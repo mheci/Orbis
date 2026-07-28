@@ -1,0 +1,180 @@
+:root {
+  --bg: #ffffff;
+  --fg: #15141a;
+  --muted: #5b5b66;
+  --line: #e0e0e6;
+  --accent: #0060df;
+  --accent-fg: #ffffff;
+  --ok: #017a40;
+  --warn: #c50042;
+  --radius: 8px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b22;
+    --fg: #fbfbfe;
+    --muted: #b1b1bb;
+    --line: #3a3944;
+    --accent: #00ddff;
+    --accent-fg: #15141a;
+    --ok: #54ffbd;
+    --warn: #ff9aa2;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 320px;
+  padding: 12px;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    13px/1.45 system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.head h1 {
+  font-size: 15px;
+  margin: 0;
+  flex: 1;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex: none;
+}
+
+.dot.off {
+  background: var(--warn);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.icon-btn:hover {
+  background: var(--line);
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.label {
+  color: var(--muted);
+  margin: 0;
+  font-size: 12px;
+}
+
+.value {
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+.host {
+  margin: 2px 0 6px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.verdict {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.verdict.contained {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.verdict.outside {
+  color: var(--muted);
+}
+
+.actions {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--fg);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  font-size: 12.5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+.btn.subtle {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.btn.danger {
+  color: var(--warn);
+}
+
+.foot {
+  display: grid;
+  gap: 6px;
+}
+
+.hidden {
+  display: none;
+}
