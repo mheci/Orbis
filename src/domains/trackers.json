@@ -1,0 +1,26 @@
+{
+  "$schema": "./schema.json",
+  "id": "trackers",
+  "title": "Google advertising and measurement domains",
+  "description": "Google-owned ad/analytics domains. Disabled by default for top-level containerization because top-level navigations to them are almost always ad click-throughs that belong to the originating site's context. Cookie isolation for these hosts is still achieved because the container has its own cookie jar. Enable via Options > Domain sets > Advertising & measurement.",
+  "updated": "2026-07-28",
+  "defaultEnabled": false,
+  "domains": [
+    "doubleclick.net",
+    "doubleclickbygoogle.com",
+    "google-analytics.com",
+    "googleadservices.com",
+    "googlesyndication.com",
+    "googletagmanager.com",
+    "googletagservices.com",
+    "googleoptimize.com",
+    "googletraveladservices.com",
+    "dartsearch.net",
+    "app-measurement.com",
+    "2mdn.net",
+    "adservice.google.com",
+    "admeld.com",
+    "invitemedia.com",
+    "teracent.net"
+  ]
+}

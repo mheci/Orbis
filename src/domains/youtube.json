@@ -1,0 +1,28 @@
+{
+  "$schema": "./schema.json",
+  "id": "youtube",
+  "title": "YouTube and video delivery",
+  "description": "YouTube-owned domains, video CDNs and localized YouTube ccTLDs.",
+  "updated": "2026-07-28",
+  "domains": [
+    "youtube.com",
+    "youtu.be",
+    "youtube-nocookie.com",
+    "youtubeeducation.com",
+    "youtubekids.com",
+    "youtubegaming.com",
+    "youtubeembeddedplayer.googleapis.com",
+    "ytimg.com",
+    "ytimg.l.google.com",
+    "yt3.ggpht.com",
+    "googlevideo.com",
+    "video.google.com",
+    "youtubei.googleapis.com",
+    "youtube.googleapis.com",
+    "youtubemobilesupport.com",
+    "yt.be"
+  ],
+  "gtldDomains": ["music.youtube", "tv.youtube", "studio.youtube", "kids.youtube"],
+  "ccTLDBases": ["youtube"],
+  "comment": "ccTLDBases are combined with the ccTLD list (see ccTLD.json) to produce youtube.de, youtube.co.uk, ... automatically."
+}
