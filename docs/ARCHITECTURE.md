@@ -1,215 +1,199 @@
 # Architecture
 
-This document explains how G-Container is put together, why it is put together that way, and which
-invariants must hold. Read it before changing anything in `src/core/`.
+How the code is organised, why it is organised that way, and which rules must not be broken. Worth
+reading before changing anything under `src/core/`.
 
-## Guiding principles
+## Principles
 
-1. **The core is pure.** Every decision the extension makes is computed by side-effect-free
-   functions in `src/core/`. The browser-facing layer only gathers facts and executes actions.
-   Determinism is what makes the behaviour testable and prevents race conditions.
-2. **Data over code.** Which hosts are Google-owned is _data_ (`src/domains/*.json`), not logic.
-   Adding a domain must never require touching TypeScript.
-3. **Fail open, never fail closed-and-broken.** If storage is corrupt, the container was deleted,
-   or an API throws, the extension degrades to "do nothing" rather than trapping the user's tabs.
-4. **Least privilege.** No permission is requested unless a specific feature needs it, and CI
-   enforces that every permission is documented.
+**The core is pure.** Every decision the extension makes is computed by functions that take input
+and return output, with no side effects and no browser access. Being predictable is what makes the
+behaviour testable and keeps timing bugs out.
 
-## Module map
+**Data instead of code.** Which addresses belong to Google is data, held in JSON files. Adding one
+must never require editing TypeScript.
+
+**Fail safe, not stuck.** If storage is corrupt, the container was deleted, or an API call throws,
+the extension does nothing rather than trapping the user's tabs.
+
+**Ask for as little as possible.** No permission is requested without a specific need, and the
+build enforces that each one is documented.
+
+## Layout
 
 ```
 src/
-├── manifest.json          MV3 manifest (Firefox 140+)
-├── types/index.ts         All cross-module types. No runtime code.
-├── domains/*.json         The domain database (see DOMAIN_DATABASE.md)
-├── core/
-│   ├── domain-db.ts       Loads + expands JSON into an in-memory database
-│   ├── matcher.ts         Reverse-label trie; decides "is this URL Google?"
-│   ├── decision.ts        Pure navigation decision engine + LoopGuard
-│   ├── settings.ts        Defaults, sanitisation, merging, migration, backups
-│   ├── container.ts       contextualIdentities lifecycle
-│   └── storage.ts         storage.local / storage.sync adapter
-├── background/index.ts    Event-page adapter: events → core → browser actions
-├── popup/                 Popup UI (renders RuntimeState, sends messages)
-└── options/               Options UI (renders Settings, sends patches)
+  manifest.json         Extension manifest, Firefox 140 and up
+  types/index.ts        Shared type definitions, no runtime code
+  domains/*.json        The address database
+  core/
+    domain-db.ts        Loads and expands the JSON into memory
+    matcher.ts          Decides whether an address belongs to Google
+    decision.ts         Works out what to do about a page load
+    settings.ts         Defaults, validation, migration, backups
+    container.ts        Creating and tracking the container
+    storage.ts          Reading and writing saved settings
+  background/index.ts   Connects browser events to the core
+  popup/                Toolbar popup
+  options/              Settings page
 ```
 
-Dependency direction is strictly one-way:
+Dependencies only ever point one way. The background layer uses the core, the core uses the data
+files. Nothing in `core/` reaches back the other way or touches the browser directly, which is what
+lets the entire core run under plain Node in tests with no browser stand in.
 
-```
-background ─► core ─► domains (data)
-   ▲                    ▲
-popup/options ──────────┘ (types only)
-```
+## What happens on a page load
 
-`core/` never imports from `background/`, `popup/` or `options/`, and never touches the `browser`
-global except through the injected interfaces in `container.ts` and `storage.ts`. This is what lets
-the entire core run under Node in Vitest with no browser mock.
+1. Firefox reports a top level page load about to start.
+2. The background layer gathers the facts: the address, the tab, which container it is in, which
+   tab opened it, and whether it is a private window.
+3. Those facts go to `decideNavigation()`, which returns one of four answers.
+4. The background layer carries out that answer.
 
-## Data flow of a navigation
+The four answers:
 
-```
-1. webRequest.onBeforeRequest fires (main_frame, blocking)
-2. background gathers: url, tabId, tab.cookieStoreId, opener tab + its cookie store,
-   incognito flag, container id, timestamp
-3. decideNavigation(context, { settings, matcher, loopGuard }) → action
-4. background executes the action:
-     contain  → tabs.create({ url, cookieStoreId: <container> }) + close original
-     release  → tabs.create({ url, cookieStoreId: 'firefox-default' }) + close original
-     unwrap   → tabs.create({ unwrapped url, default store }) + close original
-     ignore   → return undefined (load proceeds untouched)
-5. non-ignore actions return { cancel: true } so the original request never hits the network
-```
+| Answer  | Meaning                                                        |
+| ------- | -------------------------------------------------------------- |
+| contain | Stop the load, reopen the page inside the container            |
+| release | Stop the load, reopen the page outside the container           |
+| unwrap  | Follow a Google redirect link to its real destination, outside |
+| ignore  | Do nothing, let the page load normally                         |
 
-Cancelling _before_ the request is sent is what guarantees no Google cookie is ever attached to a
-request made in the wrong cookie jar. Redirecting after the fact would be too late.
+Stopping the request before it is sent is the critical detail. Loading first and moving afterwards
+would mean cookies from the wrong compartment had already gone out.
 
-## The matcher
+## Matching addresses
 
-`UrlMatcher` builds a **reverse-label trie** from all enabled domain sets. Hosts are inserted
-right-to-left (`com → google → mail`), so a lookup walks at most as many nodes as the host has
-labels — typically 3–5 — regardless of whether the database holds 700 or 70,000 entries.
+`UrlMatcher` builds a tree of address labels read back to front, so `mail.google.com` is stored as
+com, then google, then mail. Looking up an address walks as many steps as it has parts, typically
+three to five, no matter whether the database holds 900 entries or 90,000.
 
-Key properties:
+This gives a few useful properties:
 
-- **Subdomain matching is implicit.** Inserting `google.com` matches `mail.google.com` and
-  `a.b.c.google.com`, but not `google.com.evil.com` (the walk fails at `evil`).
-- **Matching uses `URL.hostname`**, never the raw string, so query strings, fragments and userinfo
-  (`https://www.google.com@evil.com/`) cannot spoof a match.
-- **Brand gTLDs are a single check** on the last label, which is what makes the database
-  future-proof: a brand-new `something.google` host matches with no data update.
-- **Results are memoised** in a 512-entry cache that is cleared wholesale when full. Bounded memory
-  matters in long sessions; an unbounded cache was a deliberate non-goal.
+Subdomains are covered automatically. Listing `google.com` matches `mail.google.com` and
+`a.b.c.google.com`, but not `google.com.example.net`, because the walk fails at `example`.
 
-The matcher is immutable. Changing settings constructs a new matcher (a few milliseconds) rather
-than mutating the existing one, so a decision in flight can never observe a half-updated ruleset.
+Matching runs on the address as parsed by the browser, never on raw text. That is what makes
+`https://example.com/?x=google.com` and `https://www.google.com@example.com/` correctly count as
+unrelated.
 
-## The decision engine
+Brand endings are a single check on the last part of the address, which is why any future
+`something.google` service is recognised with no update.
 
-`decideNavigation()` in `core/decision.ts` is the behavioural contract. Its check order is
-deliberate and every branch has a test:
+Results are remembered in a cache capped at 512 entries. Bounded memory matters during long
+browsing sessions.
 
-| Order | Check                           | Action                                        |
-| ----- | ------------------------------- | --------------------------------------------- |
-| 1     | Protection disabled or paused   | `ignore`                                      |
-| 2     | Non-http(s) scheme              | `ignore`                                      |
-| 3     | Private window and not opted in | `ignore`                                      |
-| 4     | Container unavailable           | `ignore`                                      |
-| 5     | Loop guard hit                  | `ignore`                                      |
-| 6     | Google URL outside container    | `contain` (unless OAuth pass-through applies) |
-| 7     | Redirector inside container     | `unwrap`                                      |
-| 8     | Non-Google URL inside container | `release`                                     |
-| 9     | Otherwise                       | `ignore`                                      |
+The matcher never changes after it is built. Changing a setting builds a new one, taking a couple of
+milliseconds, so a decision already in flight can never see half updated rules.
 
-### Loop prevention
+## Order of precedence
 
-The classic failure mode of container extensions is the ping-pong loop: site A redirects to Google,
-we containerize, the container redirects back, we release, repeat forever.
+Checked from the top down, first match wins:
 
-`LoopGuard` remembers `(tabId, url)` pairs for 3 seconds and refuses to act twice on the same pair
-inside that window. Properties:
+1. Sites the user marked "never"
+2. The user's own exceptions
+3. Built in exceptions for sign-in widgets that other sites embed
+4. Sites the user marked "always"
+5. Brand endings such as .google and .youtube
+6. The enabled groups in the address database
+7. Anything else browses normally
 
-- **Bounded** — hard cap on entries; expired entries are pruned, and if everything is still fresh
-  the oldest half is dropped.
-- **Per tab** — one tab looping never affects another.
-- **Self-healing** — entries expire, so a legitimate revisit 10 seconds later still works.
-- **Cleared** on tab close and on every settings change.
+## Avoiding loops
 
-The `breaks a two-site ping-pong redirect chain` test simulates 20 rapid navigations and asserts
-exactly one containment occurs.
+The classic way this kind of extension fails is a loop. Site A sends you to Google, the extension
+moves it, the container sends you back to A, the extension moves it out, and around it goes.
 
-## Container lifecycle
+`LoopGuard` remembers which address was acted on in which tab for three seconds and refuses to act
+twice on the same pair inside that window. It is capped in size, expires old entries, is tracked per
+tab so one looping tab cannot affect another, and is cleared when a tab closes or settings change.
 
-`ContainerManager.ensure()` resolves the container in this order:
+A test simulates twenty rapid page loads bouncing back and forth and confirms exactly one move
+happens.
 
-1. Cached id, if it still resolves to a live container.
-2. Id persisted in `storage.local` from a previous session.
-3. An existing container whose **name** matches (this is how a reinstall re-adopts your cookies).
-4. Create a new one.
+## The container itself
 
-Concurrency is handled by a single **in-flight promise**: twenty navigations racing on startup all
-await the same `resolve()` call, so it is impossible to create two containers. This is covered by
-the `never creates two containers under concurrent calls` test.
+`ContainerManager.ensure()` finds the container in this order:
 
-`contextualIdentities.onRemoved` invalidates the cached id, so deleting the container in Firefox's
-UI causes the next navigation to transparently recreate it.
+1. The one already in memory, if it still exists
+2. The one saved from a previous session
+3. Any existing container with the configured name
+4. Create a new one
 
-## Storage
+Step three is what lets a reinstall pick up your existing cookies and stay signed in.
 
-`storage.local` is authoritative. `storage.sync` is an opt-in mirror; on load, the sync copy is only
-adopted when it is newer _and_ the stored document itself has `behaviour.useSync === true` (so a
-stale sync record from another profile cannot silently override a local choice).
+Several page loads racing at startup all wait on a single shared operation, so it is impossible to
+end up with two containers. There is a test for that using twenty five simultaneous calls.
 
-- Writes are serialised through a promise chain — concurrent saves cannot interleave.
-- A sync write failure (quota is small and easy to exceed) never fails the local write.
-- Everything read back is passed through `sanitizeSettings()`, which rebuilds a known-good object
-  field by field. Unknown keys are dropped, wrong types are replaced with defaults, lists are
-  capped at 2000 entries, and every pattern must satisfy a strict LDH host regex.
+Deleting the container in Firefox settings clears the stored reference, and the next page load
+quietly recreates it.
 
-## MV3 and the event page
+## Saved settings
 
-The background script is a **non-persistent event page**. It can be suspended at any time, so:
+Local storage is the source of truth. Sync is optional, and a synced copy is only adopted when it is
+both newer and explicitly marked as coming from a profile with sync enabled, so a stale copy from
+another machine cannot silently override a local choice.
 
-- All durable state lives in `storage.local`.
-- Ephemeral state (loop guard, compiled matcher) is cheap to rebuild — `init()` is idempotent and
-  awaited by every entry point.
-- Statistics writes are debounced by 5 seconds so a navigation burst does not hammer storage.
+Writes are queued one after another so two rapid changes cannot overwrite each other. A failed sync
+write never prevents the local write.
 
-Firefox retains blocking `webRequest` under MV3 for privacy extensions, which is why the manifest
-declares `webRequest` + `webRequestBlocking` rather than `declarativeNetRequest` — DNR cannot make
-a container decision that depends on the _current tab's_ cookie store.
+Everything read back is rebuilt field by field. Unknown keys are dropped, wrong types are replaced
+with defaults, lists are capped at 2000 entries, and every address pattern must pass a strict format
+check. Corrupted or hostile input cannot reach the matcher.
 
-## Icon
+## Running without a persistent background page
 
-The icon set is **generated from source** by `scripts/make-icons.py` rather than committed as
-opaque binaries, so it is reviewable in a diff, reproducible, and re-tintable without a design tool.
+The background script can be shut down by Firefox at any time, so:
 
-- **Mark:** a geometric capital `G` inside a dashed ring. The dashes carry the meaning — a container
-  boundary that quarantines what is inside it, rather than merely circling it.
-- **Palette:** indigo `#1A1042` plate, cyan `#22E9DB` mark. Deliberately _not_ Google's four-colour
-  palette: using Google's actual logo colours on an unaffiliated add-on invites a trademark
-  objection during AMO review.
-- **Construction:** the `G` is drawn subtractively (filled disc, punched counter, removed aperture,
-  crossbar added back) instead of as a stroked arc. A stroked arc closes up into an unreadable blob
-  at 16px; the subtractive build keeps the counter genuinely open.
-- **Optical compensation:** detail is size-aware. At 16px the dashed ring becomes noise, so small
-  sizes fall back to a solid ring with a heavier mark. Larger sizes use a rounded-square plate to
-  match platform icon conventions; small sizes use a disc, which reads better in the toolbar.
+Anything that must survive lives in storage. Anything else, the loop guard and the compiled matcher,
+is cheap to rebuild. Setup is safe to call repeatedly and every entry point waits for it.
 
-Regenerate with `python3 scripts/make-icons.py`. Only the sizes referenced by the manifest are
-copied into `dist/`; `icon-512.png` is a master for the AMO listing and README.
+Counter writes are delayed by five seconds so a burst of page loads does not hammer storage.
 
-## Project identity
+## Rules that must hold
 
-Two values are permanent and enforced by `scripts/verify-manifest.mjs`:
+Breaking any of these is a bug.
 
-| Value           | Setting                             | Why it is pinned                                                                                                                                                                                                                                              |
-| --------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Extension id    | `g-container@astarling-x.github.io` | Firefox and AMO use this as the add-on's identity. Changing it after publication makes AMO treat the upload as a _different_ add-on: existing users get no update, and a fresh install creates a new container, orphaning their cookies, logins and settings. |
-| Canonical owner | `astarling-x`                       | The project previously lived under `mheci`, which has been deleted. `scripts/check-links.mjs` fails CI if a link to it reappears — a dead vulnerability-reporting link in SECURITY.md would be a genuine hazard.                                              |
+1. A contain action targets the container and nothing else.
+2. A replacement tab is always created before the original is closed, so a tab is never lost.
+3. If the replacement cannot be created, the original load is allowed through rather than cancelled.
+4. `decideNavigation` performs no input or output and stays synchronous.
+5. Nothing in `core/` touches the browser directly.
+6. Every saved or imported document is validated before use.
+7. No code path makes a network request.
 
-If the project ever moves accounts again, move the _repository_, not the extension id.
+## Speed limits
 
-## Invariants
+Enforced by the performance tests.
 
-Violating any of these is a bug:
+| Operation                                  | Limit                  |
+| ------------------------------------------ | ---------------------- |
+| Building the matcher, around 950 addresses | under 150 ms           |
+| Matching 50,000 distinct addresses         | under 2000 ms          |
+| 100,000 repeat lookups from cache          | under 500 ms           |
+| Cache size                                 | 512 entries            |
+| Loop guard across 50,000 operations        | under 2000 ms, bounded |
 
-1. A `contain` action targets the container cookie store and nothing else.
-2. The extension never leaves the user with zero tabs where they had one — a replacement tab is
-   always created _before_ the original is closed.
-3. `decideNavigation` performs no I/O and is synchronous.
-4. `core/` never imports the `browser` global directly.
-5. Every persisted document passes `sanitizeSettings()` before use.
-6. No code path performs a network request.
+## The icon
 
-## Performance budget
+Generated from source by `scripts/make-icons.py` rather than stored as image files, so it can be
+reviewed as a normal change and regenerated at any size.
 
-Enforced by `test/performance.test.ts`:
+The mark is a capital G inside a broken ring, the ring standing for the container boundary. Colours
+are deliberately not Google's own, since using them on an unaffiliated extension would invite a
+trademark complaint.
 
-| Operation                       | Budget                  |
-| ------------------------------- | ----------------------- |
-| Matcher build (~700 hosts)      | < 150 ms                |
-| 50,000 unique URL matches       | < 2000 ms               |
-| 100,000 cached matches          | < 500 ms                |
-| Match cache size                | ≤ 512 entries           |
-| Loop guard under 50k operations | < 2000 ms, bounded size |
+The G is drawn by cutting shapes out of a filled circle rather than stroking a curve. A stroked
+curve closes up into an unreadable blob at 16 pixels. Detail also varies by size: below 20 pixels
+the broken ring turns to mush, so small sizes use a solid one.
+
+Regenerate with `python3 scripts/make-icons.py`. Only sizes named in the manifest are packaged.
+
+## Fixed identity
+
+Two values are locked and checked by the build.
+
+| Value        | Setting                             | Why                                                                                                                                                                                                                                                       |
+| ------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Extension ID | `g-container@astarling-x.github.io` | Firefox uses this to recognise the add-on. Changing it after release makes Firefox treat an update as a completely different extension, so users get no update and a fresh install would create a new empty container, losing their cookies and settings. |
+| Account name | `astarling-x`                       | The project used to live elsewhere. A stale link is a dead end for users, and a dead security reporting link is worse than that.                                                                                                                          |
+
+If the project ever moves accounts again, move the repository and leave the extension ID alone.

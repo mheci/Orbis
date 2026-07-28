@@ -1,78 +1,85 @@
 # Roadmap
 
-Priorities are ordered by user impact and risk reduction, not by novelty. Anything that increases
-runtime complexity has to earn its place — reliability is the product.
+Ordered by how much difference something makes to users, not by how interesting it is to build.
+Anything that adds moving parts has to earn its place, because being dependable is the point.
 
-## v1.0 — Shipped
+## Done, version 1.0
 
-- [x] Automatic containment of all Google properties
-- [x] 700+ host domain database with ccTLD and brand-gTLD expansion
-- [x] Two-way containment (release non-Google pages)
-- [x] Redirector unwrapping and OAuth pass-through
-- [x] Loop prevention
-- [x] Options page, popup, context menus
-- [x] Always / never lists, exceptions
-- [x] Backup, restore, reset, Sync
-- [x] Diagnostics with URL tester
-- [x] 256 tests, CI, complete documentation
+- Automatic containment of Google services
+- 952 addresses covering country domains and brand endings
+- Moving non-Google pages back out of the container
+- Following Google redirect links to their real destination
+- Keeping third party "Sign in with Google" working
+- Loop prevention
+- Settings page, popup, right click menu
+- Always and never lists
+- Backup, restore, reset and optional sync
+- Diagnostics with a URL tester
+- 292 tests, automated builds, full documentation
+- Signed releases
 
-## v1.1 — Polish and localisation
+## Next, version 1.1
 
-- [ ] **`_locales` internationalisation** with `browser.i18n`. English, then community translations.
-- [ ] **Per-rule exception UI** exposing the `ExceptionRule` metadata (note, enabled toggle,
-      creation date) that the data model already supports.
-- [ ] **Keyboard shortcuts** (`commands`) for move-tab-in / move-tab-out / pause.
-- [ ] **Onboarding page** shown once on install, explaining what will change and what will not.
-- [ ] **Accessibility pass** on both UI surfaces: focus order, ARIA labelling, contrast audit.
-- [ ] **AMO listing**: screenshots, store copy, signed release.
+Polish and reach.
 
-## v1.2 — Smarter matching
+- **Translations.** Move every visible string into message files so the extension can be translated.
+- **Better exceptions screen.** The data already stores notes, an enabled flag and a date for each
+  exception, but the settings page only shows a flat list.
+- **Keyboard shortcuts** for moving a tab in or out and for pausing.
+- **A short welcome page** on first install explaining what will change and what will not.
+- **Accessibility review** covering keyboard navigation, screen readers and colour contrast.
+- **Listing on Mozilla's add-on site**, which needs screenshots, store text and review notes.
 
-- [ ] **Opt-in sub-resource reporting** — a diagnostics-only view of Google sub-resources a page
-      loaded, so users can see what is embedded where. Reporting only; no blocking.
-- [ ] **Rule import from Facebook Container** style lists for users migrating between tools.
-- [ ] **Bulk rule editing** (paste a list, edit as text) in Options.
-- [ ] **Redirect-chain tracing** in diagnostics: show the last N decisions with their reasons, to
-      make "why was this contained?" self-service.
+## After that, version 1.2
 
-## v1.3 — Multiple containers
+Better answers when something looks wrong.
 
-Requested frequently; deliberately scheduled late because it multiplies the state space.
+- **A record of recent decisions** in diagnostics, showing what happened and why. Kept in memory
+  only, never saved, and off unless switched on, since it amounts to browsing history.
+- **Bulk editing** of the always and never lists, so a list can be pasted in rather than typed one
+  line at a time.
+- **Importing rules** from similar tools for people switching over.
 
-- [ ] **Separate Work and Personal Google containers**, chosen by account or by rule.
-- [ ] **Per-container rule sets**.
-- [ ] Migration path that keeps single-container users unaffected by default.
+## Later, version 1.3
 
-## v2.0 — Generalisation
+Separate work and personal Google containers, with their own rules. Requested often, and deliberately
+scheduled late because it multiplies everything the extension has to keep track of. Existing users
+would see no change unless they opt in.
 
-- [ ] **Provider plug-ins**: the same engine driving Microsoft, Meta or Amazon containers, with the
-      domain database as the only per-provider data.
-- [ ] **Community domain lists** with signed, verifiable updates — only if a design exists that
-      preserves the "no network requests" property, e.g. shipping lists in the add-on update itself.
+## Someday, version 2.0
 
-## Explicit non-goals
+The same engine handling other companies, with the address list as the only thing that differs.
 
-These will not be built, so nobody wastes time proposing them:
+Community maintained address lists, but only if there is a design that keeps the promise of making
+no network requests. Shipping updated lists inside extension updates is the obvious route.
 
-- **Content or ad blocking.** Use uBlock Origin. Containment and blocking are different jobs, and
-  merging them makes both worse.
-- **Any telemetry or analytics**, even anonymised and opt-in.
-- **Remote configuration or remote code**, in any form.
-- **Chrome/Edge support.** Containers are a Firefox feature; there is nothing to port to.
-- **A rules engine with regexes and boolean logic.** Host and host+path prefixes cover real needs;
-  a mini-language would be a footgun and a security surface.
-- **Automatic Google account switching.** Out of scope and fragile.
+## Not planned
+
+Listed so nobody spends time proposing them.
+
+**Content or ad blocking.** Use uBlock Origin. Separating and blocking are different jobs and doing
+both badly is worse than doing one well.
+
+**Any telemetry**, even anonymous and opt in.
+
+**Remote configuration or remotely loaded code**, in any form.
+
+**Chrome or Edge support.** Containers are a Firefox feature. There is nothing to port to.
+
+**A rule language with patterns and logic.** Addresses and path prefixes cover real needs. A small
+programming language in the settings would be a foot gun and a security surface.
+
+**Automatic Google account switching.** Out of scope and fragile.
 
 ## Maintenance commitments
 
-- **Quarterly** domain database review against Google's product list.
-- **Within one release** of a new Firefox ESR, verify compatibility and bump `strict_min_version`
-  only when a genuinely needed API requires it.
-- **Security reports** triaged within 72 hours (see [SECURITY.md](../SECURITY.md)).
-- **Dependency updates** monthly via Dependabot; runtime dependencies remain at zero.
+- Review the address list against Google's product pages every few months
+- Confirm compatibility with each new long term Firefox release
+- Triage security reports within 72 hours, as described in [SECURITY.md](../SECURITY.md)
+- Keep dependencies current through automated updates, with runtime dependencies staying at zero
 
-## How to influence this
+## Influencing this
 
-Open a [Discussion](https://github.com/astarling-x/g-container/discussions) for ideas, or an
-[Issue](https://github.com/astarling-x/g-container/issues) for concrete bugs and missing domains. Missing
-or over-eager domains are the highest-value reports and are usually fixed within days.
+Open a [discussion](https://github.com/astarling-x/g-container/discussions) for ideas or an
+[issue](https://github.com/astarling-x/g-container/issues) for concrete problems. Reports of missed
+or wrongly caught sites are the most useful and are usually fixed within days.

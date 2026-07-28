@@ -7,15 +7,15 @@ body:
     attributes:
       value: |
         Thanks! Domain reports are the most valuable contribution to this project.
-        Please run **Options → Diagnostics → Test a URL** first — it tells us exactly which rule fired.
+        Please run the URL tester first: open Settings, then Diagnostics. It tells us exactly which rule matched.
 
   - type: dropdown
     id: kind
     attributes:
       label: What happened?
       options:
-        - A Google site was NOT put in the container
-        - A non-Google site WAS put in the container
+        - A Google site was not put in the container
+        - A site that is not Google was put in the container
     validations:
       required: true
 
@@ -32,8 +32,8 @@ body:
     id: diagnostics
     attributes:
       label: URL tester output
-      description: Paste the result from Options → Diagnostics → Test a URL
-      placeholder: '➖ Normal browsing — reason: none'
+      description: Paste the result from Settings, then Diagnostics, then Test a URL
+      placeholder: 'Normal browsing, reason: none'
     validations:
       required: true
 
@@ -41,7 +41,7 @@ body:
     id: evidence
     attributes:
       label: Evidence of ownership
-      description: For missed domains — how do we know Google owns this host? (WHOIS, official link, etc.)
+      description: For a missed address, how do we know Google owns it? WHOIS records, an official link, and so on.
 
   - type: input
     id: version
