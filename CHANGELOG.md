@@ -15,6 +15,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   must stay at zero.
 - `.gitleaks.toml` with rules for GitHub PATs and AMO JWT credentials, verified against a negative
   control so a passing scan is meaningful.
+- **Supply-chain hardening**, driven by the scanners' own findings: all 31 GitHub Action references
+  are pinned to immutable commit SHAs (a tag can be moved; a SHA cannot), `actions/checkout` runs
+  with `persist-credentials: false` so the token is not left in `.git/config` for later steps, and
+  Dependabot has a 7-day cooldown so a compromised release is likely yanked before it is adopted.
+
+### Fixed
+
+- **Cleared all dependency vulnerabilities**, including a critical advisory in `vitest`
+  (CVE-2026-47429). `vitest` and `@vitest/coverage-v8` moved to v4 — the coordinated upgrade
+  tracked in the toolchain issue, which installs cleanly now — and a targeted npm `override` forces
+  the patched `brace-expansion@5.0.8` transitively rather than forcing an `eslint` major for a
+  dev-only DoS advisory. `npm audit` now reports zero vulnerabilities at every level.
 
 ### Changed
 
