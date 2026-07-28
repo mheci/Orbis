@@ -1,10 +1,47 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
-coverage/
 web-ext-artifacts/
-*.log
-.DS_Store
-.env
+coverage/
+*.tsbuildinfo
+
+# Packaged / signed add-ons — release artifacts, never committed
 *.xpi
+*.zip
+
+# Credentials and secrets. Nothing matching these has ever been committed
+# (verified against full history); these patterns exist so it stays that way.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.amo-upload-uuid
+.web-extension-id
+.netrc
+.git-credentials
+
+# Logs and scratch
+*.log
+npm-debug.log*
+yarn-error.log*
+*.tmp
+*.bak
+*.orig
+*.rej
+
+# Editors and OS
 .vscode/
 .idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Python bytecode from scripts/make-icons.py
+__pycache__/
+*.pyc
