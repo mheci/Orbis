@@ -1,0 +1,27 @@
+# Zizmor configuration — GitHub Actions security auditing.
+#
+# Only findings that are genuinely inapplicable are suppressed, and each
+# suppression carries its reasoning. Everything else was fixed rather than
+# silenced: all actions are pinned to immutable commit SHAs, checkout runs with
+# persist-credentials: false, and Dependabot has a 7-day cooldown.
+
+rules:
+  cache-poisoning:
+    ignore:
+      # The release job builds and uploads an artifact after restoring an npm
+      # cache. The risk this rule describes is a poisoned cache influencing a
+      # published artifact.
+      #
+      # It does not apply here in a meaningful way: the published .xpi is signed
+      # by Mozilla after upload, the .zip build is byte-reproducible and
+      # verifiable by anyone from a clean clone, and release.yml runs the full
+      # test suite before packaging. A poisoned cache would have to survive all
+      # three. Removing caching entirely would slow every run for no real gain.
+      - release.yml
+
+  superfluous-actions:
+    ignore:
+      # softprops/action-gh-release handles release-note extraction, multi-file
+      # globbing and idempotent re-runs. Reimplementing that with `gh release`
+      # in shell would be more code and more failure modes, not less.
+      - release.yml
