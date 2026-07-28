@@ -3,11 +3,11 @@
   "name": "G-Container",
   "version": "1.0.0",
   "description": "Isolate Google, YouTube and every Google-owned service in a dedicated Firefox Container so Google can't track your browsing.",
-  "homepage_url": "https://github.com/mheci/g-container",
+  "homepage_url": "https://github.com/astarling-x/g-container",
   "author": "G-Container contributors",
   "browser_specific_settings": {
     "gecko": {
-      "id": "g-container@mheci.github.io",
+      "id": "g-container@astarling-x.github.io",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": ["none"]
