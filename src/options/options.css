@@ -1,0 +1,289 @@
+:root {
+  --bg: #f9f9fb;
+  --card: #ffffff;
+  --fg: #15141a;
+  --muted: #5b5b66;
+  --line: #d7d7db;
+  --accent: #0060df;
+  --accent-fg: #fff;
+  --warn: #c50042;
+  --radius: 10px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b22;
+    --card: #2b2a33;
+    --fg: #fbfbfe;
+    --muted: #b1b1bb;
+    --line: #52525e;
+    --accent: #00ddff;
+    --accent-fg: #15141a;
+    --warn: #ff9aa2;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    14px/1.5 system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.page-head h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.sub {
+  margin: 0 0 20px;
+  color: var(--muted);
+  max-width: 60ch;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  padding: 8px 12px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+fieldset {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 16px 16px;
+  margin: 0 0 16px;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin: 4px 0 10px;
+  max-width: 70ch;
+}
+
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 5px 0;
+}
+
+.check input {
+  margin-top: 3px;
+  flex: none;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.field span {
+  width: 90px;
+  color: var(--muted);
+}
+
+input[type='text'],
+select {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  min-width: 220px;
+}
+
+.inline {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.inline input[type='text'] {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+
+.btn.danger {
+  color: var(--warn);
+  border-color: var(--warn);
+}
+
+.list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 6px 5px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+}
+
+.list .remove {
+  background: none;
+  border: none;
+  color: var(--warn);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0 6px;
+}
+
+.list .empty {
+  color: var(--muted);
+  font-family: inherit;
+  justify-content: flex-start;
+  border-style: dashed;
+}
+
+.set {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.set h3 {
+  margin: 0 0 2px;
+  font-size: 13.5px;
+}
+
+.set p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.set .count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.stat b {
+  display: block;
+  font-size: 19px;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.code {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;
+  font-size: 12px;
+  max-height: 360px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.danger-zone {
+  border-color: var(--warn);
+}
+
+.status {
+  position: sticky;
+  bottom: 0;
+  margin: 12px 0 0;
+  min-height: 20px;
+  color: var(--accent);
+  font-size: 13px;
+}
