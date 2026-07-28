@@ -10,10 +10,20 @@ const outDir = 'web-ext-artifacts';
 await mkdir(outDir, { recursive: true });
 const outFile = path.join(outDir, `g_container-${pkg.version}.zip`);
 
+/**
+ * Files that must never reach users.
+ *
+ * `web-ext sign` writes `.amo-upload-uuid` into the source dir to resume
+ * interrupted uploads. It is build-machine state, not part of the add-on, and
+ * silently shipping it would leak an internal upload id into every install.
+ */
+const EXCLUDED = new Set(['.amo-upload-uuid', '.DS_Store', 'Thumbs.db']);
+
 async function walk(dir, base = dir) {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
+    if (EXCLUDED.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) files.push(...(await walk(full, base)));
     else files.push({ full, rel: path.relative(base, full).split(path.sep).join('/') });
