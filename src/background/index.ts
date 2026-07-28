@@ -19,6 +19,7 @@ import {
 } from '../core/decision.js';
 import { ContainerManager, type ContextualIdentitiesApi } from '../core/container.js';
 import { UrlMatcher, safeParse } from '../core/matcher.js';
+import { SubresourceClassifier } from '../core/subresource.js';
 import { getDomainDatabase } from '../core/domain-db.js';
 import { SettingsStore } from '../core/storage.js';
 import {
@@ -42,10 +43,20 @@ class GContainer {
   /** Tabs we created ourselves, so we can close the placeholder safely. */
   private readonly ourTabs = new Set<number>();
   private statsFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private blocker: SubresourceClassifier;
+  /** Per-tab count of Google resources blocked, for the popup and badge. */
+  private readonly blockedPerTab = new Map<number, number>();
+  /** Cookie store of each tab, cached so the blocking path stays synchronous. */
+  private readonly tabStores = new Map<number, string>();
 
   constructor() {
     this.settings = defaultSettings();
     this.matcher = new UrlMatcher(this.settings);
+    this.blocker = new SubresourceClassifier(
+      this.settings.blocking.mode,
+      this.settings.blocking.allowlist,
+      this.matcher
+    );
     this.container = new ContainerManager(
       (browser.contextualIdentities as unknown as ContextualIdentitiesApi) ?? null,
       async (id) => {
@@ -74,6 +85,11 @@ class GContainer {
 
   private rebuildMatcher(): void {
     this.matcher = new UrlMatcher(this.settings);
+    this.blocker = new SubresourceClassifier(
+      this.settings.blocking.mode,
+      this.settings.blocking.allowlist,
+      this.matcher
+    );
   }
 
   // ---------------------------------------------------------------- settings
@@ -255,6 +271,72 @@ class GContainer {
     }
   }
 
+  // ------------------------------------------------- third-party resources
+
+  /**
+   * Handle a sub-resource request: a Google script, pixel, frame or image
+   * loaded by a website that is not Google.
+   *
+   * This runs on every sub-resource of every page, so it must be cheap and it
+   * must be synchronous. Returning a promise from a blocking webRequest
+   * listener stalls the request until it settles, which would add latency to
+   * the entire web. Everything it needs is therefore kept in memory: the tab's
+   * cookie store is cached from the navigation path, and classification results
+   * are memoised.
+   */
+  onBeforeSubresource(
+    details: browser.webRequest._OnBeforeRequestDetails
+  ): browser.webRequest.BlockingResponse | undefined {
+    if (details.type === 'main_frame') {
+      // A new page load resets that tab's counter.
+      if (details.tabId >= 0) {
+        this.blockedPerTab.delete(details.tabId);
+        this.refreshBadge(details.tabId);
+      }
+      return undefined;
+    }
+    if (this.settings.blocking.mode === 'off') return undefined;
+    if (!isProtectionActive(this.settings, Date.now())) return undefined;
+
+    const containerId = this.container.id;
+    const tabStore = details.tabId >= 0 ? this.tabStores.get(details.tabId) : undefined;
+
+    const decision = this.blocker.decideCached({
+      url: details.url,
+      originUrl:
+        typeof details.originUrl === 'string'
+          ? details.originUrl
+          : typeof details.documentUrl === 'string'
+            ? details.documentUrl
+            : null,
+      type: details.type,
+      tabInContainer: containerId !== null && tabStore === containerId,
+    });
+
+    if (decision.action !== 'block') return undefined;
+
+    if (details.tabId >= 0) {
+      const next = (this.blockedPerTab.get(details.tabId) ?? 0) + 1;
+      this.blockedPerTab.set(details.tabId, next);
+      this.refreshBadge(details.tabId);
+    }
+    this.bumpStat('trackersBlocked');
+    return { cancel: true };
+  }
+
+  /** Show the blocked count for a tab on the toolbar icon. */
+  private refreshBadge(tabId: number): void {
+    const action = browser.action ?? browser.browserAction;
+    if (action === undefined) return;
+    if (!this.settings.blocking.showBadge) {
+      void action.setBadgeText({ tabId, text: '' });
+      return;
+    }
+    const count = this.blockedPerTab.get(tabId) ?? 0;
+    void action.setBadgeText({ tabId, text: count > 0 ? String(count) : '' });
+    void action.setBadgeBackgroundColor?.({ tabId, color: '#1a1042' });
+  }
+
   // ------------------------------------------------------------- tab helpers
 
   /** Move a tab into or out of the container, preserving URL and position. */
@@ -314,6 +396,13 @@ class GContainer {
       currentMatch: url === null ? { isGoogle: false, source: 'none' } : this.matcher.match(url),
       statistics: this.settings.statistics,
       domainCount: getDomainDatabase().hostCount,
+      blockedHere: typeof tab?.id === 'number' ? (this.blockedPerTab.get(tab.id) ?? 0) : 0,
+      blockingMode: this.settings.blocking.mode,
+      siteAllowlisted:
+        parsed !== null &&
+        this.settings.blocking.allowlist.some(
+          (h) => parsed.hostname === h || parsed.hostname.endsWith(`.${h}`)
+        ),
     };
   }
 
@@ -326,7 +415,7 @@ class GContainer {
       cookieStoreId: id,
       containerExists: id !== null ? await this.container.exists(id) : false,
       domainCount: getDomainDatabase().hostCount,
-      ruleCounts: this.matcher.ruleCounts(),
+      ruleCounts: { ...this.matcher.ruleCounts(), ...this.blocker.counts() },
       storage: this.store.available(),
       matcherBuildMs: this.matcher.buildMs,
       recentErrors: this.store.recentErrors(),
@@ -397,6 +486,17 @@ class GContainer {
         this.updateBadge();
         return this.settings;
       }
+      case 'allowlist-site': {
+        const host = canonicalizeUserPattern(message.host);
+        if (host === null) throw new Error(`Invalid site: ${message.host}`);
+        const current = this.settings.blocking.allowlist;
+        const next = message.allow
+          ? [...new Set([...current, host])]
+          : current.filter((h) => h !== host);
+        return this.updateSettings({ blocking: { allowlist: next } });
+      }
+      case 'get-blocked':
+        return this.blockedPerTab.get(message.tabId) ?? 0;
       case 'diagnostics':
         return this.diagnostics();
       default:
@@ -413,6 +513,31 @@ class GContainer {
       ['blocking']
     );
 
+    // Sub-resource blocking. Registered separately from the navigation
+    // listener because it must stay synchronous: returning a promise from a
+    // blocking listener stalls every request until it resolves.
+    browser.webRequest.onBeforeRequest.addListener(
+      (details) => this.onBeforeSubresource(details),
+      {
+        urls: ['http://*/*', 'https://*/*'],
+        types: [
+          'script',
+          'xmlhttprequest',
+          'image',
+          'imageset',
+          'sub_frame',
+          'ping',
+          'beacon',
+          'media',
+          'object',
+          'object_subrequest',
+          'websocket',
+          'other',
+        ] as browser.webRequest.ResourceType[],
+      },
+      ['blocking']
+    );
+
     browser.runtime.onMessage.addListener((message) =>
       this.handleMessage(message as Message).catch((error: unknown) => {
         console.warn('[g-container] message failed', error);
@@ -423,7 +548,20 @@ class GContainer {
     browser.tabs.onRemoved.addListener((tabId) => {
       this.loopGuard.forgetTab(tabId);
       this.ourTabs.delete(tabId);
+      this.blockedPerTab.delete(tabId);
+      this.tabStores.delete(tabId);
     });
+
+    // The blocking path needs a tab's cookie store synchronously, so it is
+    // cached here rather than looked up per request.
+    const rememberTab = (tab: browser.tabs.Tab): void => {
+      if (typeof tab.id === 'number' && typeof tab.cookieStoreId === 'string') {
+        this.tabStores.set(tab.id, tab.cookieStoreId);
+      }
+    };
+    browser.tabs.onCreated.addListener(rememberTab);
+    browser.tabs.onUpdated.addListener((_tabId, _change, tab) => rememberTab(tab));
+    void browser.tabs.query({}).then((tabs) => tabs.forEach(rememberTab));
 
     browser.contextualIdentities?.onRemoved.addListener((info) => {
       void this.container.invalidate(info.contextualIdentity.cookieStoreId);

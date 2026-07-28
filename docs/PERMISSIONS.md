@@ -60,8 +60,12 @@ There is a newer permission called declarativeNetRequest that some extensions us
 cannot work here, because the decision depends on which container the current tab is already in,
 and that is live information the newer system has no way to consult.
 
-The listener is registered for top level page loads only. Images, scripts and background requests
-are never examined.
+Two listeners are registered. One watches top level page loads and decides which container they
+belong in. The other watches scripts, images, frames and background requests, and cancels the ones
+identified as Google tracking on websites that are not Google.
+
+The second listener reads the address of the resource and the address of the page requesting it.
+That is all it needs, and all it uses.
 
 ### Access to all websites
 

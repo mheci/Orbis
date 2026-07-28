@@ -29,6 +29,7 @@ src/
     domain-db.ts        Loads and expands the JSON into memory
     matcher.ts          Decides whether an address belongs to Google
     decision.ts         Works out what to do about a page load
+    subresource.ts      Classifies Google resources embedded in other sites
     settings.ts         Defaults, validation, migration, backups
     container.ts        Creating and tracking the container
     storage.ts          Reading and writing saved settings
@@ -84,6 +85,52 @@ browsing sessions.
 
 The matcher never changes after it is built. Changing a setting builds a new one, taking a couple of
 milliseconds, so a decision already in flight can never see half updated rules.
+
+## Blocking embedded Google resources
+
+Separating cookies does not stop a request being made. When a news site loads Google Analytics,
+Google learns your IP address and which page you are on regardless of whether a cookie is attached.
+Cancelling the request does stop that.
+
+The difficulty is deciding what to cancel. Facebook Container blocks every Meta resource on other
+sites, which is safe because almost nothing on the web needs Meta code to work. Google is not
+comparable. Fonts, hosted script libraries, reCAPTCHA and embedded players are load-bearing across
+a large share of the web, so blocking them by default would break sites and call it privacy.
+
+Resources are therefore classified in `src/domains/subresources.json`:
+
+| Group         | Examples                              | Standard mode | Strict mode |
+| ------------- | ------------------------------------- | ------------- | ----------- |
+| Tracking      | Analytics, Tag Manager, DoubleClick   | Blocked       | Blocked     |
+| Social        | Share and follow widgets              | Blocked       | Blocked     |
+| Functional    | Fonts, maps, embeds, hosted libraries | Allowed       | Blocked     |
+| Unclassified  | Any other Google host                 | Allowed       | Blocked     |
+| Never blocked | Sign-in, reCAPTCHA, Firebase startup  | Allowed       | Allowed     |
+
+Nothing is blocked when the resource is loaded by a Google page, when the tab is already in the
+container, when the site is on the user's allowlist, or when the browser did not report which page
+made the request. Stylesheets, fonts and top level documents are never cancelled, because a
+cancelled stylesheet produces a visibly broken page rather than a quietly protected one.
+
+### Two different questions
+
+`UrlMatcher` answers "should a top level navigation go in the container?" and respects the user's
+domain group choices. Advertising domains are switched off there, because arriving at one is
+usually an ad click passing through to somewhere else.
+
+`SubresourceClassifier` answers "is this host Google-owned?" and deliberately ignores those
+choices. google-analytics.com belongs to Google whether or not the user wants ad click-throughs
+contained, and it is precisely the host that most needs blocking when embedded elsewhere.
+
+Conflating the two was an actual bug during development: the blocker used the containerization
+matcher and consequently ignored every tracking domain, which the tests caught.
+
+### Staying fast
+
+This runs on every sub-resource of every page, so the handler is synchronous. Returning a promise
+from a blocking webRequest listener stalls the request until it settles, which would add latency to
+all browsing. Everything needed is held in memory: each tab's container is cached from the
+navigation path, and decisions are memoised in a cache capped at 1024 entries.
 
 ## Order of precedence
 
