@@ -20,6 +20,7 @@ import {
   SETTINGS_SCHEMA_VERSION,
   type BackupDocument,
   type ContainerColor,
+  type BlockingMode,
   type ContainerIcon,
   type DeepPartial,
   type ExceptionRule,
@@ -30,6 +31,8 @@ import { getDomainDatabase, normalizeHostPattern } from './domain-db.js';
 import { parseHostPathRule } from './matcher.js';
 
 export const STORAGE_KEY = 'settings';
+/** Accepted blocking modes; anything else falls back to the default. */
+const BLOCKING_MODES: readonly BlockingMode[] = ['off', 'standard', 'strict'];
 /** Guard rails so a corrupt import cannot blow up memory. */
 const MAX_LIST_ENTRIES = 2000;
 const MAX_PATTERN_LENGTH = 253 + 512;
@@ -40,6 +43,7 @@ export function defaultStatistics(): Statistics {
     releasedNavigations: 0,
     unwrappedLinks: 0,
     exceptionsApplied: 0,
+    trackersBlocked: 0,
     since: Date.now(),
     lastEvent: 0,
   };
@@ -61,6 +65,15 @@ export function defaultSettings(): Settings {
       handlePrivateWindows: false,
       collectStatistics: true,
       useSync: false,
+    },
+    blocking: {
+      // Standard blocks analytics, advertising and social widgets on sites that
+      // are not Google. Fonts, hosted libraries, reCAPTCHA, maps and embeds are
+      // left alone, because blocking those by default would break a large share
+      // of the web rather than protect anyone.
+      mode: 'standard',
+      allowlist: [],
+      showBadge: true,
     },
     domainSets,
     alwaysContainerize: [],
@@ -137,6 +150,7 @@ function sanitizeStatistics(value: unknown): Statistics {
     releasedNavigations: asFiniteNumber(record['releasedNavigations'], 0),
     unwrappedLinks: asFiniteNumber(record['unwrappedLinks'], 0),
     exceptionsApplied: asFiniteNumber(record['exceptionsApplied'], 0),
+    trackersBlocked: asFiniteNumber(record['trackersBlocked'], 0),
     since: asFiniteNumber(record['since'], base.since),
     lastEvent: asFiniteNumber(record['lastEvent'], 0),
   };
@@ -156,6 +170,11 @@ export function sanitizeSettings(input: unknown): Settings {
     typeof record['behaviour'] === 'object' && record['behaviour'] !== null
       ? (record['behaviour'] as Record<string, unknown>)
       : {};
+  const blockingRaw =
+    typeof record['blocking'] === 'object' && record['blocking'] !== null
+      ? (record['blocking'] as Record<string, unknown>)
+      : {};
+
   const setsRaw =
     typeof record['domainSets'] === 'object' && record['domainSets'] !== null
       ? (record['domainSets'] as Record<string, unknown>)
@@ -205,6 +224,13 @@ export function sanitizeSettings(input: unknown): Settings {
       ),
       useSync: asBoolean(behaviourRaw['useSync'], defaults.behaviour.useSync),
     },
+    blocking: {
+      mode: BLOCKING_MODES.includes(blockingRaw['mode'] as BlockingMode)
+        ? (blockingRaw['mode'] as BlockingMode)
+        : defaults.blocking.mode,
+      allowlist: sanitizePatternList(blockingRaw['allowlist']),
+      showBadge: asBoolean(blockingRaw['showBadge'], defaults.blocking.showBadge),
+    },
     domainSets,
     alwaysContainerize: sanitizePatternList(record['alwaysContainerize']),
     neverContainerize: sanitizePatternList(record['neverContainerize']),
@@ -221,6 +247,9 @@ export function mergeSettings(base: Settings, patch: DeepPartial<Settings>): Set
   }
   if (patch.behaviour !== undefined) {
     merged['behaviour'] = { ...base.behaviour, ...patch.behaviour };
+  }
+  if (patch.blocking !== undefined) {
+    merged['blocking'] = { ...base.blocking, ...patch.blocking };
   }
   if (patch.domainSets !== undefined) {
     merged['domainSets'] = { ...base.domainSets, ...patch.domainSets };

@@ -77,6 +77,9 @@ export interface ExceptionRule {
 /** Per-domain-set enablement, keyed by the set's `id`. */
 export type DomainSetToggles = Record<string, boolean>;
 
+/** How aggressively to block Google resources embedded in other websites. */
+export type BlockingMode = 'off' | 'standard' | 'strict';
+
 /** Aggregate, strictly local usage counters. Never leaves the browser. */
 export interface Statistics {
   /** Navigations redirected into the container. */
@@ -87,6 +90,8 @@ export interface Statistics {
   unwrappedLinks: number;
   /** Times an exception or never-rule prevented containerization. */
   exceptionsApplied: number;
+  /** Google tracking resources blocked on websites that are not Google. */
+  trackersBlocked: number;
   /** Epoch ms of the first counted event. */
   since: number;
   /** Epoch ms of the most recent counted event. */
@@ -120,6 +125,20 @@ export interface Settings {
     collectStatistics: boolean;
     /** Mirror settings through Firefox Sync when available. */
     useSync: boolean;
+  };
+  /** Blocking of Google resources embedded in third-party websites. */
+  blocking: {
+    /**
+     * off      leave every embedded resource alone
+     * standard block analytics, advertising and social widgets (default)
+     * strict   also block fonts, hosted libraries, maps and embeds, which
+     *          will visibly break some websites
+     */
+    mode: BlockingMode;
+    /** Websites exempt from blocking entirely, by hostname. */
+    allowlist: string[];
+    /** Show a count on the toolbar icon when resources are blocked. */
+    showBadge: boolean;
   };
   /** Which optional domain sets are active. */
   domainSets: DomainSetToggles;
@@ -155,7 +174,9 @@ export type Message =
   | { type: 'export' }
   | { type: 'import'; document: unknown }
   | { type: 'reset' }
-  | { type: 'diagnostics' };
+  | { type: 'diagnostics' }
+  | { type: 'allowlist-site'; host: string; allow: boolean }
+  | { type: 'get-blocked'; tabId: number };
 
 /** Snapshot of runtime state used to render the popup. */
 export interface RuntimeState {
@@ -172,6 +193,12 @@ export interface RuntimeState {
   readonly currentMatch: MatchResult;
   readonly statistics: Statistics;
   readonly domainCount: number;
+  /** Google resources blocked on the current page. */
+  readonly blockedHere: number;
+  /** Current blocking mode. */
+  readonly blockingMode: BlockingMode;
+  /** Whether the current site is exempt from blocking. */
+  readonly siteAllowlisted: boolean;
 }
 
 /** Diagnostics payload for the options page. */

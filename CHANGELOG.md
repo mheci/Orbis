@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Blocking Google trackers embedded in other websites.** Separating cookies never stopped the
+  request being made, so a news site loading Google Analytics still told Google your IP address and
+  which page you were reading. Those requests are now cancelled before they leave the machine.
+
+  Facebook Container can block every Meta resource on other sites because almost nothing depends on
+  Meta code loading. Google is not comparable, so resources are classified instead. Standard mode,
+  the default, blocks analytics, advertising and social widgets. Fonts, hosted script libraries,
+  maps, embedded players, reCAPTCHA and sign-in are left alone, because blocking them breaks pages
+  rather than protecting anyone. Strict mode blocks those too and says plainly that sites will
+  break. Sign-in and reCAPTCHA are never blocked in any mode, since locking someone out of their
+  own account is not an acceptable outcome.
+
+  The popup shows how many were blocked on the current page and can exempt a single site in one
+  click. No new permissions were needed.
+
 ### Changed
 
 - **Rewrote all documentation.** The README now explains what the extension does in plain language,

@@ -46,6 +46,10 @@ Each of these is here because getting it wrong is a privacy failure rather than 
 - Twenty five simultaneous container requests create exactly one container
 - If a replacement tab cannot be created, the page is allowed through rather than cancelled, so no
   one is left on a blank tab
+- Google Fonts, hosted script libraries, reCAPTCHA, sign-in and embedded players keep loading in
+  standard mode, each with a note in the test explaining what breaks if they do not
+- Sign-in and reCAPTCHA keep loading even in strict mode, so nobody is locked out of an account
+- The blocking handler returns synchronously, since returning a promise would slow every request
 
 ## Manual checks
 
@@ -80,6 +84,18 @@ release, using a fresh profile.
 - Private windows do nothing by default, and act once the option is enabled
 - Going offline shows a normal error page with no looping
 - With fifty tabs open, restarting Firefox restores the session with no duplicates
+
+### Blocking
+
+- Visit a news site and check the toolbar icon shows a count
+- Confirm the page still looks right: fonts loaded, layout intact
+- Visit a site with an embedded map and confirm the map appears
+- Visit a site with a reCAPTCHA box and confirm you can submit the form
+- Use a "Sign in with Google" button on a third party site and confirm it completes
+- Play an embedded YouTube video on a third party site
+- Switch to strict mode and confirm the warning is visible, then check that sign-in and reCAPTCHA
+  still work while fonts and maps stop loading
+- Use the popup button to allow a site, reload, and confirm the count drops to zero
 
 ### Settings
 

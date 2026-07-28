@@ -59,7 +59,24 @@ async function render(): Promise<void> {
 
   $('statContained').textContent = String(state.statistics.containedNavigations);
   $('statReleased').textContent = String(state.statistics.releasedNavigations);
-  $('statDomains').textContent = state.domainCount.toLocaleString();
+  $('statBlocked').textContent = state.statistics.trackersBlocked.toLocaleString();
+
+  $('blockedHere').textContent = String(state.blockedHere);
+  const blockHint = $('blockHint');
+  const allowButton = $('allowSite') as HTMLButtonElement;
+  if (state.blockingMode === 'off') {
+    blockHint.textContent = 'Tracker blocking is switched off in settings.';
+  } else if (state.siteAllowlisted) {
+    blockHint.textContent = 'You have allowed Google resources on this site.';
+  } else if (state.blockedHere === 0) {
+    blockHint.textContent = 'No Google trackers found on this page.';
+  } else {
+    blockHint.textContent = 'Google trackers stopped before they loaded.';
+  }
+  allowButton.textContent = state.siteAllowlisted
+    ? 'Block Google resources on this site again'
+    : 'Allow Google resources on this site';
+  allowButton.disabled = state.currentHost === null || state.blockingMode === 'off';
 
   ($('moveIn') as HTMLButtonElement).disabled =
     state.currentTabInContainer || state.currentUrl === null;
@@ -114,6 +131,17 @@ function wire(): void {
   $('never').addEventListener('click', async () => {
     const host = await currentHost();
     if (host !== null) await send({ type: 'add-rule', list: 'never', pattern: host });
+    await safeRender();
+  });
+
+  $('allowSite').addEventListener('click', async () => {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    const host = await currentHost();
+    if (host === null) return;
+    const state = await send<RuntimeState>({ type: 'get-state' });
+    await send({ type: 'allowlist-site', host, allow: !state.siteAllowlisted });
+    // Blocking decisions are cached per page, so the change needs a reload.
+    if (typeof tab?.id === 'number') await browser.tabs.reload(tab.id);
     await safeRender();
   });
 
