@@ -1,128 +1,150 @@
-# Security policy
+# Security
 
-## Reporting a vulnerability
+## Reporting a problem
 
-**Do not open a public issue for a security problem.**
+Please do not open a public issue for a security problem.
 
-Report privately through GitHub's
-[private vulnerability reporting](https://github.com/astarling-x/g-container/security/advisories/new)
+Report it privately through
+[GitHub's private vulnerability reporting](https://github.com/astarling-x/g-container/security/advisories/new)
 on this repository.
 
-Please include:
+Useful things to include:
 
-- a description of the issue and its impact,
-- reproduction steps or a proof of concept,
-- affected version and Firefox version,
-- any suggested fix.
+- What the problem is and what it allows
+- How to reproduce it
+- Which version of the extension and of Firefox
+- A suggested fix, if you have one
 
-**What to expect**
+What to expect:
 
-| Stage                    | Target                                  |
-| ------------------------ | --------------------------------------- |
-| Acknowledgement          | 72 hours                                |
-| Initial assessment       | 7 days                                  |
-| Fix for a critical issue | 14 days                                 |
-| Fix for other issues     | next release                            |
-| Public disclosure        | after a fix ships, coordinated with you |
+| Stage                      | Target                             |
+| -------------------------- | ---------------------------------- |
+| Acknowledgement            | 72 hours                           |
+| First assessment           | 7 days                             |
+| Fix for something critical | 14 days                            |
+| Fix for anything else      | next release                       |
+| Public disclosure          | after a fix ships, agreed with you |
 
-Reporters are credited in the advisory and `CHANGELOG.md` unless they prefer to stay anonymous.
+Reporters are credited in the advisory and changelog unless they would rather not be.
 
 ## Supported versions
 
-| Version | Supported |
-| ------- | --------- |
-| 1.x     | ✅        |
-| < 1.0   | ❌        |
+| Version   | Supported |
+| --------- | --------- |
+| 1.x       | Yes       |
+| Below 1.0 | No        |
 
-## Threat model
+## What this protects against
 
-### What G-Container defends against
+**Being tracked across sites through Google cookies.** Google's cookies live in a separate
+compartment and are not sent with ordinary browsing.
 
-- **Cross-site tracking via Google cookies.** Google's cookies live in a separate jar and are not
-  sent with requests made in normal browsing.
-- **Session bleed in the other direction.** Cookies set during normal browsing are not sent to
-  Google properties.
-- **Accidental de-anonymisation.** Being signed into Google no longer links your identity to
-  activity on unrelated sites through cookie-based joins.
-- **Rule tampering via imported settings.** Every imported document is fully rebuilt and validated.
+**Leaking the other direction.** Cookies from ordinary browsing are not sent to Google.
 
-### What it explicitly does NOT defend against
+**Being identified by association.** Staying signed into Google no longer links your identity to
+activity on unrelated sites through cookie matching.
 
-Be honest with yourself about these:
+**Tampered settings.** Every imported settings file is rebuilt and validated before use.
 
-- **IP-address tracking.** Your IP is unchanged. Use a VPN or Tor if that matters.
-- **Browser fingerprinting.** Containers do not alter your fingerprint. Use Firefox's
-  resist-fingerprinting or the Tor Browser.
-- **Data you hand over voluntarily.** Anything you do while signed into Google is visible to Google.
-- **Third-party Google scripts on other sites.** Analytics and reCAPTCHA sub-resources still load
-  where sites embed them; they simply cannot read the Google container's cookie jar. Pair with
-  uBlock Origin or Firefox's Enhanced Tracking Protection for blocking.
-- **Malicious or compromised extensions** with broader permissions than ours.
-- **A compromised operating system or browser binary.**
+## What it does not protect against
 
-## Security properties of the implementation
+Being honest about this matters more than the marketing would.
 
-- **No network activity.** The extension never contacts any server. The domain database is compiled
-  into the bundle at build time.
-- **No remote code.** No `eval`, no `new Function`, no dynamically injected scripts, no CDN.
-- **No content scripts.** Nothing is injected into pages; no DOM is read.
-- **No runtime dependencies.** Zero third-party code ships in the add-on, minimising supply-chain
-  risk. Dev dependencies never reach the user.
-- **Least privilege.** Seven permissions, each justified in [docs/PERMISSIONS.md](docs/PERMISSIONS.md);
-  CI fails the build if an undocumented permission is added.
-- **Input validation everywhere.** Settings read from storage or imported from a file are rebuilt
-  field by field: unknown keys dropped, types checked, lists capped at 2000 entries, and every host
-  pattern validated against a strict LDH regex.
-- **URL parsing, never string matching.** Decisions use `URL.hostname`, so
-  `https://google.com.evil.com/`, `https://evil.com/?u=google.com` and
-  `https://www.google.com@evil.com/` are all correctly treated as non-Google. Each has a test.
-- **No user data in logs.** Diagnostics contain counts, versions and error strings — not URLs or
-  browsing history.
-- **Statistics are local integers** and can be disabled.
+**Your IP address.** Unchanged. Use a VPN or Tor if that matters to you.
 
-## Known limitations
+**Browser fingerprinting.** Containers do not change your fingerprint. Firefox's own
+fingerprint resistance or the Tor Browser handle that.
 
-1. **Private windows are excluded by default.** Firefox cannot move a tab between a private window
-   and a container, so the feature is opt-in and behaves differently there.
-2. **A brief tab replacement is visible.** Containment cancels the load and re-opens the URL in the
-   container. That is inherent to the mechanism (Facebook Container behaves the same way) and is
-   what guarantees no request is ever sent from the wrong cookie jar.
-3. **OAuth pass-through is a deliberate trade-off.** Letting third-party sign-in flows complete
-   outside the container keeps those sites working. Disable it in Options for maximum strictness.
-4. **Sub-resources are not containerized.** Only top-level navigations are; embedded Google
-   resources load in their host page's context, which is the correct behaviour for the web to work,
-   and they remain partitioned by Firefox's own state partitioning.
+**Anything you hand over yourself.** Whatever you do while signed into Google is visible to Google.
 
-## Automated security scanning
+**Google code embedded in other sites.** Analytics and reCAPTCHA still load where sites include
+them. They simply cannot read the Google container's cookies. Pair this with uBlock Origin or
+Firefox's tracking protection if you want them blocked outright.
 
-Every push, pull request and weekly schedule runs established third-party scanners rather than
-bespoke checks. Findings are uploaded as SARIF and appear in the repository's Security tab with
-line-level annotations.
+**Other extensions** with broader permissions than this one.
 
-| Tool                                                 | Vendor        | Covers                                                                                      |
-| ---------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------- |
-| [CodeQL](https://codeql.github.com/)                 | GitHub        | Static analysis: injection, unsafe DOM use, taint flow (`security-and-quality` query suite) |
-| [Trivy](https://trivy.dev/)                          | Aqua Security | Dependency CVEs, embedded secrets, misconfiguration                                         |
-| [Gitleaks](https://gitleaks.io/)                     | Gitleaks      | Credential scanning across the **full git history**, not just the tip                       |
-| [OSV Scanner](https://google.github.io/osv-scanner/) | Google        | Cross-ecosystem lookup against the OSV vulnerability database                               |
-| [Zizmor](https://docs.zizmor.sh/)                    | zizmorcore    | GitHub Actions auditing: script injection, over-broad token permissions                     |
-| `npm audit`                                          | npm           | Advisory database, split into blocking (production) and advisory (dev) runs                 |
+**A compromised computer or browser.**
 
-Two project-specific invariants are enforced as build failures:
+## How the code is kept safe
 
-- **`npm audit --omit=dev` must be completely clean.** The extension ships zero runtime
-  dependencies, so any production advisory means something reached end users.
-- **The runtime dependency count must be zero.** Adding one expands the supply-chain surface and
-  complicates AMO review, so it fails the build rather than passing quietly.
+**No network activity.** The extension never contacts any server. The address list is compiled in
+when it is built.
 
-Gitleaks runs with a [custom rule set](.gitleaks.toml) extending the upstream defaults with the
-credential formats this project handles (GitHub PATs, AMO JWT issuer/secret pairs). The rules are
-verified against a negative control — deliberately planted credentials — so a clean scan is
-meaningful rather than vacuous.
+**No remote code.** Nothing is evaluated at runtime, and nothing is loaded from anywhere.
 
-## Verifying a build
+**No content scripts.** Nothing is injected into pages and no page content is read.
 
-The build is reproducible: `npm ci && npm run package` from a given tag yields a byte-identical zip
-(timestamps in the archive are pinned). You can compare a release artifact against your own build,
-or read `dist/` directly — the bundle is unminified in development builds
-(`NODE_ENV=development npm run build:js`).
+**No third party code ships.** The extension has no runtime dependencies at all, which keeps the
+supply chain minimal. Development tools never reach users.
+
+**Minimal permissions.** Seven of them, each explained in
+[docs/PERMISSIONS.md](docs/PERMISSIONS.md), and the build fails if an undocumented one appears.
+
+**Everything untrusted is validated.** Settings read from storage or loaded from a file are rebuilt
+field by field. Unknown keys dropped, types checked, lists capped at 2000 entries, and every address
+pattern checked against a strict format.
+
+**Addresses are parsed, not pattern matched.** Decisions use the hostname as the browser parses it,
+so `https://google.com.example.net/`, `https://example.com/?u=google.com` and
+`https://www.google.com@example.com/` are all correctly treated as unrelated. Each has a test.
+
+**No browsing data in logs.** Diagnostics contain counts, versions and error text, never addresses
+or history.
+
+**Counters stay local** and can be switched off.
+
+## Automated scanning
+
+Every push, pull request and weekly schedule runs established scanners rather than home made checks.
+Findings appear in the repository's Security tab with line level detail.
+
+| Tool                                                 | From          | Looks for                                                 |
+| ---------------------------------------------------- | ------------- | --------------------------------------------------------- |
+| [CodeQL](https://codeql.github.com/)                 | GitHub        | Injection, unsafe page handling, data flow problems       |
+| [Trivy](https://trivy.dev/)                          | Aqua Security | Known vulnerabilities, embedded secrets, misconfiguration |
+| [Gitleaks](https://gitleaks.io/)                     | Gitleaks      | Credentials anywhere in the project history               |
+| [OSV Scanner](https://google.github.io/osv-scanner/) | Google        | Known vulnerabilities across ecosystems                   |
+| [Zizmor](https://docs.zizmor.sh/)                    | zizmorcore    | Weaknesses in the build workflows themselves              |
+| npm audit                                            | npm           | Advisory database, split into blocking and advisory runs  |
+
+Two project rules are enforced as build failures:
+
+Production dependencies must have zero advisories. The extension ships no runtime dependencies, so
+any finding there means something reached users.
+
+The runtime dependency count must stay at zero. Adding one widens the supply chain and complicates
+review, so it fails the build rather than passing quietly.
+
+Gitleaks runs with [custom rules](.gitleaks.toml) covering the credential formats this project
+handles. Those rules are checked against deliberately planted test credentials, so a clean result
+means something.
+
+The build workflows are hardened as well. Every external action is pinned to an exact revision
+rather than a moveable label, checkout does not leave credentials on disk, and dependency updates
+wait seven days before being offered, by which time a compromised release has usually been pulled.
+
+## Known limits
+
+**Private windows are left alone by default.** Firefox cannot move a tab between a private window
+and a container, so this is opt in and behaves differently there.
+
+**You will see one reload.** Moving a page into the container means stopping the load and starting
+it again. That is inherent to the approach and is what guarantees nothing is sent from the wrong
+compartment.
+
+**Sign-in pass-through is a trade off.** Letting third party sign-in finish outside the container
+keeps those sites working. Turn it off in settings for stricter separation.
+
+**Embedded content is not moved.** Only whole page loads are. Google resources embedded in another
+page load in that page's context, which is what makes the web work, and Firefox partitions them
+separately anyway.
+
+## Checking a build
+
+Builds are reproducible. Running `npm ci && npm run package` on a given release produces an
+identical file, since timestamps inside the archive are fixed. You can compare that against the
+released download, or read the built output directly. A development build is not minified:
+
+```bash
+NODE_ENV=development npm run build:js
+```

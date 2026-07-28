@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Security issue?** Do not file it here — see [SECURITY.md](https://github.com/astarling-x/g-container/blob/main/SECURITY.md).
+        Found a security problem? Please do not file it here. See [SECURITY.md](https://github.com/astarling-x/g-container/blob/main/SECURITY.md) instead.
 
   - type: textarea
     id: what
@@ -47,7 +47,7 @@ body:
     id: diagnostics
     attributes:
       label: Diagnostics
-      description: Options → Diagnostics → Refresh, then paste the JSON here.
+      description: Open Settings, then Diagnostics, click Refresh, and paste the result here.
       render: json
 
   - type: checkboxes
@@ -55,5 +55,5 @@ body:
     attributes:
       label: Checks
       options:
-        - label: I checked that protection is not paused (badge does not show "off")
+        - label: I checked that protection is not paused, the toolbar icon does not show "off"
         - label: I searched existing issues

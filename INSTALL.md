@@ -1,38 +1,44 @@
-# Installation
+# Installing G-Container
 
-## Requirements
+## Before you start
 
-- **Firefox 140 or newer** (Desktop). Containers are a Firefox feature; Chrome is not supported.
-  Firefox for Android is not supported — it has no container support.
-- Node.js 20+ and npm, if you are building from source.
+You need Firefox 140 or newer on desktop. Check with Help, then About Firefox.
 
-Container support must be enabled — it is on by default. If containers are unavailable,
-`about:config` → `privacy.userContext.enabled` should be `true`.
+Firefox for Android is not supported. It has no container feature, so there is nothing for the
+extension to use.
 
-## Option 1 — Signed .xpi (recommended)
+Containers are switched on in Firefox by default. If they have been disabled, open `about:config`
+and set `privacy.userContext.enabled` to true.
 
-A **Mozilla-signed** build is attached to every release, so it installs permanently on any Firefox
-channel — including Release and Beta — with no `about:config` changes.
+## Recommended: install the signed file
 
-1. Download **`g_container-<version>.xpi`** from the
-   [latest release](https://github.com/astarling-x/g-container/releases/latest).
-2. Open `about:addons`.
-3. Click the gear icon ⚙ → **Install Add-on From File…**
-4. Select the downloaded `.xpi` and confirm.
+Every release includes a file signed by Mozilla, which installs permanently on any version of
+Firefox including the standard release.
 
-Firefox will show the permissions prompt and, because the file carries Mozilla's signature, install
-it as a normal permanent add-on.
+1. Go to the [latest release](https://github.com/astarling-x/g-container/releases/latest).
+2. Download the file ending in `.xpi`.
+3. Open `about:addons` in Firefox.
+4. Click the gear icon near the top right, then choose "Install Add-on From File".
+5. Pick the file you downloaded and confirm.
 
-> The `.xpi` is signed on the **unlisted** channel (self-distribution). It is a genuine Mozilla
-> signature, but the add-on is not yet listed in the public Add-ons directory, so it will not
-> auto-update from AMO. Watch the repository for new releases.
+Firefox shows you the list of permissions before installing. Every one of them is explained in
+[docs/PERMISSIONS.md](docs/PERMISSIONS.md).
 
-## Option 1b — Mozilla Add-ons directory (once listed)
+One thing to know: the file is signed for direct distribution rather than listed in Mozilla's
+public add-on directory, so it will not update itself. Watch the repository releases page for new
+versions.
 
-The AMO listing will appear at `https://addons.mozilla.org/firefox/addon/g-container/`.
-Until then, use one of the options below.
+## Trying it temporarily
 
-## Option 2 — Temporary install (quickest, for testing)
+If you just want a look without installing anything permanently, this takes about a minute and
+disappears when you close Firefox.
+
+1. Download the `.zip` from the [latest release](https://github.com/astarling-x/g-container/releases/latest).
+2. Open `about:debugging#/runtime/this-firefox`.
+3. Click "Load Temporary Add-on".
+4. Select the `.zip`. There is no need to unpack it.
+
+## Building it yourself
 
 ```bash
 git clone https://github.com/astarling-x/g-container.git
@@ -41,93 +47,96 @@ npm install
 npm run build
 ```
 
-1. Open `about:debugging#/runtime/this-firefox`.
-2. Click **Load Temporary Add-on…**.
-3. Select `dist/manifest.json`.
+The finished extension appears in `dist/`. Load it through `about:debugging` as described above, or
+package it into a `.zip` with `npm run package`.
 
-The add-on is removed when Firefox closes. Ideal for development and evaluation.
+Node.js 20 or newer is required to build.
 
-## Option 3 — Permanent install of an unsigned build
+### Signing your own build
 
-Firefox Release and Beta only install **signed** add-ons. For a permanent unsigned install you need
-[Firefox Developer Edition](https://www.mozilla.org/firefox/developer/),
-[Nightly](https://www.mozilla.org/firefox/channel/desktop/#nightly), or ESR:
-
-1. Open `about:config`, set `xpinstall.signatures.required` to `false`.
-2. Build and package:
-   ```bash
-   npm run package     # → web-ext-artifacts/g_container-<version>.zip
-   ```
-3. Open `about:addons` → gear icon → **Install Add-on From File…** → select the `.zip`.
-
-## Option 4 — Self-signing for your own use
-
-Signing produces an `.xpi` that installs permanently on any Firefox channel. You need free
-[AMO API credentials](https://addons.mozilla.org/developers/addon/api/key/).
+An unsigned build cannot be installed permanently on standard Firefox. To sign one yourself you
+need free API credentials from
+[the Mozilla developer hub](https://addons.mozilla.org/developers/addon/api/key/).
 
 ```bash
 npm run build
 npx web-ext sign --source-dir=dist \
-  --api-key="$AMO_JWT_ISSUER" \
-  --api-secret="$AMO_JWT_SECRET" \
+  --api-key="YOUR_JWT_ISSUER" \
+  --api-secret="YOUR_JWT_SECRET" \
   --channel=unlisted
 ```
 
-The signed `.xpi` lands in `web-ext-artifacts/`. Install it via `about:addons` →
-**Install Add-on From File…**.
+The signed file lands in `web-ext-artifacts/`. Install it through `about:addons` as above.
+
+Keep those credentials private. Never commit them.
+
+## Checking the download is genuine
+
+Builds are reproducible, meaning the same source always produces an identical file. You can rebuild
+from source and compare against the released checksum:
+
+```bash
+git clone https://github.com/astarling-x/g-container.git
+cd g-container
+npm ci
+npm run package
+sha256sum web-ext-artifacts/g_container-1.0.1.zip
+```
+
+If the checksums match, the released file was built from the source you just read.
 
 ## First run
 
-1. A container named **Google** is created automatically on the first Google navigation.
-2. Visit `google.com` — the tab should re-open with the container's colour stripe.
-3. Click the toolbar icon to see the current status and statistics.
-4. Open Options (popup → ⚙) to rename the container, adjust domain sets or add rules.
+Nothing needs setting up. The defaults are the recommended configuration.
 
-Nothing needs to be configured; the defaults are the recommended setup.
+Visit google.com. The tab reloads once and comes back with a coloured stripe along the top, which
+is how Firefox shows that a tab is in a container. That single reload is normal and happens because
+the page is being moved; it should not repeat.
 
-## Development workflow
+Click the toolbar icon to see the current status.
+
+## Removing it
+
+Open `about:addons`, find G-Container and choose Remove.
+
+The Google container itself stays, along with its cookies, so you remain signed in. If you want to
+clear those too, go to Firefox Settings, then Privacy and Security, then Cookies and Site Data.
+Leaving the container in place means reinstalling later picks up exactly where you left off.
+
+## If something is wrong
+
+**Nothing is being put in a container.** Check the toolbar icon. A badge reading "off" means
+protection is paused or disabled. Also confirm containers are enabled, as described at the top of
+this page.
+
+**A Google site is not being caught.** Open the settings page, go to Diagnostics, and paste the
+address into the URL tester. It tells you which rule matched, or that none did. If none did, please
+[open an issue](https://github.com/astarling-x/g-container/issues) with that address.
+
+**A site that is not Google is being put in the container.** Check whether you added it to the
+always list. If not, please report it with the address.
+
+**A "Sign in with Google" button is not working.** Open the settings page and confirm the sign-in
+pass-through option is enabled. As a workaround, add the site to the never list.
+
+**Tabs flicker when opening Google links.** One reload per page is expected, since the page is
+being moved into the container. Repeated flickering is a bug worth reporting.
+
+**Settings are not saving.** The Diagnostics section of the settings page reports whether storage is
+available and lists recent errors.
+
+## Development
 
 ```bash
-npm run watch          # incremental rebuilds into dist/
-npx web-ext run --source-dir=dist --browser-console
+npm run watch          # rebuild automatically while editing
+npm test               # run the test suite
+npm run lint           # check formatting and code style
+npm run typecheck      # check types
+npm run ci             # everything the build server runs
 ```
 
-`web-ext run` launches a throwaway profile with the add-on loaded and reloads it on rebuild.
-
-Other useful commands:
+To run a throwaway Firefox profile with the extension loaded and reloading on each change:
 
 ```bash
-npm test               # unit + integration tests
-npm run lint           # eslint + prettier check
-npm run lint:fix       # auto-fix
-npm run typecheck      # strict tsc, no emit
-npm run verify         # manifest + domain JSON validation
-npm run ci             # everything CI runs
+npx web-ext run --source-dir=dist
 ```
-
-## Upgrading
-
-Settings and the container survive upgrades. `migrateSettings()` handles schema changes, and the
-container is re-adopted by name even if its internal id changed.
-
-Building a newer version over an older `dist/` is safe — `npm run build` cleans first.
-
-## Uninstalling
-
-`about:addons` → G-Container → **Remove**.
-
-The **Google container is not deleted**, and neither are its cookies. To remove them too, go to
-Firefox Settings → _Privacy & Security_ → _Cookies and Site Data_, or delete the container from the
-container settings page. Keeping the container means reinstalling later restores your Google
-session exactly as it was.
-
-## Troubleshooting
-
-| Symptom                               | Fix                                                                                                                     |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Nothing is contained                  | Check the badge — `off` means paused/disabled. Verify `privacy.userContext.enabled` is `true`.                          |
-| A Google site is not contained        | Options → Diagnostics → _Test a URL_. It names the matching rule, or `none`. Check your never-list, then open an issue. |
-| A non-Google site is contained        | Check your always-list. If a built-in rule caused it, open an issue with the URL.                                       |
-| "Sign in with Google" fails on a site | Options → General → ensure _OAuth pass-through_ is on; add the site to the never-list as a workaround.                  |
-| Tabs flicker on Google links          | Expected once per navigation: the load is cancelled and re-opened in the container. It should never repeat.             |
-| Settings will not save                | Options → Diagnostics shows storage availability and recent errors.                                                     |

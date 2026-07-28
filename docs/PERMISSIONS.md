@@ -1,94 +1,105 @@
 # Permissions
 
-Every permission G-Container requests is listed here with the specific feature that needs it and
-what would break without it. `scripts/verify-manifest.mjs` fails the build if the manifest declares
-a permission that is not documented in this file, so this document cannot silently drift.
+Firefox shows a list of permissions when you install an extension. This page explains what each one
+is for in G-Container, and what would stop working without it.
 
-## Requested permissions
+The build fails automatically if a permission is added without being documented here, so this page
+cannot quietly fall out of date.
 
-### `contextualIdentities`
+## What is requested
 
-**Needed for:** creating, finding, renaming and recolouring the Google container.
-**Used in:** `src/core/container.ts`.
-**Without it:** the extension cannot exist — there would be no container to isolate into.
+### contextualIdentities
 
-### `cookies`
+Creates and manages the Google container itself, including its name, colour and icon.
 
-**Needed for:** Firefox requires the `cookies` permission before an extension may reference
-container cookie stores (`cookieStoreId`) in `tabs.create` and `tabs.query`.
-**Used in:** implicitly, everywhere a `cookieStoreId` is passed.
-**Note:** G-Container never calls `browser.cookies.get`, `.set` or `.remove`. It does not read,
-write or delete a single cookie; it only names the jar a tab should use.
+Without it there would be no container to separate anything into, so the extension could not
+function at all.
 
-### `storage`
+### cookies
 
-**Needed for:** persisting your settings, rules and local counters.
-**Used in:** `src/core/storage.ts`.
-**Without it:** every setting would reset on each browser restart.
+Firefox requires this before an extension is allowed to refer to a container's cookie storage when
+opening a tab.
 
-### `tabs`
+Worth being precise here: the extension never reads, writes or deletes a single cookie. It has no
+code that touches cookie contents. This permission only lets it name which compartment a tab should
+use.
 
-**Needed for:** reading a tab's URL, cookie store, index, window and opener so a navigation can be
-re-opened in the correct container at the same position, and for the "move this tab" commands.
-**Used in:** `src/background/index.ts`.
-**Without it:** the extension could not tell whether a tab is already in the container, and would
-containerize the same page endlessly.
+### storage
 
-### `menus`
+Saves your settings and rules so they survive restarting the browser. Also used for the optional
+Firefox Sync mirroring.
 
-**Needed for:** the right-click entries — _Open link in Google Container_, _Always/Never open this
-site in Google Container_, _Move this tab in/out_.
-**Used in:** `registerContextMenus()` in `src/background/index.ts`.
-**Without it:** only the popup and options page would be available.
+Without it every setting would reset each time you closed Firefox.
 
-### `webRequest` and `webRequestBlocking`
+### tabs
 
-**Needed for:** intercepting top-level (`main_frame`) navigations **before the request is sent**, so
-the load can be cancelled and re-issued in the right cookie jar.
-**Used in:** `onBeforeRequest` in `src/background/index.ts`.
-**Why blocking is unavoidable:** if we let the request go out and redirected afterwards, the
-request would already have carried cookies from the wrong jar — exactly the leak the extension
-exists to prevent. `declarativeNetRequest` cannot express "does this tab's cookie store match the
-Google container?", because that is dynamic per-tab state, so DNR is not a viable substitute.
-Firefox continues to support blocking `webRequest` under Manifest V3 for privacy extensions.
-**Scope:** the listener is registered with `types: ['main_frame']` only. Sub-resources, XHR, images
-and scripts are never inspected.
+Reads a tab's address, which container it is in, its position and which tab opened it. That
+information is needed to reopen a page in the right container, in the same position, and to power
+the "move this tab" buttons.
 
-### `<all_urls>` host permission (`http://*/*`, `https://*/*`)
+Without it the extension could not tell whether a tab was already in the container, and would keep
+moving the same page forever.
 
-**Needed for:** a link to Google can be followed from _any_ website, so navigations must be
-observed everywhere. The same applies in reverse: to release a non-Google page out of the
-container, the extension must see that navigation too.
-**What is actually accessed:** the **URL string only**, inside the `onBeforeRequest` listener.
-G-Container injects **no content scripts**, reads **no page content or DOM**, and has no
-`content_scripts` entry in its manifest.
-**Why not a narrower list:** restricting host permissions to Google domains would make it
-impossible to detect a non-Google page loading _inside_ the container, breaking the release
-behaviour and letting non-Google cookies accumulate in the Google jar.
+### menus
 
-## Permissions deliberately NOT requested
+Adds the right click options: open a link in the Google container, always or never use the
+container for a site, and move the current tab in or out.
 
-| Not requested                | Why we do without it                                    |
-| ---------------------------- | ------------------------------------------------------- |
-| `<all_urls>` content scripts | No page content is ever needed. Nothing is injected.    |
-| `history`                    | The extension never reads or edits browsing history.    |
-| `bookmarks`                  | Not needed; bookmark clicks are ordinary navigations.   |
-| `downloads`                  | Backup export uses an in-page `Blob` + `<a download>`.  |
-| `privacy`                    | The extension does not change global browser settings.  |
-| `proxy`                      | No network interception beyond navigation decisions.    |
-| `identity`                   | No accounts, no sign-in, no remote service.             |
-| `nativeMessaging`            | No native components.                                   |
-| `management`                 | Other add-ons are none of our business.                 |
-| `clipboardRead/Write`        | Not needed.                                             |
-| `alarms`                     | The pause feature uses a stored timestamp, not a timer. |
-| `notifications`              | The extension is silent by design.                      |
+Without it only the popup and settings page would be available.
 
-## Data handling
+### webRequest and webRequestBlocking
 
-- **No network requests.** G-Container never contacts any server, including the author's. The domain
-  database is compiled into the add-on.
-- **No telemetry, analytics or crash reporting.**
-- **No remote code.** Nothing is `eval`'d or loaded at runtime; the CSP-relevant surface is empty.
-- **Local data only.** Settings and counters live in `storage.local`. If you opt into Firefox Sync,
-  they additionally travel through _your_ Mozilla-encrypted Sync account and nowhere else.
-- **Statistics** are four integers plus two timestamps, and can be turned off in Options.
+Lets the extension see a page load starting and stop it before the request is sent, so the page can
+be reopened in the correct container.
+
+Stopping the request first is the whole point. If the page were allowed to load and then moved
+afterwards, cookies from the wrong compartment would already have been sent, which is exactly the
+leak the extension exists to prevent.
+
+There is a newer permission called declarativeNetRequest that some extensions use instead. It
+cannot work here, because the decision depends on which container the current tab is already in,
+and that is live information the newer system has no way to consult.
+
+The listener is registered for top level page loads only. Images, scripts and background requests
+are never examined.
+
+### Access to all websites
+
+A link to Google can be clicked from any site, so page loads have to be observed everywhere. The
+same applies in reverse: spotting a non-Google page opened inside the container requires seeing
+that load too.
+
+What is actually accessed is the address, and nothing else. The extension injects no code into
+pages and reads no page content. There is no content script in the manifest at all.
+
+Restricting this to Google addresses only would break the ability to move non-Google pages back out
+of the container, which would let unrelated cookies build up inside it.
+
+## What is deliberately not requested
+
+| Not requested   | Why it is not needed                                         |
+| --------------- | ------------------------------------------------------------ |
+| Content scripts | No page content is ever read, and nothing is injected        |
+| history         | Browsing history is never read or changed                    |
+| bookmarks       | Clicking a bookmark is an ordinary page load                 |
+| downloads       | Exporting settings uses an in page link instead              |
+| privacy         | No global browser settings are changed                       |
+| proxy           | No network traffic is intercepted beyond page load decisions |
+| identity        | There are no accounts and no remote service                  |
+| nativeMessaging | There is no companion program                                |
+| management      | Other extensions are none of its business                    |
+| clipboard       | Not needed                                                   |
+| alarms          | Pausing uses a stored timestamp rather than a timer          |
+| notifications   | The extension stays quiet                                    |
+
+## What happens to your data
+
+No network requests are made. Not to Google, not to the author, not to anyone. The list of Google
+addresses is compiled into the extension when it is built.
+
+No telemetry, no analytics, no crash reporting, and no third party code.
+
+Settings and counters live on your own machine. Turning on the Sync option additionally sends them
+through your own Mozilla account, encrypted, and nowhere else.
+
+The usage counters are four numbers and two dates. They can be switched off in the settings.

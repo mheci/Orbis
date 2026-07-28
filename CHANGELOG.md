@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Rewrote all documentation.** The README now explains what the extension does in plain language,
+  leading with the problem it solves rather than a feature list. Across every markdown file:
+  removed emoji, decorative symbols, ASCII diagrams, check marks and em-dashes, and replaced jargon
+  with ordinary words. Every number quoted in the docs was checked against the code rather than
+  carried over.
+
 ### Added
 
 - **Security scanning workflow** using established tooling: CodeQL, Trivy, Gitleaks, OSV Scanner and
@@ -23,8 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Cleared all dependency vulnerabilities**, including a critical advisory in `vitest`
-  (CVE-2026-47429). `vitest` and `@vitest/coverage-v8` moved to v4 — the coordinated upgrade
-  tracked in the toolchain issue, which installs cleanly now — and a targeted npm `override` forces
+  (CVE-2026-47429). `vitest` and `@vitest/coverage-v8` moved to v4, the coordinated upgrade
+  tracked in the toolchain issue, which installs cleanly now, and a targeted npm `override` forces
   the patched `brace-expansion@5.0.8` transitively rather than forcing an `eslint` major for a
   dev-only DoS advisory. `npm audit` now reports zero vulnerabilities at every level.
 
@@ -32,15 +40,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Commit history rewritten to a single maintainer identity** (`astarling-x`). Dependabot
   authorship is preserved, since rewriting it would misrepresent who wrote those changes. File
-  contents are byte-identical — the tree hash is unchanged and only commit metadata differs.
+  contents are byte-identical, the tree hash is unchanged and only commit metadata differs.
 - Hardened workflows: explicit least-privilege `permissions` blocks on every job.
 
 ### Removed
 
-- `PROJECT_SUMMARY.md` — a handover note that duplicated the README and CHANGELOG and had gone
+- `PROJECT_SUMMARY.md`, a handover note that duplicated the README and CHANGELOG and had gone
   stale.
 
-## [1.0.1] — 2026-07-28
+## [1.0.1] - 2026-07-28
 
 First **Mozilla-signed** release. The signed `.xpi` installs permanently on any Firefox channel,
 including Release and Beta, with no `about:config` changes.
@@ -63,8 +71,8 @@ including Release and Beta, with no `about:config` changes.
   internal AMO upload id. It is now excluded along with other build-machine detritus.
 
 - **Navigation is no longer cancelled when the replacement tab cannot be created.** If
-  `tabs.create` failed — container deleted mid-navigation, window closing, resource exhaustion —
-  the original load was still cancelled, stranding the user on a blank dead tab. Containment is now
+  `tabs.create` failed, container deleted mid-navigation, window closing or resource
+  exhaustion, the original load was still cancelled, stranding the user on a blank dead tab. Containment is now
   best-effort: on failure the navigation is allowed through uncontained, which is the far less
   harmful outcome. Found by the new background-worker tests.
 - **The popup no longer renders blank when the background worker is unreachable.** Worker errors are
@@ -73,21 +81,21 @@ including Release and Beta, with no `about:config` changes.
 - **A failed save in the options page is now reported** instead of silently doing nothing.
 - Added `fitbit.com`, `nest.com`, `tenor.com`, `kaggle.com`, `looker.com`, `mandiant.com`,
   `widevine.com`, `apigee.com` and other Google acquisitions that remain on their own brand
-  domains — these were being missed entirely.
+  domains, these were being missed entirely.
 
 ### Added
 
-- `test/background.test.ts` and `test/mock-browser.ts` — 23 integration tests covering the
+- `test/background.test.ts` and `test/mock-browser.ts`. 23 integration tests covering the
   background worker, which previously had no test coverage at all. Coverage now includes
   `src/background/**`.
-- `scripts/check-links.mjs` — CI gate that fails the build if a link to the retired account
+- `scripts/check-links.mjs`. CI gate that fails the build if a link to the retired account
   reappears anywhere in the tree. A dead security-reporting link is a real hazard, so this is
   enforced rather than trusted to review.
 - Weekly scheduled maintenance workflow that rebuilds from a clean checkout, re-runs Mozilla's
   validator against current rules and opens (or comments on) a single tracking issue on failure.
 - Dependabot for dev dependencies and GitHub Actions, grouped to keep the review queue small.
 
-## [1.0.0] — 2026-07-28
+## [1.0.0] - 2026-07-28
 
 First production release.
 
@@ -97,8 +105,8 @@ First production release.
 
 - Automatic containment of every Google-owned property into a dedicated Firefox Container.
 - Two-way containment: non-Google pages opened inside the container are pushed back out.
-- Redirector unwrapping — `google.com/url?q=…`, `youtube.com/redirect?q=…` and friends land on the
-  real destination outside the container.
+- Redirector unwrapping, `google.com/url?q=`, `youtube.com/redirect?q=` and similar links land on
+  the real destination outside the container.
 - OAuth pass-through so third-party "Sign in with Google" flows keep working.
 - Loop prevention with a bounded, per-tab, self-expiring guard.
 

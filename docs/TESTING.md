@@ -1,102 +1,106 @@
 # Testing
 
 ```bash
-npm test              # run everything (292 tests)
-npm run test:watch    # watch mode
-npm run test:coverage # coverage with thresholds enforced
-npm run ci            # lint + typecheck + test + package (what CI runs)
+npm test              # run everything, 292 tests
+npm run test:watch    # rerun as you edit
+npm run test:coverage # with coverage limits enforced
+npm run ci            # everything the build server runs
 ```
 
-## Strategy
+## Approach
 
-The core is a set of pure modules with injected dependencies, so **no browser mock is required**.
-Tests run in plain Node under Vitest, which keeps them fast (~2 s for the whole suite) and means
-there is no excuse for skipping them before a commit.
+The core is written as plain functions with dependencies passed in, so no browser stand in is
+needed. Tests run under Node and the whole suite finishes in about two seconds, which removes any
+excuse for skipping them before committing.
 
-| Suite                | File                       | Covers                                                                                                              |
-| -------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Domain matching      | `test/matcher.test.ts`     | 130+ URLs: every service class, ccTLDs, brand gTLDs, look-alikes, schemes, precedence, redirectors, OAuth detection |
-| Navigation decisions | `test/decision.test.ts`    | contain / release / unwrap / ignore, pause, private windows, OAuth pass-through, loop prevention                    |
-| Settings             | `test/settings.test.ts`    | defaults, sanitisation of hostile input, merging, migration, backup round-trip                                      |
-| Storage              | `test/storage.test.ts`     | persistence, corruption recovery, sync precedence, concurrent writes, failing backends                              |
-| Containers           | `test/container.test.ts`   | creation, reuse, concurrency, deletion recovery, rename, missing API                                                |
-| Domain database      | `test/domain-db.test.ts`   | expansion correctness, duplicates, formatting, size floors                                                          |
-| Performance          | `test/performance.test.ts` | build time, 50k matches, cache bounds, loop guard memory                                                            |
+| Area              | File                       | Covers                                                                                                                                      |
+| ----------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Address matching  | `test/matcher.test.ts`     | Every service category, country addresses, brand endings, lookalikes, schemes, precedence, redirect links, sign-in detection                |
+| Decisions         | `test/decision.test.ts`    | Contain, release, unwrap and ignore, pausing, private windows, sign-in pass-through, loop prevention                                        |
+| Background worker | `test/background.test.ts`  | The real worker driven against a stand in Firefox: containment, release, failure handling, container recovery, messaging, restart behaviour |
+| Settings          | `test/settings.test.ts`    | Defaults, rejecting bad input, merging, migration, backup round trip                                                                        |
+| Storage           | `test/storage.test.ts`     | Saving, corruption recovery, sync precedence, simultaneous writes, failing storage                                                          |
+| Containers        | `test/container.test.ts`   | Creation, reuse, races, recovery after deletion, renaming, missing API                                                                      |
+| Address data      | `test/domain-db.test.ts`   | Expansion correctness, duplicates, formatting, minimum size                                                                                 |
+| Performance       | `test/performance.test.ts` | Build time, 50,000 lookups, cache limits, loop guard memory                                                                                 |
 
-Coverage thresholds are enforced for `src/core/**` and `src/background/**` at 80 % lines/functions/
-statements and 75 % branches; CI fails below them. Current: **99 % core**, **72 % background**
-(the untested remainder is context-menu and listener registration, which is exercised manually).
+Coverage limits are enforced for the core and background code at 80 percent of lines, functions and
+statements, and 75 percent of branches. The build fails below that.
 
-The background worker is tested through `test/mock-browser.ts`, a behavioural mock that models real
-Firefox semantics — `tabs.get` rejects for a missing tab, `contextualIdentities.get` throws for an
-unknown id, and `tabs.create` can be made to fail on demand. Mocks that return convenient values
-instead of realistic ones would hide exactly the bugs this layer is prone to.
+The background worker is tested through `test/mock-browser.ts`, a stand in that behaves like real
+Firefox. Looking up a missing tab throws, looking up an unknown container throws, and tab creation
+can be made to fail on demand. A stand in returning convenient values instead would hide exactly the
+bugs this layer is prone to.
 
-## What the security-relevant tests assert
+## Checks that exist for a reason
 
-These exist because getting them wrong is a privacy bug, not a cosmetic one:
+Each of these is here because getting it wrong is a privacy failure rather than a cosmetic one.
 
-- `https://google.com.evil.com/` → **not** contained (suffix-spoofing).
-- `https://evil.com/?redirect=https://mail.google.com` → **not** contained (query-string spoofing).
-- `https://www.google.com@evil.com/` → **not** contained (userinfo spoofing).
-- `javascript:`, `data:`, `file:`, `moz-extension:` → never contained.
-- Imported backups containing `javascript:alert(1)` as a rule → silently dropped.
-- Oversized imports (5000 rules) → capped at 2000.
-- 20 rapid ping-pong navigations → exactly **one** containment.
-- `tabs.create` failing → navigation is **allowed through**, not cancelled (no stranded blank tab).
-- 25 concurrent `ensure()` calls → exactly **one** container created.
+- `https://google.com.example.net/` is not put in the container
+- `https://example.com/?redirect=https://mail.google.com` is not put in the container
+- `https://www.google.com@example.com/` is not put in the container
+- `javascript:`, `data:`, `file:` and extension addresses are never touched
+- An imported settings file containing `javascript:alert(1)` as a rule has it silently dropped
+- An oversized import of 5000 rules is capped at 2000
+- Twenty rapid page loads bouncing back and forth produce exactly one move
+- Twenty five simultaneous container requests create exactly one container
+- If a replacement tab cannot be created, the page is allowed through rather than cancelled, so no
+  one is left on a blank tab
 
-## Manual QA checklist
+## Manual checks
 
-Automated tests cannot exercise real Firefox tab plumbing. Run this list before tagging a release,
-using a fresh profile (`npx web-ext run` or `about:debugging`).
+Automated tests cannot exercise real Firefox tab handling. Work through this list before tagging a
+release, using a fresh profile.
 
-### Basic containment
+### Basics
 
-- [ ] Type `google.com` in the address bar → opens in the Google container (coloured tab strip).
-- [ ] Click a Google result → stays in the container.
-- [ ] Click a non-Google result → leaves the container.
-- [ ] Open `youtube.com` from a normal tab → moves into the container.
-- [ ] `youtu.be/<id>` short link → container.
-- [ ] Bookmark a Gmail URL, click it → container.
-- [ ] Middle-click / Ctrl+click a Google link → container, correct tab position.
-- [ ] `target="_blank"` and `window.open()` Google links → container.
+- Typing google.com in the address bar opens it in the container
+- Clicking a Google search result stays in the container
+- Clicking a result that is not Google leaves the container
+- Opening youtube.com from an ordinary tab moves it into the container
+- A youtu.be short link goes to the container
+- A bookmarked Gmail address goes to the container
+- Middle clicking and control clicking a Google link works, in the right tab position
+- Links opening in a new tab or window go to the container
 
-### Login and session
+### Signing in
 
-- [ ] Sign into Google inside the container; open a normal tab to `google.com` → also contained,
-      same session.
-- [ ] Sign out → session ends; no residual login in normal browsing.
-- [ ] A third-party site's "Sign in with Google" completes and returns to that site logged in.
-- [ ] Embedded YouTube player on a third-party page still plays (it is a sub-resource, untouched).
+- Sign into Google in the container, then open google.com in an ordinary tab; it should be
+  contained and already signed in
+- Sign out; nothing should remain in ordinary browsing
+- A "Sign in with Google" button on another site completes and returns you signed in
+- An embedded YouTube video on another site still plays
 
-### Edge cases
+### Awkward cases
 
-- [ ] Google search → external link → lands outside the container (redirector unwrapping).
-- [ ] A site that redirects through Google and back does **not** loop; the tab settles.
-- [ ] Delete the container in Firefox settings → next Google visit recreates it.
-- [ ] Rename the container in Options → tab strip label updates, session preserved.
-- [ ] Private window: nothing happens by default; enabling the option makes it act.
-- [ ] Offline / DNS failure → error page shows normally, no loop, no tab churn.
-- [ ] 50 tabs open, restart Firefox → session restores, no duplicated tabs.
+- A Google search result linking elsewhere lands outside the container
+- A site that bounces through Google and back settles instead of looping
+- Deleting the container in Firefox settings, then visiting Google, recreates it
+- Renaming the container in settings updates the tab stripe and keeps you signed in
+- Private windows do nothing by default, and act once the option is enabled
+- Going offline shows a normal error page with no looping
+- With fifty tabs open, restarting Firefox restores the session with no duplicates
 
 ### Settings
 
-- [ ] Add a "never" rule for `docs.google.com` → it opens outside the container.
-- [ ] Add an "always" rule for a non-Google host → it opens inside.
-- [ ] Toggle the _Advertising & measurement_ set → behaviour changes immediately.
-- [ ] Pause 30 minutes → badge shows `off`, no containment; resume restores it.
-- [ ] Export, reset, re-import → all settings return.
-- [ ] Import a truncated/garbage JSON file → clear error, settings unchanged.
-- [ ] Diagnostics → _Test a URL_ reports the correct matching rule.
+- Adding a never rule for docs.google.com makes it open outside the container
+- Adding an always rule for a non-Google site makes it open inside
+- Toggling the advertising group changes behaviour immediately
+- Pausing shows the off badge and stops containment; resuming restores it
+- Exporting, resetting and reimporting restores every setting
+- Importing a damaged file shows a clear error and changes nothing
+- The URL tester reports the correct matching rule
 
-### Upgrade
+### Upgrading
 
-- [ ] Install an older build, configure it, upgrade in place → settings and container survive.
-- [ ] Uninstall and reinstall → the existing container is re-adopted by name (cookies intact).
+- Configure an older build, then install a newer one over it; settings and container survive
+- Uninstall and reinstall; the existing container is picked up again and you are still signed in
 
-## Adding tests
+## Writing tests
 
-- A bug fix **must** come with a regression test that fails before the fix.
-- A new domain **must** come with a matcher assertion.
-- A behaviour change **must** update `test/decision.test.ts`; that file is the executable spec.
+A bug fix needs a test that fails before the fix.
+
+A new address needs a matching assertion.
+
+A behaviour change needs `test/decision.test.ts` updated, since that file is the written record of
+how the extension is supposed to behave.
