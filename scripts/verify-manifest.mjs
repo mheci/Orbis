@@ -78,6 +78,26 @@ for (const permission of manifest.permissions ?? []) {
   );
 }
 
+// The project moved from the mheci account to astarling-x. That account no
+// longer exists, so any link pointing at it is a dead 404 for users and a dead
+// vulnerability-reporting path for researchers. Fail the build rather than ship
+// one. Also pins the extension id: changing it after publication would make AMO
+// treat the add-on as brand new and orphan every user's container and settings.
+const CANONICAL_OWNER = 'astarling-x';
+const RETIRED_OWNERS = ['mheci'];
+const EXPECTED_EXTENSION_ID = `g-container@${CANONICAL_OWNER}.github.io`;
+
+check(
+  gecko?.id === EXPECTED_EXTENSION_ID,
+  `gecko.id must be "${EXPECTED_EXTENSION_ID}" (found "${gecko?.id}"). The extension id is a permanent identity key — changing it after release orphans existing installs.`
+);
+for (const retired of RETIRED_OWNERS) {
+  check(
+    !JSON.stringify(manifest).includes(retired),
+    `manifest still references the retired account "${retired}"; update it to "${CANONICAL_OWNER}"`
+  );
+}
+
 const referenced = [
   ...(manifest.background?.scripts ?? []),
   manifest.action?.default_popup,

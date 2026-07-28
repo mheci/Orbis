@@ -79,7 +79,7 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "**Install:** download the \`.zip\` below, or see [INSTALL.md](https://github.com/mheci/g-container/blob/main/INSTALL.md)."
+            echo "**Install:** download the \`.zip\` below, or see [INSTALL.md](https://github.com/astarling-x/g-container/blob/main/INSTALL.md)."
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 

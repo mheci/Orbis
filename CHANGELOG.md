@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- **Project moved to the `astarling-x` GitHub account.** The previous `mheci` repository has been
+  deleted; all clone URLs, badges, issue links and the private security-reporting link now point at
+  `github.com/astarling-x/g-container`.
+- **Extension id changed** from `g-container@mheci.github.io` to `g-container@astarling-x.github.io`.
+  This was done deliberately while the add-on has no published users. The id is a permanent identity
+  key: had it been changed after an AMO release, Firefox would have treated the update as a
+  different add-on and orphaned every user's container, cookies and settings. It is now pinned by
+  `scripts/verify-manifest.mjs` and must not change again.
+
+### Added
+
+- `scripts/check-links.mjs` — CI gate that fails the build if a link to the retired account
+  reappears anywhere in the tree. A dead security-reporting link is a real hazard, so this is
+  enforced rather than trusted to review.
+- Weekly scheduled maintenance workflow that rebuilds from a clean checkout, re-runs Mozilla's
+  validator against current rules and opens (or comments on) a single tracking issue on failure.
+- Dependabot for dev dependencies and GitHub Actions, grouped to keep the review queue small.
 
 ## [1.0.0] — 2026-07-28
 
@@ -71,5 +89,5 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/mheci/g-container/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/mheci/g-container/releases/tag/v1.0.0
+[Unreleased]: https://github.com/astarling-x/g-container/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/astarling-x/g-container/releases/tag/v1.0.0
