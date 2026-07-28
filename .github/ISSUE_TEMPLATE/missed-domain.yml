@@ -1,0 +1,52 @@
+name: Missed or over-eager domain
+description: A Google site was not contained, or a non-Google site was contained
+title: '[domain]: '
+labels: ['domains', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Domain reports are the most valuable contribution to this project.
+        Please run **Options → Diagnostics → Test a URL** first — it tells us exactly which rule fired.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What happened?
+      options:
+        - A Google site was NOT put in the container
+        - A non-Google site WAS put in the container
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: The exact URL (remove anything private from the query string)
+      placeholder: https://example.google.com/some/path
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: URL tester output
+      description: Paste the result from Options → Diagnostics → Test a URL
+      placeholder: '➖ Normal browsing — reason: none'
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence of ownership
+      description: For missed domains — how do we know Google owns this host? (WHOIS, official link, etc.)
+
+  - type: input
+    id: version
+    attributes:
+      label: G-Container version
+      placeholder: '1.0.0'
+    validations:
+      required: true
