@@ -1,6 +1,6 @@
 {
   "name": "g-container",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "G-Container \u2014 automatically isolate every Google-owned site into a dedicated Firefox Container.",
   "private": true,
   "type": "module",
