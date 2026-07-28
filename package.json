@@ -1,0 +1,43 @@
+{
+  "name": "g-container",
+  "version": "1.0.0",
+  "description": "G-Container — automatically isolate every Google-owned site into a dedicated Firefox Container.",
+  "private": true,
+  "type": "module",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mheci/g-container.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "build": "npm run clean && npm run build:js && npm run build:static && npm run verify",
+    "build:js": "node scripts/build.mjs",
+    "build:static": "node scripts/copy-static.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "verify": "node scripts/verify-manifest.mjs && node scripts/validate-json.mjs",
+    "package": "npm run build && node scripts/package.mjs",
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run package"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@types/firefox-webext-browser": "^120.0.4",
+    "@types/node": "^22.5.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "esbuild": "^0.23.1",
+    "eslint": "^9.9.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.2.0",
+    "vitest": "^2.0.5"
+  }
+}
