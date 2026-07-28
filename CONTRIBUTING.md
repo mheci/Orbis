@@ -1,9 +1,9 @@
-# Contributing to G-Container
+# Contributing
 
-Thanks for helping out. This project prioritises **correctness, stability and maintainability over
-feature velocity** — a small, well-tested change is always more welcome than a large, clever one.
+Thanks for helping out. This project values being correct and dependable over shipping features
+quickly, so a small well tested change is always more welcome than a large clever one.
 
-## Quick start
+## Getting set up
 
 ```bash
 git clone https://github.com/astarling-x/g-container.git
@@ -13,123 +13,130 @@ npm test
 npm run build
 ```
 
-Load `dist/manifest.json` via `about:debugging#/runtime/this-firefox`, or run
-`npx web-ext run --source-dir=dist`.
+Load `dist/manifest.json` through `about:debugging#/runtime/this-firefox`, or run
+`npx web-ext run --source-dir=dist` for a throwaway profile that reloads as you edit.
 
-## Before you open a PR
+Node.js 20 or newer.
+
+## Before opening a pull request
 
 ```bash
-npm run ci    # lint + typecheck + test + verify + package
+npm run ci
 ```
 
-Everything must pass. CI runs the same command, so there are no surprises.
+That runs formatting, type checking, tests, validation and packaging. Everything has to pass. The
+build server runs the same command, so there are no surprises.
 
-## Ways to contribute
+## Ways to help
 
-### Report a missed or over-eager domain
+### Report a missed or wrongly caught site
 
-The single most valuable contribution. Include:
+The most valuable thing you can send. Include:
 
-- the exact URL,
-- whether it should or should not be contained,
-- the output of Options → Diagnostics → _Test a URL_.
+- The exact address
+- Whether it should or should not be put in the container
+- The output of the URL tester in Settings, then Diagnostics
 
-### Add a domain
+### Add an address
 
-See [docs/DOMAIN_DATABASE.md](docs/DOMAIN_DATABASE.md). Usually a one-line JSON change plus a test.
-Please include evidence of Google ownership.
+See [docs/DOMAIN_DATABASE.md](docs/DOMAIN_DATABASE.md). Usually one line of JSON plus a test. Please
+include evidence that Google owns it.
 
 ### Fix a bug
 
-Write the failing test first. A bug fix without a regression test will be asked for changes.
+Write the failing test first. A fix without a test that would have caught the bug will be sent back.
 
-### Propose a feature
+### Suggest a feature
 
-Open a Discussion or an issue before writing code. Given the project's goals, features that add
-configuration surface or runtime complexity need a strong justification. "Reliability is more
-important than flashy features" is a real constraint here, not a slogan.
+Open a discussion or an issue before writing code. Given the goals of the project, anything that
+adds settings or moving parts needs a solid case. Being dependable really is the product here.
 
-## Commit convention
+## Commit messages
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+The project uses [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-<type>(<scope>): <subject>
+type(scope): short description
 ```
 
-| Type       | Use for                               |
-| ---------- | ------------------------------------- |
-| `feat`     | new user-visible capability           |
-| `fix`      | bug fix                               |
-| `docs`     | documentation only                    |
-| `test`     | tests only                            |
-| `refactor` | behaviour-preserving code change      |
-| `perf`     | performance improvement               |
-| `build`    | build system, packaging, dependencies |
-| `ci`       | CI configuration                      |
-| `chore`    | maintenance                           |
+| Type       | Use for                                |
+| ---------- | -------------------------------------- |
+| `feat`     | Something new that users can see       |
+| `fix`      | A bug fix                              |
+| `docs`     | Documentation only                     |
+| `test`     | Tests only                             |
+| `refactor` | Restructuring with no behaviour change |
+| `perf`     | Making something faster                |
+| `build`    | Build setup, packaging, dependencies   |
+| `ci`       | Build server configuration             |
+| `chore`    | Maintenance                            |
 
-Common scopes: `matcher`, `decision`, `domains`, `settings`, `storage`, `container`, `popup`,
-`options`, `background`, `ci`, `docs`.
+Common scopes: matcher, decision, domains, settings, storage, container, popup, options, background,
+icons, ci, docs.
 
 Examples:
 
 ```
 feat(domains): add notebooklm.google.com
-fix(matcher): reject userinfo-spoofed Google hostnames
-perf(matcher): cache lookups in a bounded LRU
-docs(architecture): document the loop guard invariants
+fix(matcher): reject addresses using credentials to fake a Google hostname
+perf(matcher): cache lookups with a size limit
+docs(architecture): explain the loop guard rules
 ```
 
-Commit types drive release notes, so please get them right. Breaking changes use `!`
-(`feat(settings)!: …`) and a `BREAKING CHANGE:` footer.
+Release notes are generated from these, so the type matters. Breaking changes use an exclamation
+mark, as in `feat(settings)!:`, plus a note in the message body.
 
 ## Pull request checklist
 
-- [ ] Focused on a single concern; small enough to review in one sitting.
-- [ ] `npm run ci` passes locally.
-- [ ] New behaviour has tests; bug fixes have a regression test.
-- [ ] Docs updated when behaviour, permissions or the domain database changed.
-- [ ] No new runtime dependency (see below).
-- [ ] No new permission unless documented in `docs/PERMISSIONS.md` — CI enforces this.
-- [ ] `CHANGELOG.md` updated under _Unreleased_ for user-visible changes.
+- One concern per pull request, small enough to review in a sitting
+- `npm run ci` passes locally
+- New behaviour has tests, bug fixes have a test that would have caught the bug
+- Documentation updated if behaviour, permissions or the address list changed
+- `CHANGELOG.md` updated under Unreleased for anything users would notice
+- No new runtime dependency
+- No new permission unless documented in `docs/PERMISSIONS.md`, which the build checks
 
 ## Code standards
 
-- **TypeScript strict mode.** No `any` without a comment explaining why; no `@ts-ignore`.
-- **Keep the core pure.** `src/core/` must not touch the `browser` global directly and must stay
-  synchronous where it already is. That property is what makes the test suite meaningful.
-- **Small files, clear interfaces.** If a module needs a diagram to explain, split it.
-- **Comment the _why_, not the _what_.** Non-obvious ordering, workarounds and invariants deserve a
-  comment; `i++ // increment i` does not.
-- **No runtime dependencies.** The extension ships zero third-party code, which keeps the AMO review
-  simple and the supply chain minimal. Dev dependencies are fine but should be justified.
+**Strict TypeScript.** No `any` without a comment explaining why, and no suppressing type errors.
+
+**Keep the core pure.** Nothing under `src/core/` may touch the browser directly or become
+asynchronous where it currently is not. That property is what makes the test suite worth anything.
+
+**Small files, clear boundaries.** If a module needs a diagram to explain, split it.
+
+**Comment why, not what.** Unusual ordering, workarounds and rules deserve a note. Restating the
+code in English does not.
+
+**No runtime dependencies.** The extension ships no third party code, which keeps review simple and
+the supply chain small. Development tools are fine but should be worth their weight.
 
 ## Architecture rules
 
-Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before changing `src/core/`. In particular:
+Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) before touching `src/core/`. In particular:
 
-1. Dependency direction is one-way: `background → core → domains`.
+1. Dependencies point one way: background uses core, core uses data.
 2. `decideNavigation()` stays pure and synchronous.
-3. Every persisted or imported document goes through `sanitizeSettings()`.
+3. Everything saved or imported is validated before use.
 4. A replacement tab is always created before the original is closed.
-5. No code path may make a network request.
+5. If the replacement cannot be created, the original load is allowed through.
+6. Nothing makes a network request.
 
 ## Reviews
 
-Maintainers aim to respond within a week. Expect questions about edge cases — especially
-"what happens on a redirect chain?" and "can this break a non-Google site?". That scrutiny is the
-point; please do not take it personally.
+Expect questions about edge cases, particularly what happens across a chain of redirects and whether
+a change could break a site that is not Google. That scrutiny is the point, so please do not take it
+personally. Maintainers aim to reply within a week.
 
-## Security issues
+## Security problems
 
-Do **not** open a public issue. Follow [SECURITY.md](SECURITY.md).
+Do not open a public issue. Follow [SECURITY.md](SECURITY.md).
 
-## Code of conduct
+## Conduct
 
-Be respectful and constructive. Harassment of any kind is not tolerated. Maintainers may remove
-comments, commits and contributions that violate this, and may ban repeat offenders.
+Be decent to each other. Harassment is not tolerated, and maintainers will remove contributions and
+block people who make the project unpleasant.
 
 ## Licence
 
-By contributing you agree that your work is licensed under the [MPL-2.0](LICENSE).
+Contributions are licensed under [MPL-2.0](LICENSE).

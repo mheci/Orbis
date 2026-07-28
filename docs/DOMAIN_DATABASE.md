@@ -1,126 +1,118 @@
-# The domain database
+# The address database
 
-Which hosts belong to Google is **data, not code**. Everything lives in `src/domains/*.json` and is
-inlined into the bundle at build time — there is no runtime fetch, no remote list and no network
-access. Adding a domain is a one-line JSON change plus a test run.
+Which addresses belong to Google is stored as data, not code. Everything lives in `src/domains/` as
+JSON and is compiled into the extension when it is built, so there is no list fetched at runtime and
+no network access.
 
-## Files
+Adding an address is a one line change plus a test.
 
-| File            | Purpose                                                              |
-| --------------- | -------------------------------------------------------------------- |
-| `google.json`   | Core Google properties and hosts under the `.google` brand gTLD      |
-| `youtube.json`  | YouTube, video CDNs, localized YouTube domains                       |
-| `ccTLD.json`    | Country suffixes, brand gTLD labels, and the base labels they expand |
-| `aliases.json`  | Redirector rules, built-in never list, OAuth paths                   |
-| `trackers.json` | Advertising/measurement domains (**opt-in**)                         |
-| `hosting.json`  | User-content hosting domains (**opt-in**)                            |
-| `schema.json`   | JSON Schema describing all of the above                              |
+## The files
 
-## Matching rules you must understand
+| File            | Contents                                                        |
+| --------------- | --------------------------------------------------------------- |
+| `google.json`   | Core Google services and .google brand addresses                |
+| `youtube.json`  | YouTube, video servers, localised YouTube addresses             |
+| `ccTLD.json`    | Country endings, brand endings, and the names they combine with |
+| `aliases.json`  | Redirect links, built in exceptions, sign-in paths              |
+| `trackers.json` | Advertising and measurement, off by default                     |
+| `hosting.json`  | App hosting, off by default                                     |
+| `schema.json`   | Structure definition for all of the above                       |
 
-**Subdomains are implicit.** Listing `google.com` matches `google.com`, `mail.google.com` and
-`a.b.c.google.com`. Never write `*.google.com` — the validator rejects wildcards.
+## Rules to understand first
 
-**Only bare hosts.** No scheme, no path, no port, no trailing dot, lower-case only. CI rejects
-anything else.
+**Subdomains are automatic.** Listing `google.com` also covers `mail.google.com` and
+`a.b.c.google.com`. Never write `*.google.com`; the validator rejects wildcards.
 
-**Brand gTLDs cover the future.** `ccTLD.json` → `brandTLDs` lists ICANN brand TLDs delegated to
-Google (`google`, `youtube`, `chrome`, `android`, …). _Any_ host ending in one of those labels
-matches automatically, so you do **not** need to add a new `something.google` service by hand.
-The entries in `google.json` → `gtldDomains` are documentation and belt-and-braces only.
+**Plain addresses only.** No scheme, no path, no port, no trailing dot, lower case. Anything else
+fails the build.
 
-**ccTLDs are expanded, not listed.** `ccTLD.json` holds `bases` (`google`, `youtube`, `blogspot`,
-`gstatic`) and ~180 `suffixes` (`com`, `co.uk`, `com.eg`, …). The loader produces the cartesian
-product, so adding one country covers every product at once. Never paste 180 lines of
-`google.<tld>` into `google.json`.
+**Brand endings cover the future.** The `brandTLDs` list in `ccTLD.json` holds endings Google owns
+outright, such as google, youtube, chrome and android. Any address ending in one of those matches
+automatically, so a brand new `something.google` service needs no change at all. The entries listed
+individually in `google.json` are belt and braces.
 
-## How to add a domain
+**Country addresses are generated, not listed.** `ccTLD.json` holds base names such as google and
+youtube, plus roughly 194 country endings. The loader combines them, so adding one country covers
+every product at once. Never paste 194 lines of `google.<ending>` into a file by hand.
 
-1. **Confirm Google actually owns it.** Check WHOIS, or that the site is linked from an official
-   Google property. Include your evidence in the PR description.
-2. **Pick the right file and set:**
-   - a user-facing Google service → `google.json` → `domains`
-   - anything YouTube → `youtube.json` → `domains`
-   - a new country suffix → `ccTLD.json` → `suffixes` (covers all bases at once)
-   - an ad/measurement host → `trackers.json` (stays opt-in)
-   - a host serving third-party apps → `hosting.json` (stays opt-in)
-3. **Add the entry** in the correct alphabetical-ish position, lower-case, bare host.
-4. **Bump `updated`** to today's date in that file.
-5. **Add a test** in `test/matcher.test.ts` asserting the new host is matched.
-6. **Run the checks:**
+## Adding an address
+
+1. **Check Google actually owns it.** Look at WHOIS records, or confirm it is linked from an
+   official Google page. Put your evidence in the pull request.
+2. **Pick the right file.**
+   - A user facing Google service goes in `google.json` under `domains`
+   - Anything YouTube goes in `youtube.json`
+   - A new country ending goes in `ccTLD.json` under `suffixes`, covering all products at once
+   - Advertising or measurement goes in `trackers.json`, staying off by default
+   - Anything hosting other people's apps goes in `hosting.json`, staying off by default
+3. **Add the entry** in roughly alphabetical position, lower case, plain address.
+4. **Update the `updated` date** in that file.
+5. **Add a test** in `test/matcher.test.ts` proving the new address is matched.
+6. **Run the checks.**
    ```bash
-   npm run verify   # JSON schema + host syntax + duplicate detection
+   npm run verify
    npm test
    ```
-7. Open a PR titled `feat(domains): add <domain>`.
+7. Open a pull request titled `feat(domains): add <address>`.
 
-## Choosing between "on by default" and "opt-in"
+## On by default, or off
 
-This is the judgement call that matters most, because a wrong choice breaks unrelated websites.
+This is the judgement call that matters most, because getting it wrong breaks unrelated websites.
 
-**Default-on** requires all of:
+Turn something on by default only when all three are true:
 
-- the host is unambiguously a Google product surface, and
-- users navigate to it at the top level on purpose, and
-- containerizing it cannot break a non-Google site.
+- It is unmistakably a Google product
+- People navigate to it directly, on purpose
+- Putting it in the container cannot break a site that is not Google
 
-**Opt-in** if any of:
+Leave it off when any of these apply:
 
-- the host serves third-party content (`appspot.com`, `web.app`, `firebaseapp.com` host apps that
-  have nothing to do with Google), or
-- top-level navigations to it are usually pass-throughs belonging to another site
-  (`doubleclick.net` ad click-throughs, `googleadservices.com` redirects), or
-- it is embedded by other sites as a widget (`accounts.google.com/gsi` — that one is in the
-  built-in _never_ list, because containerizing it breaks "Sign in with Google" everywhere).
+- It serves other people's content, such as appspot.com or web.app, where the actual site has
+  nothing to do with Google
+- People usually arrive there in passing rather than deliberately, such as an advertising redirect
+  on the way to a shop
+- Other sites embed it as a widget, such as the Google sign-in button
 
-When in doubt, ship it opt-in. A missed domain is a privacy gap the user can fix with one click; a
-false positive is a broken website they cannot diagnose.
+When unsure, ship it off by default. A missed address is a gap the user can close with one click. A
+wrongly included one is a broken website they have no way to diagnose.
 
-## `aliases.json` in detail
+## Inside aliases.json
 
-### `redirectors`
+**redirectors** lists addresses whose query parameters carry a real destination, such as
+`google.com/url?q=`. When a page inside the container passes through one of these on the way
+somewhere that is not Google, the destination opens outside the container. Parameters are tried in
+order and the first proper web address wins.
 
-Hosts whose query parameter carries a real destination:
+**neverContainerize** lists sign-in widgets that other websites embed. These only ever load as part
+of another site's flow, so putting them in the container breaks that site.
 
-```json
-{ "host": "google.com", "path": "/url", "params": ["q", "url"] }
-```
-
-When a **contained** tab navigates through one of these to a **non-Google** destination, the
-destination is opened outside the container. Parameters are tried in order; the first absolute
-`http(s)` URL wins, and destinations that are themselves Google are left alone.
-
-### `neverContainerize`
-
-`host + path prefix` entries for federated sign-in widgets embedded by third parties. These are only
-ever loaded as part of _another_ site's flow, so containerizing them breaks that site.
-
-### `oauthPaths`
-
-Path prefixes on `accounts.google.com` that indicate a third-party OAuth handshake. Combined with
-"was this navigation started by a non-Google tab?", they drive the OAuth pass-through behaviour.
+**oauthPaths** lists the address paths that mean a sign-in handshake is underway. Combined with
+knowing the page was opened by a non-Google tab, this is what keeps "Sign in with Google" working.
 
 ## Validation
 
-`npm run verify` runs `scripts/validate-json.mjs`, which fails CI on:
+`npm run verify` fails the build on:
 
-- invalid JSON or a missing `id` / `title` / `updated`
-- `updated` not in `YYYY-MM-DD` form
-- uppercase entries, surrounding whitespace, wildcards, schemes, slashes
-- hosts that are not valid LDH labels
-- duplicates within a list
-- a `ccTLD.json` base containing a dot
-- (warning) fewer than 50 country suffixes
+- Broken JSON, or a missing name, title or date
+- A date not written as YYYY-MM-DD
+- Capital letters, stray spaces, wildcards, schemes or slashes
+- Anything that is not a valid address
+- Duplicate entries in a list
+- A base name in `ccTLD.json` containing a dot
 
-`test/domain-db.test.ts` additionally asserts the built database is duplicate-free, lower-cased,
-and above a minimum size, so silent data loss is caught too.
+The tests additionally check that the built database has no duplicates, is entirely lower case, and
+is above a minimum size, so silent data loss is caught as well.
 
-## Maintenance cadence
+## Keeping it current
 
-Google adds and retires services regularly. Suggested routine:
+Google adds and retires services regularly.
 
-- **Quarterly** — review [about.google/products](https://about.google/products/) for new surfaces.
-- **On report** — a user issue saying "site X wasn't contained" is the main signal; the Options →
-  Diagnostics → _Test a URL_ tool tells you exactly which rule (if any) matched.
-- **Never remove** a retired domain immediately. Old links persist; keeping a dead host costs a few
-  bytes in the trie and nothing at runtime.
+**Every few months**, look over [Google's product list](https://about.google/products/) for anything
+new.
+
+**When someone reports it**, which is the main signal in practice. A user saying a site was missed
+is the most useful report this project gets. The URL tester in the settings page tells you exactly
+which rule matched, if any.
+
+**Do not remove retired addresses.** Old links stay in circulation for years, and a dead entry costs
+nothing at runtime.
