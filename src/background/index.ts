@@ -169,14 +169,32 @@ class GContainer {
     // own onBeforeRequest event does not trigger a second decision.
     this.loopGuard.remember(details.tabId, details.url, now);
 
-    await this.executeAction(action, tab);
+    const executed = await this.executeAction(action, tab);
+    if (!executed) {
+      // The replacement tab could not be created (container deleted mid-flight,
+      // window closing, resource exhaustion). Cancelling anyway would strand the
+      // user on a blank dead tab, so fail OPEN and let the original load
+      // proceed. Containment is best-effort; losing the user's navigation is
+      // not an acceptable failure mode.
+      //
+      // Forget the loop-guard entry too, otherwise a transient failure would
+      // suppress containment for this URL for the next few seconds.
+      this.loopGuard.forgetTab(details.tabId);
+      return undefined;
+    }
     return { cancel: true };
   }
 
+  /**
+   * Carry out a decision.
+   *
+   * @returns true when the replacement tab exists and the original navigation
+   *          may safely be cancelled; false when it must be allowed to proceed.
+   */
   private async executeAction(
     action: Exclude<NavigationAction, { kind: 'ignore' }>,
     sourceTab: browser.tabs.Tab
-  ): Promise<void> {
+  ): Promise<boolean> {
     const cookieStoreId = action.kind === 'contain' ? action.cookieStoreId : DEFAULT_COOKIE_STORE;
 
     try {
@@ -207,12 +225,13 @@ class GContainer {
       }
     } catch (error) {
       console.warn('[g-container] failed to execute action', action.kind, error);
-      return;
+      return false;
     }
 
     if (action.kind === 'contain') this.bumpStat('containedNavigations');
     else if (action.kind === 'release') this.bumpStat('releasedNavigations');
     else if (action.kind === 'unwrap') this.bumpStat('unwrappedLinks');
+    return true;
   }
 
   /**

@@ -11,6 +11,7 @@ import {
   CONTAINER_COLORS,
   CONTAINER_ICONS,
   type BackupDocument,
+  type DeepPartial,
   type Diagnostics,
   type MatchResult,
   type Message,
@@ -43,12 +44,21 @@ function toast(text: string): void {
   }, 3000);
 }
 
-async function patch(
-  update: Parameters<typeof send>[0] extends never ? never : object
-): Promise<void> {
-  settings = await send<Settings>({ type: 'set-settings', patch: update } as Message);
-  render();
-  toast('Saved.');
+/**
+ * Apply a partial settings update.
+ *
+ * The worker re-sanitises the whole document, so the UI cannot drive it into an
+ * invalid state; a rejected patch surfaces as a toast rather than a silent
+ * no-op, which is what makes a failed save visible to the user.
+ */
+async function patch(update: DeepPartial<Settings>): Promise<void> {
+  try {
+    settings = await send<Settings>({ type: 'set-settings', patch: update });
+    render();
+    toast('Saved.');
+  } catch (error) {
+    toast(`Could not save: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 // ------------------------------------------------------------------ rendering

@@ -92,6 +92,30 @@ describe('core Google properties', () => {
   });
 });
 
+describe('Google acquisitions on their own brand domains', () => {
+  // These stay on non-google.com domains after acquisition, so they are easy to
+  // forget. Each was verified as Google-owned before being added; see
+  // docs/DOMAIN_DATABASE.md for the evidence requirement.
+  const acquisitions = [
+    'https://www.fitbit.com/',
+    'https://nest.com/',
+    'https://tenor.com/view/abc',
+    'https://www.waze.com/live-map',
+    'https://looker.com/',
+    'https://www.mandiant.com/',
+    'https://www.kaggle.com/datasets',
+    'https://dialogflow.com/',
+    'https://firebase.crashlytics.com/',
+    'https://socratic.org/',
+    'https://photomath.com/',
+    'https://www.widevine.com/',
+    'https://apigee.com/',
+  ];
+  it.each(acquisitions)('containerizes %s', (url) => {
+    expect(matcher.match(url).isGoogle).toBe(true);
+  });
+});
+
 describe('YouTube properties', () => {
   const urls = [
     'https://www.youtube.com/watch?v=dQw4w9WgXcQ',

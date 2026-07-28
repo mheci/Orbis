@@ -14,8 +14,21 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   return element as T;
 };
 
+/**
+ * Send a message to the background worker.
+ *
+ * The worker converts a thrown error into `{ error: string }` rather than
+ * rejecting, so an unchecked caller would happily treat that object as a
+ * `RuntimeState` and render `undefined` everywhere. Convert it back into a
+ * rejection here so failures surface as a readable message instead of a blank
+ * popup.
+ */
 async function send<T>(message: Message): Promise<T> {
-  return (await browser.runtime.sendMessage(message)) as T;
+  const response = (await browser.runtime.sendMessage(message)) as T | { error: string };
+  if (response !== null && typeof response === 'object' && 'error' in response) {
+    throw new Error(String((response as { error: string }).error));
+  }
+  return response as T;
 }
 
 function describeMatch(state: RuntimeState): string {
@@ -95,25 +108,48 @@ function wire(): void {
   $('always').addEventListener('click', async () => {
     const host = await currentHost();
     if (host !== null) await send({ type: 'add-rule', list: 'always', pattern: host });
-    await render();
+    await safeRender();
   });
 
   $('never').addEventListener('click', async () => {
     const host = await currentHost();
     if (host !== null) await send({ type: 'add-rule', list: 'never', pattern: host });
-    await render();
+    await safeRender();
   });
 
   $('pause').addEventListener('click', async () => {
     await send({ type: 'pause', minutes: 30 });
-    await render();
+    await safeRender();
   });
 
   $('resume').addEventListener('click', async () => {
     await send({ type: 'resume' });
-    await render();
+    await safeRender();
   });
 }
 
+/**
+ * Render, and if the worker is unreachable show a readable message rather than
+ * a silently blank popup. This happens in practice when the event page is being
+ * restarted or the extension was just updated underneath an open popup.
+ */
+async function safeRender(): Promise<void> {
+  try {
+    await render();
+  } catch (error) {
+    const verdict = document.getElementById('verdict');
+    const host = document.getElementById('host');
+    if (host !== null) host.textContent = 'G-Container is starting…';
+    if (verdict !== null) {
+      verdict.className = 'verdict outside';
+      verdict.textContent =
+        error instanceof Error && error.message.length > 0
+          ? `Could not reach the extension: ${error.message}. Close and reopen this popup.`
+          : 'Could not reach the extension. Close and reopen this popup.';
+    }
+    console.warn('[g-container] popup render failed', error);
+  }
+}
+
 wire();
-void render();
+void safeRender();

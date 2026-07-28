@@ -56,20 +56,27 @@ for (const file of files) {
   local.writeUInt16LE(name.length, 26);
   chunks.push(local, name, payload);
 
+  // Central directory file header (APPNOTE 4.3.12). Every field is written
+  // explicitly, including the ones that stay zero, so the layout is auditable
+  // rather than relying on Buffer.alloc's zero-fill.
   const header = Buffer.alloc(46);
-  header.writeUInt32LE(0x02014b50, 0);
-  header.writeUInt16LE(20, 4);
-  header.writeUInt16LE(20, 6);
-  header.writeUInt16LE(0, 8);
-  header.writeUInt16LE(method, 10);
-  header.writeUInt16LE(DOS_TIME, 12);
-  header.writeUInt16LE(DOS_DATE, 14);
-  header.writeUInt32LE(sum, 16);
-  header.writeUInt32LE(payload.length, 20);
-  header.writeUInt32LE(data.length, 24);
-  header.writeUInt16LE(name.length, 28);
-  header.writeUInt32LE(0, 42);
-  header.writeUInt32LE(offset, 42);
+  header.writeUInt32LE(0x02014b50, 0); //  0  signature
+  header.writeUInt16LE(20, 4); //  4  version made by
+  header.writeUInt16LE(20, 6); //  6  version needed
+  header.writeUInt16LE(0, 8); //  8  general purpose flags
+  header.writeUInt16LE(method, 10); // 10  compression method
+  header.writeUInt16LE(DOS_TIME, 12); // 12  last mod time (pinned)
+  header.writeUInt16LE(DOS_DATE, 14); // 14  last mod date (pinned)
+  header.writeUInt32LE(sum, 16); // 16  crc-32
+  header.writeUInt32LE(payload.length, 20); // 20  compressed size
+  header.writeUInt32LE(data.length, 24); // 24  uncompressed size
+  header.writeUInt16LE(name.length, 28); // 28  file name length
+  header.writeUInt16LE(0, 30); // 30  extra field length
+  header.writeUInt16LE(0, 32); // 32  file comment length
+  header.writeUInt16LE(0, 34); // 34  disk number start
+  header.writeUInt16LE(0, 36); // 36  internal file attributes
+  header.writeUInt32LE(0, 38); // 38  external file attributes
+  header.writeUInt32LE(offset, 42); // 42  relative offset of local header
   central.push(Buffer.concat([header, name]));
   offset += local.length + name.length + payload.length;
 }
