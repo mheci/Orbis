@@ -5,7 +5,7 @@
 **Do not open a public issue for a security problem.**
 
 Report privately through GitHub's
-[private vulnerability reporting](https://github.com/mheci/g-container/security/advisories/new)
+[private vulnerability reporting](https://github.com/astarling-x/g-container/security/advisories/new)
 on this repository.
 
 Please include:

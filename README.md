@@ -4,7 +4,7 @@
 
 **Automatically isolate every Google-owned site in a dedicated Firefox Container.**
 
-[![CI](https://github.com/mheci/g-container/actions/workflows/ci.yml/badge.svg)](https://github.com/mheci/g-container/actions/workflows/ci.yml)
+[![CI](https://github.com/astarling-x/g-container/actions/workflows/ci.yml/badge.svg)](https://github.com/astarling-x/g-container/actions/workflows/ci.yml)
 [![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 [![Firefox 140+](https://img.shields.io/badge/firefox-140%2B-orange.svg)](https://www.mozilla.org/firefox/new/)
 
@@ -60,7 +60,7 @@ Pair it with Firefox's Enhanced Tracking Protection or uBlock Origin for content
 **From source** (until the AMO listing is live):
 
 ```bash
-git clone https://github.com/mheci/g-container.git
+git clone https://github.com/astarling-x/g-container.git
 cd g-container
 npm install
 npm run build

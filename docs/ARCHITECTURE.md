@@ -159,6 +159,17 @@ Firefox retains blocking `webRequest` under MV3 for privacy extensions, which is
 declares `webRequest` + `webRequestBlocking` rather than `declarativeNetRequest` — DNR cannot make
 a container decision that depends on the _current tab's_ cookie store.
 
+## Project identity
+
+Two values are permanent and enforced by `scripts/verify-manifest.mjs`:
+
+| Value           | Setting                             | Why it is pinned                                                                                                                                                                                                                                              |
+| --------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Extension id    | `g-container@astarling-x.github.io` | Firefox and AMO use this as the add-on's identity. Changing it after publication makes AMO treat the upload as a _different_ add-on: existing users get no update, and a fresh install creates a new container, orphaning their cookies, logins and settings. |
+| Canonical owner | `astarling-x`                       | The project previously lived under `mheci`, which has been deleted. `scripts/check-links.mjs` fails CI if a link to it reappears — a dead vulnerability-reporting link in SECURITY.md would be a genuine hazard.                                              |
+
+If the project ever moves accounts again, move the _repository_, not the extension id.
+
 ## Invariants
 
 Violating any of these is a bug:

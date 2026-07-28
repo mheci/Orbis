@@ -73,6 +73,6 @@ These will not be built, so nobody wastes time proposing them:
 
 ## How to influence this
 
-Open a [Discussion](https://github.com/mheci/g-container/discussions) for ideas, or an
-[Issue](https://github.com/mheci/g-container/issues) for concrete bugs and missing domains. Missing
+Open a [Discussion](https://github.com/astarling-x/g-container/discussions) for ideas, or an
+[Issue](https://github.com/astarling-x/g-container/issues) for concrete bugs and missing domains. Missing
 or over-eager domains are the highest-value reports and are usually fixed within days.

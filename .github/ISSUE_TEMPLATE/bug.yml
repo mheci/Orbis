@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        **Security issue?** Do not file it here — see [SECURITY.md](https://github.com/mheci/g-container/blob/main/SECURITY.md).
+        **Security issue?** Do not file it here — see [SECURITY.md](https://github.com/astarling-x/g-container/blob/main/SECURITY.md).
 
   - type: textarea
     id: what

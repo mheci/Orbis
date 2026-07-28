@@ -1,7 +1,7 @@
 # G-Container — delivery summary
 
-**Repository:** https://github.com/mheci/g-container
-**Release:** [v1.0.0](https://github.com/mheci/g-container/releases/tag/v1.0.0) · `g_container-1.0.0.zip` (23.9 KiB)
+**Repository:** https://github.com/astarling-x/g-container (sole maintained home)
+**Release:** [v1.0.0](https://github.com/astarling-x/g-container/releases/tag/v1.0.0) · `g_container-1.0.0.zip` (23.9 KiB)
 **Status:** CI green on Node 20 + 22 · 256/256 tests · Mozilla AMO validator **0 errors, 0 warnings, 0 notices**
 
 ---

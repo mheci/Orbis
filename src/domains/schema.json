@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/mheci/g-container/src/domains/schema.json",
+  "$id": "https://github.com/astarling-x/g-container/src/domains/schema.json",
   "title": "G-Container domain set",
   "type": "object",
   "required": ["id", "title", "updated"],

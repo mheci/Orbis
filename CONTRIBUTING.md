@@ -6,7 +6,7 @@ feature velocity** — a small, well-tested change is always more welcome than a
 ## Quick start
 
 ```bash
-git clone https://github.com/mheci/g-container.git
+git clone https://github.com/astarling-x/g-container.git
 cd g-container
 npm install
 npm test
