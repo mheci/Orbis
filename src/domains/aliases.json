@@ -1,0 +1,33 @@
+{
+  "$schema": "./schema.json",
+  "id": "aliases",
+  "title": "Redirector hosts, unwrappable links and special-case rules",
+  "description": "Rules that go beyond plain host matching: URL unwrapping for redirector links, and hosts that must never be containerized even though they match a Google pattern.",
+  "updated": "2026-07-28",
+  "redirectors": [
+    { "host": "google.com", "path": "/url", "params": ["q", "url"] },
+    { "host": "google.com", "path": "/imgres", "params": ["imgurl", "imgrefurl"] },
+    { "host": "news.google.com", "path": "/articles", "params": ["url"] },
+    { "host": "youtube.com", "path": "/redirect", "params": ["q"] },
+    { "host": "goo.gl", "path": "/url", "params": ["q"] },
+    { "host": "google.com", "path": "/search", "params": [] }
+  ],
+  "notesRedirectors": "When a *containerized* tab navigates through one of these redirectors to a non-Google destination, the destination is resolved from the listed query parameter and opened OUTSIDE the container. Params are read in order; the first absolute http(s) URL wins.",
+  "neverContainerize": [
+    "accounts.google.com/gsi",
+    "apis.google.com/js",
+    "www.gstatic.com/firebasejs"
+  ],
+  "notesNeverContainerize": "Host+path prefixes for federated-sign-in widgets that are embedded by third parties. These are only ever loaded as sub-resources or popups belonging to another site, so containerizing them breaks 'Sign in with Google' on non-Google sites. Matching is prefix based on host + pathname.",
+  "oauthPaths": [
+    "/o/oauth2/",
+    "/signin/oauth",
+    "/oauth2/auth",
+    "/accounts/SetSID",
+    "/CheckCookie",
+    "/ServiceLogin",
+    "/signin/v2",
+    "/gsi/"
+  ],
+  "notesOauthPaths": "Paths on accounts.google.com that form part of a third-party OAuth flow. When such a navigation is started by a non-Google opener and 'oauthPassthrough' is enabled, the flow stays in the originating context so the relying party receives its callback in the right cookie jar."
+}
