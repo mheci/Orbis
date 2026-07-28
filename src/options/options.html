@@ -56,6 +56,48 @@
         </fieldset>
 
         <fieldset>
+          <legend>Blocking Google trackers on other websites</legend>
+          <p class="hint">
+            Google code is embedded across much of the web. Even without cookies, loading it tells
+            Google your IP address and which page you are reading. Blocking stops the request before
+            it is sent.
+          </p>
+          <label class="check">
+            <input type="radio" name="blockMode" value="off" id="blockOff" />
+            <span><strong>Off.</strong> Load every embedded Google resource as normal.</span>
+          </label>
+          <label class="check">
+            <input type="radio" name="blockMode" value="standard" id="blockStandard" />
+            <span>
+              <strong>Standard, recommended.</strong> Block Google analytics, advertising and social
+              widgets on sites that are not Google. Fonts, maps, sign-in, reCAPTCHA and embedded
+              videos keep working.
+            </span>
+          </label>
+          <label class="check">
+            <input type="radio" name="blockMode" value="strict" id="blockStrict" />
+            <span>
+              <strong>Strict.</strong> Also block fonts, hosted script libraries, maps and embedded
+              players. <em>This will visibly break some websites.</em> Sign-in and reCAPTCHA are
+              still allowed, so you cannot be locked out of an account.
+            </span>
+          </label>
+          <label class="check">
+            <input type="checkbox" id="showBadge" />
+            <span>Show the number blocked on the toolbar icon</span>
+          </label>
+
+          <p class="hint" style="margin-top: 12px">
+            Sites where Google resources are allowed to load normally:
+          </p>
+          <div class="inline">
+            <input type="text" id="blockAllowInput" placeholder="example.com" />
+            <button class="btn primary" id="blockAllowAdd">Add</button>
+          </div>
+          <ul class="list" id="blockAllowList"></ul>
+        </fieldset>
+
+        <fieldset>
           <legend>Behaviour</legend>
           <label class="check"
             ><input type="checkbox" id="unwrapRedirectors" />

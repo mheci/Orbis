@@ -63,6 +63,7 @@ export class MockBrowser {
   removedTabIds: number[] = [];
   menuItems: Array<{ id: string; title: string; contexts: string[] }> = [];
   badgeText: string | null = null;
+  badgeByTab = new Map<number, string>();
   badgeTitle: string | null = null;
 
   /** Internal counters, readable by buildApi(). */
@@ -76,6 +77,8 @@ export class MockBrowser {
   readonly webRequestOnBeforeRequest = new Event();
   readonly runtimeOnMessage = new Event();
   readonly tabsOnRemoved = new Event();
+  readonly tabsOnCreated = new Event();
+  readonly tabsOnUpdated = new Event();
   readonly identitiesOnRemoved = new Event();
   readonly runtimeOnInstalled = new Event();
   readonly runtimeOnStartup = new Event();
@@ -148,6 +151,7 @@ function buildApi(mock: MockBrowser): Record<string, unknown> {
             typeof props['openerTabId'] === 'number' ? (props['openerTabId'] as number) : undefined,
         });
         mock.createdTabs.push(tab);
+        void mock.tabsOnCreated.emit({ ...tab });
         return { ...tab };
       },
       async remove(id: number) {
@@ -156,6 +160,8 @@ function buildApi(mock: MockBrowser): Record<string, unknown> {
         mock.removedTabIds.push(id);
       },
       onRemoved: mock.tabsOnRemoved,
+      onCreated: mock.tabsOnCreated,
+      onUpdated: mock.tabsOnUpdated,
     },
     contextualIdentities: {
       async query({ name }: { name?: string }) {
@@ -218,8 +224,9 @@ function buildApi(mock: MockBrowser): Record<string, unknown> {
       sendMessage: async () => {},
     },
     action: {
-      async setBadgeText(d: { text: string }) {
+      async setBadgeText(d: { text: string; tabId?: number }) {
         mock.badgeText = d.text;
+        if (typeof d.tabId === 'number') mock.badgeByTab.set(d.tabId, d.text);
       },
       async setBadgeBackgroundColor() {},
       async setTitle(d: { title: string }) {

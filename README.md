@@ -22,6 +22,10 @@ up while signed into Google. Your activity across unrelated sites gets joined in
 
 ## What G-Container does
 
+Two things, working together.
+
+**First, it keeps Google in a separate compartment.**
+
 Firefox has a built-in feature called containers. Each container is a sealed compartment with its
 own cookie jar, storage and cache. A site opened in one container cannot see anything belonging to
 another.
@@ -38,16 +42,34 @@ The result:
 You do not have to remember anything or change how you browse. Click a Google link and it lands in
 the right place on its own.
 
+**Second, it stops Google trackers on other websites.**
+
+Separating cookies is only half the problem. When a news site loads Google Analytics, that request
+still tells Google your IP address, your browser, and which page you are reading, whether or not a
+cookie goes with it.
+
+So G-Container blocks those requests before they leave your machine. Analytics, advertising and
+social widgets are stopped on sites that are not Google. The popup shows how many were blocked on
+the page you are looking at.
+
+Things websites genuinely need keep working. Google Fonts, embedded maps and videos, reCAPTCHA
+boxes and "Sign in with Google" buttons are all left alone, because blocking those would break the
+page rather than protect you. If you want maximum separation and can accept some broken sites,
+strict mode in the settings blocks those too. Sign-in and reCAPTCHA stay allowed even then, so you
+cannot be locked out of an account.
+
 ## What it does not do
 
 Being clear about the limits matters more than overselling.
 
-G-Container separates your browsing. It does not block anything. Google can still see the requests
-you deliberately send them, and your IP address is unchanged. It also does not hide your browser
-fingerprint.
+G-Container separates your browsing and blocks Google's tracking code on other sites. It is not a
+general ad blocker, and it only deals with Google. Trackers belonging to anyone else are untouched.
 
-If you also want to block trackers outright, run something like uBlock Origin alongside it. The two
-do different jobs and work fine together.
+Google can still see whatever you deliberately send them. Your IP address is unchanged when you
+visit Google directly, and your browser fingerprint is not hidden.
+
+For broad ad and tracker blocking across all companies, run something like uBlock Origin alongside
+it. The two do different jobs and work well together.
 
 ## Install
 
@@ -66,13 +88,17 @@ Full instructions, including building from source, are in [INSTALL.md](INSTALL.m
 There is nothing to configure. A container named Google is created the first time you visit a
 Google site, and the defaults are the recommended setup.
 
-Click the toolbar icon to see whether the current page is protected, move a tab in or out of the
-container by hand, or pause protection for half an hour.
+Click the toolbar icon to see whether the current page is protected, how many Google trackers were
+blocked on it, move a tab in or out of the container by hand, or pause protection for half an hour.
+
+If a website misbehaves, the popup has a button to allow Google resources on that site only.
 
 For more control, open the settings page from the popup. You can:
 
 - Rename the container or change its colour and icon
+- Choose how much to block: off, standard or strict
 - Turn whole groups of domains on or off
+- List sites where Google resources should load normally
 - Force a specific site to always or never use the container
 - Save your settings to a file and load them back later
 - Check exactly why a given address was or was not put in the container

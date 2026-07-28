@@ -156,6 +156,35 @@ const SET_DESCRIPTIONS: Record<string, string> = {
     'appspot.com, web.app, firebaseapp.com… Off by default: these host unrelated third-party apps.',
 };
 
+function renderBlockAllowList(): void {
+  const host = $('blockAllowList');
+  host.textContent = '';
+  if (settings.blocking.allowlist.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'No sites yet.';
+    host.append(li);
+    return;
+  }
+  for (const entry of settings.blocking.allowlist) {
+    const li = document.createElement('li');
+    const label = document.createElement('span');
+    label.textContent = entry;
+    const remove = document.createElement('button');
+    remove.className = 'remove';
+    remove.type = 'button';
+    remove.title = `Remove ${entry}`;
+    remove.textContent = 'x';
+    remove.addEventListener('click', async () => {
+      settings = await send<Settings>({ type: 'allowlist-site', host: entry, allow: false });
+      render();
+      toast('Removed.');
+    });
+    li.append(label, remove);
+    host.append(li);
+  }
+}
+
 function renderStats(): void {
   const s = settings.statistics;
   const items: Array<[string, string]> = [
@@ -163,6 +192,7 @@ function renderStats(): void {
     ['Released navigations', s.releasedNavigations.toLocaleString()],
     ['Links unwrapped', s.unwrappedLinks.toLocaleString()],
     ['Exceptions applied', s.exceptionsApplied.toLocaleString()],
+    ['Trackers blocked', s.trackersBlocked.toLocaleString()],
     ['Counting since', new Date(s.since).toLocaleDateString()],
     ['Last event', s.lastEvent === 0 ? '—' : new Date(s.lastEvent).toLocaleString()],
   ];
@@ -195,6 +225,14 @@ function render(): void {
     const input = document.getElementById(key) as HTMLInputElement | null;
     if (input !== null) input.checked = settings.behaviour[key];
   }
+
+  for (const mode of ['off', 'standard', 'strict'] as const) {
+    const id = `block${mode.charAt(0).toUpperCase()}${mode.slice(1)}`;
+    const input = document.getElementById(id) as HTMLInputElement | null;
+    if (input !== null) input.checked = settings.blocking.mode === mode;
+  }
+  ($('showBadge') as HTMLInputElement).checked = settings.blocking.showBadge;
+  renderBlockAllowList();
 
   renderDomainSets(null);
   renderList($('alwaysList'), settings.alwaysContainerize, 'always');
@@ -252,6 +290,35 @@ function wireGeneral(): void {
       void patch({ container: { [field]: select.value } });
     });
   }
+
+  for (const mode of ['off', 'standard', 'strict'] as const) {
+    const id = `block${mode.charAt(0).toUpperCase()}${mode.slice(1)}`;
+    const input = document.getElementById(id) as HTMLInputElement | null;
+    input?.addEventListener('change', () => {
+      if (input.checked) void patch({ blocking: { mode } });
+    });
+  }
+  ($('showBadge') as HTMLInputElement).addEventListener('change', (event) => {
+    void patch({ blocking: { showBadge: (event.target as HTMLInputElement).checked } });
+  });
+
+  const blockInput = $('blockAllowInput') as HTMLInputElement;
+  const addBlockAllow = async (): Promise<void> => {
+    const value = blockInput.value.trim();
+    if (value === '') return;
+    try {
+      settings = await send<Settings>({ type: 'allowlist-site', host: value, allow: true });
+      blockInput.value = '';
+      render();
+      toast('Site added.');
+    } catch (error) {
+      toast(`Could not add: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+  $('blockAllowAdd').addEventListener('click', () => void addBlockAllow());
+  blockInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') void addBlockAllow();
+  });
 
   for (const key of [
     'unwrapRedirectors',

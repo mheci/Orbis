@@ -178,3 +178,13 @@ body {
 .hidden {
   display: none;
 }
+
+.hint {
+  color: var(--muted);
+  font-size: 11.5px;
+  margin: 2px 0 8px;
+}
+
+#blockedHere {
+  font-size: 15px;
+}

@@ -44,6 +44,11 @@ compartment and are not sent with ordinary browsing.
 **Being identified by association.** Staying signed into Google no longer links your identity to
 activity on unrelated sites through cookie matching.
 
+**Being watched through embedded Google code.** Google resources on websites that are not Google
+are blocked before the request is sent, so Google does not receive your IP address, your browser
+details or the address of the page you are reading. Cookie separation alone would not stop that,
+because the request would still be made.
+
 **Tampered settings.** Every imported settings file is rebuilt and validated before use.
 
 ## What it does not protect against
@@ -57,9 +62,12 @@ fingerprint resistance or the Tor Browser handle that.
 
 **Anything you hand over yourself.** Whatever you do while signed into Google is visible to Google.
 
-**Google code embedded in other sites.** Analytics and reCAPTCHA still load where sites include
-them. They simply cannot read the Google container's cookies. Pair this with uBlock Origin or
-Firefox's tracking protection if you want them blocked outright.
+**Trackers belonging to anyone else.** Only Google is handled. Use uBlock Origin for the rest.
+
+**Google code that websites genuinely need.** Fonts, embedded maps and videos, reCAPTCHA and
+sign-in buttons are allowed by default, because blocking them breaks the page rather than
+protecting you. They cannot read the Google container's cookies, but the request is still made.
+Strict mode blocks most of them, at the cost of some sites not working.
 
 **Other extensions** with broader permissions than this one.
 
@@ -134,6 +142,11 @@ compartment.
 
 **Sign-in pass-through is a trade off.** Letting third party sign-in finish outside the container
 keeps those sites working. Turn it off in settings for stricter separation.
+
+**Blocking has to be judged, not absolute.** Deciding which Google resources a page needs is a
+classification, and classifications are sometimes wrong. A resource wrongly treated as functional
+is allowed through; one wrongly treated as tracking breaks something. Reports of either are
+welcome, and the popup can exempt a single site immediately.
 
 **Embedded content is not moved.** Only whole page loads are. Google resources embedded in another
 page load in that page's context, which is what makes the web work, and Firefox partitions them

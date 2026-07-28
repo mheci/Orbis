@@ -369,3 +369,120 @@ describe('background: settings persistence across a restart', () => {
     MockBrowser.uninstall();
   });
 });
+
+describe('background: blocking Google resources on other websites', () => {
+  let mock: MockBrowser;
+
+  beforeEach(() => {
+    mock = new MockBrowser();
+  });
+  afterEach(() => {
+    MockBrowser.uninstall();
+  });
+
+  function sub(url: string, tabId: number, origin: string, type = 'script') {
+    return {
+      ...details(url, tabId, type as browser.webRequest.ResourceType),
+      originUrl: origin,
+    } as browser.webRequest._OnBeforeRequestDetails;
+  }
+
+  it('blocks Google Analytics embedded in an ordinary website', async () => {
+    const app = await loadApp(mock);
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    const result = app.onBeforeSubresource(
+      sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+    );
+    expect(result).toEqual({ cancel: true });
+  });
+
+  it('lets Google Fonts through so pages still render', async () => {
+    const app = await loadApp(mock);
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    const result = app.onBeforeSubresource(
+      sub('https://fonts.googleapis.com/css2?family=Inter', tab.id, 'https://news.example.com/')
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it('counts blocked resources per tab and shows them on the icon', async () => {
+    const app = await loadApp(mock);
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    for (const url of [
+      'https://www.google-analytics.com/analytics.js',
+      'https://www.googletagmanager.com/gtm.js',
+      'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js',
+    ]) {
+      app.onBeforeSubresource(sub(url, tab.id, 'https://news.example.com/'));
+    }
+    expect(await app.handleMessage({ type: 'get-blocked', tabId: tab.id })).toBe(3);
+    expect(mock.badgeByTab.get(tab.id)).toBe('3');
+  });
+
+  it('resets the count when the tab navigates somewhere new', async () => {
+    const app = await loadApp(mock);
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    app.onBeforeSubresource(
+      sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+    );
+    expect(await app.handleMessage({ type: 'get-blocked', tabId: tab.id })).toBe(1);
+
+    app.onBeforeSubresource(details('https://other.example.com/', tab.id, 'main_frame'));
+    expect(await app.handleMessage({ type: 'get-blocked', tabId: tab.id })).toBe(0);
+  });
+
+  it('blocks nothing when the mode is off', async () => {
+    const app = await loadApp(mock);
+    await app.handleMessage({ type: 'set-settings', patch: { blocking: { mode: 'off' } } });
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    const result = app.onBeforeSubresource(
+      sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+    );
+    expect(result).toBeUndefined();
+  });
+
+  it('blocks nothing while protection is paused', async () => {
+    const app = await loadApp(mock);
+    await app.handleMessage({ type: 'pause', minutes: 30 });
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    expect(
+      app.onBeforeSubresource(
+        sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+      )
+    ).toBeUndefined();
+  });
+
+  it('honours a site the user has allowlisted', async () => {
+    const app = await loadApp(mock);
+    await app.handleMessage({ type: 'allowlist-site', host: 'news.example.com', allow: true });
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    expect(
+      app.onBeforeSubresource(
+        sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+      )
+    ).toBeUndefined();
+  });
+
+  it('returns synchronously, never a promise', async () => {
+    const app = await loadApp(mock);
+    const tab = mock.addTab({ url: 'https://news.example.com/' });
+    const result = app.onBeforeSubresource(
+      sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+    );
+    // A blocking webRequest listener that returns a promise stalls the request
+    // until it settles, which would add latency to every page on the web.
+    expect(result).not.toBeInstanceOf(Promise);
+  });
+
+  it('reports blocked counts and mode in the popup state', async () => {
+    const app = await loadApp(mock);
+    const tab = mock.addTab({ url: 'https://news.example.com/', active: true });
+    app.onBeforeSubresource(
+      sub('https://www.google-analytics.com/analytics.js', tab.id, 'https://news.example.com/')
+    );
+    const state = await ask<RuntimeState>(app, { type: 'get-state' });
+    expect(state.blockedHere).toBe(1);
+    expect(state.blockingMode).toBe('standard');
+    expect(state.siteAllowlisted).toBe(false);
+  });
+});
