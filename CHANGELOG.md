@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **`.amo-upload-uuid` is no longer packaged.** `web-ext sign` writes this upload-resume state file
+  into the source directory, and the packager would have shipped it to every user, leaking an
+  internal AMO upload id. It is now excluded along with other build-machine detritus.
+
 - **Navigation is no longer cancelled when the replacement tab cannot be created.** If
   `tabs.create` failed — container deleted mid-navigation, window closing, resource exhaustion —
   the original load was still cancelled, stranding the user on a blank dead tab. Containment is now
