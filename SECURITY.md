@@ -93,6 +93,33 @@ Be honest with yourself about these:
    resources load in their host page's context, which is the correct behaviour for the web to work,
    and they remain partitioned by Firefox's own state partitioning.
 
+## Automated security scanning
+
+Every push, pull request and weekly schedule runs established third-party scanners rather than
+bespoke checks. Findings are uploaded as SARIF and appear in the repository's Security tab with
+line-level annotations.
+
+| Tool                                                 | Vendor        | Covers                                                                                      |
+| ---------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------- |
+| [CodeQL](https://codeql.github.com/)                 | GitHub        | Static analysis: injection, unsafe DOM use, taint flow (`security-and-quality` query suite) |
+| [Trivy](https://trivy.dev/)                          | Aqua Security | Dependency CVEs, embedded secrets, misconfiguration                                         |
+| [Gitleaks](https://gitleaks.io/)                     | Gitleaks      | Credential scanning across the **full git history**, not just the tip                       |
+| [OSV Scanner](https://google.github.io/osv-scanner/) | Google        | Cross-ecosystem lookup against the OSV vulnerability database                               |
+| [Zizmor](https://docs.zizmor.sh/)                    | zizmorcore    | GitHub Actions auditing: script injection, over-broad token permissions                     |
+| `npm audit`                                          | npm           | Advisory database, split into blocking (production) and advisory (dev) runs                 |
+
+Two project-specific invariants are enforced as build failures:
+
+- **`npm audit --omit=dev` must be completely clean.** The extension ships zero runtime
+  dependencies, so any production advisory means something reached end users.
+- **The runtime dependency count must be zero.** Adding one expands the supply-chain surface and
+  complicates AMO review, so it fails the build rather than passing quietly.
+
+Gitleaks runs with a [custom rule set](.gitleaks.toml) extending the upstream defaults with the
+credential formats this project handles (GitHub PATs, AMO JWT issuer/secret pairs). The rules are
+verified against a negative control — deliberately planted credentials — so a clean scan is
+meaningful rather than vacuous.
+
 ## Verifying a build
 
 The build is reproducible: `npm ci && npm run package` from a given tag yields a byte-identical zip

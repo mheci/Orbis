@@ -1,0 +1,192 @@
+name: Security
+
+# Security scanning using established, widely-adopted tooling rather than
+# bespoke checks:
+#
+#   - CodeQL   (GitHub)      static analysis for injection, XSS, unsafe DOM use
+#   - Trivy    (Aqua)        dependency CVEs, secrets, misconfiguration
+#   - Gitleaks (Gitleaks)    credential scanning across the full git history
+#   - OSV      (Google)      vulnerability lookup against the OSV database
+#   - Zizmor   (woodruffw)   GitHub Actions workflow security auditing
+#
+# Results are uploaded as SARIF so findings appear in the repository's Security
+# tab with line-level annotations, instead of being buried in job logs.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # 05:00 UTC every Monday, an hour before the maintenance build. Scheduled
+    # runs catch newly-disclosed CVEs in code that has not changed.
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codeql:
+    name: CodeQL static analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          # security-and-quality adds maintainability rules on top of the
+          # default security queries. Worth the extra runtime for an add-on
+          # that handles every URL the user visits.
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
+
+  trivy:
+    name: Trivy — dependencies, secrets, config
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Trivy filesystem scan (SARIF for the Security tab)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH,MEDIUM
+          ignore-unfixed: true
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
+
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy
+
+      - name: Fail the build on CRITICAL or HIGH
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+        env:
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db
+
+  gitleaks:
+    name: Gitleaks — secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history: a credential committed and later removed is still
+          # exposed, so scanning only the tip would miss the thing that matters.
+          fetch-depth: 0
+
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  osv:
+    name: OSV Scanner — vulnerability database
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.2.4
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=sarif
+            --output=osv-results.sarif
+            --recursive
+            ./
+
+      - name: Upload OSV SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: osv-results.sarif
+          category: osv
+
+  actions-audit:
+    name: Zizmor — GitHub Actions audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Audit workflows for injection and permission issues
+        uses: zizmorcore/zizmor-action@v0.2.0
+        with:
+          # The workflows themselves are a supply-chain surface: script
+          # injection through untrusted inputs and over-broad token permissions
+          # are the common failure modes.
+          advanced-security: true
+          persona: regular
+
+  npm-audit:
+    name: npm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Audit production dependencies
+        # The extension ships zero runtime dependencies, so a production audit
+        # must always be clean. If this ever fails, something has been added
+        # that reaches end users.
+        run: npm audit --omit=dev --audit-level=low
+
+      - name: Audit all dependencies (advisory)
+        # Dev dependencies never reach users, so these are reported but do not
+        # block. Dependabot handles the upgrades.
+        run: npm audit --audit-level=critical || true
+
+      - name: Verify zero runtime dependencies
+        run: |
+          DEPS=$(node -p "Object.keys(require('./package.json').dependencies || {}).length")
+          echo "runtime dependencies: $DEPS"
+          if [ "$DEPS" != "0" ]; then
+            echo "::error::G-Container must ship zero runtime dependencies (found $DEPS)."
+            echo "Adding one expands the supply-chain surface and complicates AMO review."
+            exit 1
+          fi
