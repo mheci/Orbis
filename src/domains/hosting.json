@@ -1,0 +1,24 @@
+{
+  "$schema": "./schema.json",
+  "id": "hosting",
+  "title": "Google-operated user-content hosting",
+  "description": "Domains owned by Google but which serve arbitrary third-party applications and user content. Containerizing them would sweep unrelated sites into the Google container, so they are disabled by default. Enable via Options > Domain sets > User-content hosting.",
+  "updated": "2026-07-28",
+  "defaultEnabled": false,
+  "domains": [
+    "appspot.com",
+    "firebaseapp.com",
+    "firebaseio.com",
+    "firebasestorage.app",
+    "web.app",
+    "cloudfunctions.net",
+    "run.app",
+    "page.link",
+    "glitch.me",
+    "googleapis.dev"
+  ],
+  "alwaysOn": ["blogspot.com"],
+  "notes": {
+    "alwaysOn": "blogspot.* is handled through aliases.json ccTLD expansion; listed here only for documentation completeness."
+  }
+}
