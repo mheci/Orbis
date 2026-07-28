@@ -1,0 +1,51 @@
+# Gitleaks configuration for G-Container.
+#
+# Extends the upstream default ruleset (which covers AWS, GCP, Slack, Stripe,
+# private keys and ~150 other providers) and adds the credential types this
+# project specifically handles.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "amo-jwt-issuer"
+description = "Mozilla Add-ons API JWT issuer"
+# AMO issuers look like "user:12345678:901".
+regex = '''user:[0-9]{6,10}:[0-9]{1,5}'''
+tags = ["amo", "credential"]
+
+[[rules]]
+id = "amo-jwt-secret"
+description = "Mozilla Add-ons API JWT secret (64-char hex)"
+regex = '''(?i)(?:amo|jwt)[_-]?secret['"\s:=]{1,10}([a-f0-9]{64})'''
+secretGroup = 1
+tags = ["amo", "credential"]
+
+[[rules]]
+id = "github-pat-classic"
+description = "GitHub personal access token (classic)"
+regex = '''ghp_[A-Za-z0-9]{36}'''
+tags = ["github", "credential"]
+
+[[rules]]
+id = "github-pat-fine-grained"
+description = "GitHub fine-grained personal access token"
+regex = '''github_pat_[A-Za-z0-9_]{60,}'''
+tags = ["github", "credential"]
+
+[allowlist]
+description = "Paths and patterns that are not credentials"
+paths = [
+  '''package-lock\.json''',
+  '''node_modules/''',
+  '''dist/''',
+  '''coverage/''',
+  '''\.gitleaks\.toml''',
+]
+regexes = [
+  # Workflow references to repository secrets are indirections, not values.
+  '''\$\{\{\s*secrets\.[A-Z_]+\s*\}\}''',
+  '''\$AMO_JWT_(ISSUER|SECRET)''',
+  # Documentation placeholders.
+  '''YOUR_JWT_(ISSUER|SECRET)''',
+]
