@@ -1,0 +1,59 @@
+name: Bug report
+description: Something is broken
+title: '[bug]: '
+labels: ['bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Security issue?** Do not file it here — see [SECURITY.md](https://github.com/mheci/g-container/blob/main/SECURITY.md).
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Include what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a normal tab
+        2. Go to …
+        3. Observe …
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: G-Container version
+      placeholder: '1.0.0'
+    validations:
+      required: true
+
+  - type: input
+    id: firefox
+    attributes:
+      label: Firefox version
+      placeholder: '128.0 (about:support)'
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Options → Diagnostics → Refresh, then paste the JSON here.
+      render: json
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I checked that protection is not paused (badge does not show "off")
+        - label: I searched existing issues
