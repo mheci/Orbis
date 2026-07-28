@@ -12,17 +12,17 @@ A production-grade Firefox Multi-Account Containers extension that automatically
 Google-owned property into one dedicated container — the Google equivalent of Mozilla's Facebook
 Container, with a larger domain database and far more configurability.
 
-| Metric | Value |
-|---|---|
-| Host patterns matched | **936** |
-| Country domains | 194 suffixes × 4 base labels |
-| Tests | **256**, all passing (~2 s) |
-| Core coverage | 98% statements / 92% branches |
-| Matcher build time | **2 ms** |
-| Packaged size | 23.9 KiB |
-| Runtime dependencies | **0** |
-| Permissions | 7, each documented + CI-enforced |
-| Commits | 14 atomic Conventional Commits |
+| Metric                | Value                            |
+| --------------------- | -------------------------------- |
+| Host patterns matched | **936**                          |
+| Country domains       | 194 suffixes × 4 base labels     |
+| Tests                 | **256**, all passing (~2 s)      |
+| Core coverage         | 98% statements / 92% branches    |
+| Matcher build time    | **2 ms**                         |
+| Packaged size         | 23.9 KiB                         |
+| Runtime dependencies  | **0**                            |
+| Permissions           | 7, each documented + CI-enforced |
+| Commits               | 14 atomic Conventional Commits   |
 
 ## Architecture in one line
 
@@ -34,23 +34,23 @@ under Node with no browser mock.
 
 ## Requirements coverage
 
-| Requirement | How it was met |
-|---|---|
-| Isolate all Google properties | 936 patterns across 4 switchable sets |
-| Future-proof matching | Brand gTLD rule: any `*.google` / `*.youtube` host matches with no update |
-| Maintainable domain DB | 6 JSON files + JSON Schema + CI validation; adding a domain touches no code |
-| No redirect loops | Bounded, per-tab, self-expiring `LoopGuard`; test proves 20 rapid navigations → 1 containment |
-| No race conditions | Shared in-flight promise; test proves 25 concurrent calls → 1 container |
-| No brittle URL matching | Reverse-label trie on `URL.hostname`; suffix/query/userinfo spoofing all rejected by test |
-| Never lose tabs | Replacement tab always created before the original closes |
-| Survive updates/deletion | Container re-adopted by name; schema migration; corruption-tolerant storage |
-| OAuth / login flows | Pass-through keeps third-party "Sign in with Google" working |
-| Exceptions & whitelists | Always/never lists with host or host+path granularity, documented precedence |
-| Import/export | Versioned JSON, backward compatible, fully sanitised on import |
-| Least privilege | 7 permissions; `verify-manifest.mjs` fails the build on any undocumented one |
-| No telemetry / remote code | Zero network requests, zero content scripts, zero runtime deps |
-| CI/CD | Lint, typecheck, test, coverage, build, manifest verify, JSON validate, package, AMO lint |
-| Documentation | 10 documents covering architecture, domains, testing, permissions, security, roadmap |
+| Requirement                   | How it was met                                                                                |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| Isolate all Google properties | 936 patterns across 4 switchable sets                                                         |
+| Future-proof matching         | Brand gTLD rule: any `*.google` / `*.youtube` host matches with no update                     |
+| Maintainable domain DB        | 6 JSON files + JSON Schema + CI validation; adding a domain touches no code                   |
+| No redirect loops             | Bounded, per-tab, self-expiring `LoopGuard`; test proves 20 rapid navigations → 1 containment |
+| No race conditions            | Shared in-flight promise; test proves 25 concurrent calls → 1 container                       |
+| No brittle URL matching       | Reverse-label trie on `URL.hostname`; suffix/query/userinfo spoofing all rejected by test     |
+| Never lose tabs               | Replacement tab always created before the original closes                                     |
+| Survive updates/deletion      | Container re-adopted by name; schema migration; corruption-tolerant storage                   |
+| OAuth / login flows           | Pass-through keeps third-party "Sign in with Google" working                                  |
+| Exceptions & whitelists       | Always/never lists with host or host+path granularity, documented precedence                  |
+| Import/export                 | Versioned JSON, backward compatible, fully sanitised on import                                |
+| Least privilege               | 7 permissions; `verify-manifest.mjs` fails the build on any undocumented one                  |
+| No telemetry / remote code    | Zero network requests, zero content scripts, zero runtime deps                                |
+| CI/CD                         | Lint, typecheck, test, coverage, build, manifest verify, JSON validate, package, AMO lint     |
+| Documentation                 | 10 documents covering architecture, domains, testing, permissions, security, roadmap          |
 
 ## Three bugs the tooling caught during development
 
