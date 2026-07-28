@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>G-Container settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="page-head">
+        <h1>G-Container</h1>
+        <p class="sub">
+          Every Google-owned site is isolated in its own Firefox Container, so Google cookies never
+          touch the rest of your browsing.
+        </p>
+      </header>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-panel="general" role="tab">General</button>
+        <button class="tab" data-panel="domains" role="tab">Domains</button>
+        <button class="tab" data-panel="rules" role="tab">Rules &amp; exceptions</button>
+        <button class="tab" data-panel="data" role="tab">Backup &amp; data</button>
+        <button class="tab" data-panel="diagnostics" role="tab">Diagnostics</button>
+      </nav>
+
+      <section class="panel active" id="panel-general" role="tabpanel">
+        <fieldset>
+          <legend>Protection</legend>
+          <label class="check"
+            ><input type="checkbox" id="enabled" /> <span>Enable G-Container</span></label
+          >
+          <p class="hint" id="pauseState"></p>
+          <div class="inline">
+            <button class="btn" id="pause30">Pause 30 minutes</button>
+            <button class="btn" id="resume">Resume now</button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Container appearance</legend>
+          <label class="field"
+            ><span>Name</span><input type="text" id="containerName" maxlength="64"
+          /></label>
+          <label class="field"
+            ><span>Colour</span
+            ><select id="containerColor"></select
+          ></label>
+          <label class="field"
+            ><span>Icon</span
+            ><select id="containerIcon"></select
+          ></label>
+          <p class="hint">
+            Renaming updates the existing container in place; your cookies and logins stay intact.
+          </p>
+        </fieldset>
+
+        <fieldset>
+          <legend>Behaviour</legend>
+          <label class="check"
+            ><input type="checkbox" id="unwrapRedirectors" />
+            <span
+              >Unwrap Google redirect links (<code>google.com/url?q=…</code>) so external sites open
+              outside the container</span
+            ></label
+          >
+          <label class="check"
+            ><input type="checkbox" id="oauthPassthrough" />
+            <span
+              >Let “Sign in with Google” on third-party sites complete outside the container</span
+            ></label
+          >
+          <label class="check"
+            ><input type="checkbox" id="releaseNonGoogle" />
+            <span>Push non-Google pages opened inside the container back out</span></label
+          >
+          <label class="check"
+            ><input type="checkbox" id="handlePrivateWindows" />
+            <span>Also act in private windows</span></label
+          >
+          <label class="check"
+            ><input type="checkbox" id="collectStatistics" />
+            <span>Keep local statistics (never leaves your device)</span></label
+          >
+          <label class="check"
+            ><input type="checkbox" id="useSync" />
+            <span>Mirror settings through Firefox Sync when available</span></label
+          >
+        </fieldset>
+      </section>
+
+      <section class="panel" id="panel-domains" role="tabpanel">
+        <fieldset>
+          <legend>Domain sets</legend>
+          <p class="hint">
+            The domain database ships with the extension and needs no network access. See
+            <code>docs/DOMAIN_DATABASE.md</code> to add domains.
+          </p>
+          <div id="domainSets"></div>
+        </fieldset>
+      </section>
+
+      <section class="panel" id="panel-rules" role="tabpanel">
+        <fieldset>
+          <legend>Always containerize</legend>
+          <p class="hint">Extra hosts that should always open in the Google container.</p>
+          <div class="inline">
+            <input type="text" id="alwaysInput" placeholder="example.com or example.com/path" />
+            <button class="btn primary" id="alwaysAdd">Add</button>
+          </div>
+          <ul class="list" id="alwaysList"></ul>
+        </fieldset>
+
+        <fieldset>
+          <legend>Never containerize</legend>
+          <p class="hint">
+            Highest priority. Use for sites that must stay in normal browsing even when they
+            redirect through Google.
+          </p>
+          <div class="inline">
+            <input type="text" id="neverInput" placeholder="mail.example.com" />
+            <button class="btn primary" id="neverAdd">Add</button>
+          </div>
+          <ul class="list" id="neverList"></ul>
+        </fieldset>
+      </section>
+
+      <section class="panel" id="panel-data" role="tabpanel">
+        <fieldset>
+          <legend>Backup</legend>
+          <p class="hint">Versioned, human-readable JSON. Imports are validated and sanitised.</p>
+          <div class="inline">
+            <button class="btn" id="export">Export settings</button>
+            <button class="btn" id="importBtn">Import settings</button>
+            <input type="file" id="importFile" accept="application/json,.json" hidden />
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Statistics</legend>
+          <div id="stats" class="stats"></div>
+        </fieldset>
+        <fieldset class="danger-zone">
+          <legend>Reset</legend>
+          <p class="hint">Restores defaults. Your container and its cookies are not deleted.</p>
+          <button class="btn danger" id="reset">Reset all settings</button>
+        </fieldset>
+      </section>
+
+      <section class="panel" id="panel-diagnostics" role="tabpanel">
+        <fieldset>
+          <legend>Diagnostics</legend>
+          <button class="btn" id="refreshDiag">Refresh</button>
+          <pre id="diagnostics" class="code"></pre>
+        </fieldset>
+        <fieldset>
+          <legend>Test a URL</legend>
+          <div class="inline">
+            <input type="text" id="testInput" placeholder="https://mail.google.com/" />
+            <button class="btn primary" id="testBtn">Check</button>
+          </div>
+          <p id="testResult" class="hint"></p>
+        </fieldset>
+      </section>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </main>
+    <script src="options.js" type="module"></script>
+  </body>
+</html>
