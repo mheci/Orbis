@@ -159,6 +159,26 @@ Firefox retains blocking `webRequest` under MV3 for privacy extensions, which is
 declares `webRequest` + `webRequestBlocking` rather than `declarativeNetRequest` — DNR cannot make
 a container decision that depends on the _current tab's_ cookie store.
 
+## Icon
+
+The icon set is **generated from source** by `scripts/make-icons.py` rather than committed as
+opaque binaries, so it is reviewable in a diff, reproducible, and re-tintable without a design tool.
+
+- **Mark:** a geometric capital `G` inside a dashed ring. The dashes carry the meaning — a container
+  boundary that quarantines what is inside it, rather than merely circling it.
+- **Palette:** indigo `#1A1042` plate, cyan `#22E9DB` mark. Deliberately _not_ Google's four-colour
+  palette: using Google's actual logo colours on an unaffiliated add-on invites a trademark
+  objection during AMO review.
+- **Construction:** the `G` is drawn subtractively (filled disc, punched counter, removed aperture,
+  crossbar added back) instead of as a stroked arc. A stroked arc closes up into an unreadable blob
+  at 16px; the subtractive build keeps the counter genuinely open.
+- **Optical compensation:** detail is size-aware. At 16px the dashed ring becomes noise, so small
+  sizes fall back to a solid ring with a heavier mark. Larger sizes use a rounded-square plate to
+  match platform icon conventions; small sizes use a disc, which reads better in the toolbar.
+
+Regenerate with `python3 scripts/make-icons.py`. Only the sizes referenced by the manifest are
+copied into `dist/`; `icon-512.png` is a master for the AMO listing and README.
+
 ## Project identity
 
 Two values are permanent and enforced by `scripts/verify-manifest.mjs`:
