@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Security scanning workflow** using established tooling: CodeQL, Trivy, Gitleaks, OSV Scanner and
+  Zizmor, with results published as SARIF to the repository Security tab. Two invariants are now
+  enforced as build failures: `npm audit --omit=dev` must be clean, and the runtime dependency count
+  must stay at zero.
+- `.gitleaks.toml` with rules for GitHub PATs and AMO JWT credentials, verified against a negative
+  control so a passing scan is meaningful.
+
+### Changed
+
+- **Commit history rewritten to a single maintainer identity** (`astarling-x`). Dependabot
+  authorship is preserved, since rewriting it would misrepresent who wrote those changes. File
+  contents are byte-identical — the tree hash is unchanged and only commit metadata differs.
+- Hardened workflows: explicit least-privilege `permissions` blocks on every job.
+
+### Removed
+
+- `PROJECT_SUMMARY.md` — a handover note that duplicated the README and CHANGELOG and had gone
+  stale.
 
 ## [1.0.1] — 2026-07-28
 
