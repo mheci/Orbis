@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>G-Container</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="head">
+      <span class="dot" id="statusDot" aria-hidden="true"></span>
+      <h1>G-Container</h1>
+      <button id="openOptions" class="icon-btn" title="Open settings" aria-label="Open settings">
+        ⚙
+      </button>
+    </header>
+
+    <section class="card" aria-live="polite">
+      <p class="label">Current site</p>
+      <p class="host" id="host">—</p>
+      <p class="verdict" id="verdict">Checking…</p>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <span class="label">Protection</span>
+        <span class="value" id="statusText">—</span>
+      </div>
+      <div class="row">
+        <span class="label">Container</span>
+        <span class="value" id="containerName">—</span>
+      </div>
+      <div class="row">
+        <span class="label">This tab</span>
+        <span class="value" id="tabState">—</span>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="moveIn" class="btn primary">Move tab into container</button>
+      <button id="moveOut" class="btn">Move tab out of container</button>
+      <button id="always" class="btn subtle">Always containerize this site</button>
+      <button id="never" class="btn subtle">Never containerize this site</button>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <span class="label">Contained</span>
+        <span class="value" id="statContained">0</span>
+      </div>
+      <div class="row">
+        <span class="label">Released</span>
+        <span class="value" id="statReleased">0</span>
+      </div>
+      <div class="row">
+        <span class="label">Domains tracked</span>
+        <span class="value" id="statDomains">0</span>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <button id="pause" class="btn danger">Pause 30 min</button>
+      <button id="resume" class="btn hidden">Resume protection</button>
+    </footer>
+
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>
