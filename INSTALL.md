@@ -80,7 +80,7 @@ git clone https://github.com/astarling-x/g-container.git
 cd g-container
 npm ci
 npm run package
-sha256sum web-ext-artifacts/g_container-1.0.1.zip
+sha256sum web-ext-artifacts/g_container-1.1.0.zip
 ```
 
 If the checksums match, the released file was built from the source you just read.

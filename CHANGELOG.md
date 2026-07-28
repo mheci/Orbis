@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.1.0] - 2026-07-28
+
+Adds blocking of Google trackers embedded in other websites, which is the piece that turns
+cookie separation into an actual defence against being followed around the web.
+
 ### Added
 
 - **Blocking Google trackers embedded in other websites.** Separating cookies never stopped the
@@ -174,6 +181,7 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/astarling-x/g-container/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/astarling-x/g-container/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/astarling-x/g-container/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/astarling-x/g-container/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/astarling-x/g-container/releases/tag/v1.0.0
