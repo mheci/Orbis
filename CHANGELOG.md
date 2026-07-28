@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [1.0.1] — 2026-07-28
+
+First **Mozilla-signed** release. The signed `.xpi` installs permanently on any Firefox channel,
+including Release and Beta, with no `about:config` changes.
+
 ### Changed
 
 - **Project moved to the `astarling-x` GitHub account.** The previous `mheci` repository has been
@@ -111,5 +118,6 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/astarling-x/g-container/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/astarling-x/g-container/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/astarling-x/g-container/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/astarling-x/g-container/releases/tag/v1.0.0
