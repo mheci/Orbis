@@ -9,6 +9,11 @@ updates:
       interval: weekly
       day: monday
       time: '06:00'
+    # Wait before adopting a freshly published version. Compromised packages are
+    # typically caught and yanked within days, so a cooldown converts "we were
+    # the first to install the malicious release" into "we never installed it".
+    cooldown:
+      default-days: 7
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'build'
@@ -42,6 +47,11 @@ updates:
     directory: '/'
     schedule:
       interval: monthly
+    # Wait before adopting a freshly published version. Compromised packages are
+    # typically caught and yanked within days, so a cooldown converts "we were
+    # the first to install the malicious release" into "we never installed it".
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: 'ci'
     groups:
