@@ -9,7 +9,25 @@
 Container support must be enabled — it is on by default. If containers are unavailable,
 `about:config` → `privacy.userContext.enabled` should be `true`.
 
-## Option 1 — Mozilla Add-ons (recommended, once published)
+## Option 1 — Signed .xpi (recommended)
+
+A **Mozilla-signed** build is attached to every release, so it installs permanently on any Firefox
+channel — including Release and Beta — with no `about:config` changes.
+
+1. Download **`g_container-<version>.xpi`** from the
+   [latest release](https://github.com/astarling-x/g-container/releases/latest).
+2. Open `about:addons`.
+3. Click the gear icon ⚙ → **Install Add-on From File…**
+4. Select the downloaded `.xpi` and confirm.
+
+Firefox will show the permissions prompt and, because the file carries Mozilla's signature, install
+it as a normal permanent add-on.
+
+> The `.xpi` is signed on the **unlisted** channel (self-distribution). It is a genuine Mozilla
+> signature, but the add-on is not yet listed in the public Add-ons directory, so it will not
+> auto-update from AMO. Watch the repository for new releases.
+
+## Option 1b — Mozilla Add-ons directory (once listed)
 
 The AMO listing will appear at `https://addons.mozilla.org/firefox/addon/g-container/`.
 Until then, use one of the options below.
