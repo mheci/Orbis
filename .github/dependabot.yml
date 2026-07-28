@@ -17,6 +17,24 @@ updates:
       dev-minor-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
+    # Major bumps of the lint/test toolchain routinely need coordinated changes
+    # across several packages (eslint 10 needs @eslint/js 10 AND a matching
+    # typescript-eslint, for example), so an automated single-package major PR
+    # can only ever fail `npm ci`. Those upgrades are deliberate maintenance
+    # work, tracked as an issue instead of arriving as unmergeable noise.
+    ignore:
+      - dependency-name: 'eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'typescript-eslint'
+        update-types: ['version-update:semver-major']
+      - dependency-name: 'vitest'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@vitest/coverage-v8'
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@types/firefox-webext-browser'
+        update-types: ['version-update:semver-major']
     labels:
       - dependencies
 
