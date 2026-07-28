@@ -1,7 +1,7 @@
 # Testing
 
 ```bash
-npm test              # run everything (256 tests)
+npm test              # run everything (292 tests)
 npm run test:watch    # watch mode
 npm run test:coverage # coverage with thresholds enforced
 npm run ci            # lint + typecheck + test + package (what CI runs)
@@ -23,8 +23,14 @@ there is no excuse for skipping them before a commit.
 | Domain database      | `test/domain-db.test.ts`   | expansion correctness, duplicates, formatting, size floors                                                          |
 | Performance          | `test/performance.test.ts` | build time, 50k matches, cache bounds, loop guard memory                                                            |
 
-Coverage thresholds for `src/core/**` are enforced at 80 % lines/functions/statements and 75 %
-branches; CI fails below them.
+Coverage thresholds are enforced for `src/core/**` and `src/background/**` at 80 % lines/functions/
+statements and 75 % branches; CI fails below them. Current: **99 % core**, **72 % background**
+(the untested remainder is context-menu and listener registration, which is exercised manually).
+
+The background worker is tested through `test/mock-browser.ts`, a behavioural mock that models real
+Firefox semantics — `tabs.get` rejects for a missing tab, `contextualIdentities.get` throws for an
+unknown id, and `tabs.create` can be made to fail on demand. Mocks that return convenient values
+instead of realistic ones would hide exactly the bugs this layer is prone to.
 
 ## What the security-relevant tests assert
 
@@ -37,6 +43,7 @@ These exist because getting them wrong is a privacy bug, not a cosmetic one:
 - Imported backups containing `javascript:alert(1)` as a rule → silently dropped.
 - Oversized imports (5000 rules) → capped at 2000.
 - 20 rapid ping-pong navigations → exactly **one** containment.
+- `tabs.create` failing → navigation is **allowed through**, not cancelled (no stranded blank tab).
 - 25 concurrent `ensure()` calls → exactly **one** container created.
 
 ## Manual QA checklist

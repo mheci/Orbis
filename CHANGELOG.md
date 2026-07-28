@@ -18,8 +18,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   different add-on and orphaned every user's container, cookies and settings. It is now pinned by
   `scripts/verify-manifest.mjs` and must not change again.
 
+### Fixed
+
+- **Navigation is no longer cancelled when the replacement tab cannot be created.** If
+  `tabs.create` failed — container deleted mid-navigation, window closing, resource exhaustion —
+  the original load was still cancelled, stranding the user on a blank dead tab. Containment is now
+  best-effort: on failure the navigation is allowed through uncontained, which is the far less
+  harmful outcome. Found by the new background-worker tests.
+- **The popup no longer renders blank when the background worker is unreachable.** Worker errors are
+  returned as `{ error }` rather than thrown, and the popup treated that object as valid state.
+  Errors now surface as a readable message.
+- **A failed save in the options page is now reported** instead of silently doing nothing.
+- Added `fitbit.com`, `nest.com`, `tenor.com`, `kaggle.com`, `looker.com`, `mandiant.com`,
+  `widevine.com`, `apigee.com` and other Google acquisitions that remain on their own brand
+  domains — these were being missed entirely.
+
 ### Added
 
+- `test/background.test.ts` and `test/mock-browser.ts` — 23 integration tests covering the
+  background worker, which previously had no test coverage at all. Coverage now includes
+  `src/background/**`.
 - `scripts/check-links.mjs` — CI gate that fails the build if a link to the retired account
   reappears anywhere in the tree. A dead security-reporting link is a real hazard, so this is
   enforced rather than trusted to review.

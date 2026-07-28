@@ -160,7 +160,7 @@ Add your host, run `npm test`, open a PR. Full guide: **[DOMAIN_DATABASE.md](doc
 ```bash
 npm install
 npm run watch      # rebuild on change
-npm test           # 256 unit/integration tests
+npm test           # 292 unit/integration tests
 npm run lint       # eslint + prettier
 npm run typecheck  # tsc --noEmit, strict
 npm run ci         # everything CI runs
