@@ -19,6 +19,17 @@ const files = [
   ['src/options/options.css', 'dist/options/options.css'],
 ];
 for (const [from, to] of files) await cp(from, to);
-await cp('src/icons', 'dist/icons', { recursive: true });
+// Copy only the icon sizes the manifest actually references. The 512px master
+// is for the AMO listing and README, and shipping it (plus any unused size)
+// would be dead weight in every user's profile.
+const referencedIcons = new Set(
+  [
+    ...Object.values(manifest.icons ?? {}),
+    ...Object.values(manifest.action?.default_icon ?? {}),
+  ].map((p) => p.replace(/^icons\//, ''))
+);
+for (const icon of referencedIcons) {
+  await cp(`src/icons/${icon}`, `dist/icons/${icon}`);
+}
 
 console.log('[static] manifest, pages and icons copied');
