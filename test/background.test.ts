@@ -6,7 +6,7 @@
  * real-browser behaviour bites: tabs that vanish mid-operation, containers that
  * cannot be created, message handlers that must not throw across the boundary.
  *
- * These tests drive the real `GContainer` class against a behavioural mock of
+ * These tests drive the real `Orbis` class against a behavioural mock of
  * Firefox, exercising the full path from a webRequest event to a created tab.
  */
 
@@ -25,7 +25,7 @@ type App = {
 const ask = async <T>(app: App, message: Message): Promise<T> =>
   (await app.handleMessage(message)) as T;
 
-const CONTAINER_NAME = 'Google';
+const CONTAINER_NAME = 'Orbis';
 
 /**
  * Install the mock, then load the background module fresh.
@@ -38,7 +38,7 @@ async function loadApp(mock: MockBrowser) {
   mock.install();
   vi.resetModules();
   const module = await import('../src/background/index.js');
-  const app = new module.GContainer();
+  const app = new module.Orbis();
   await app.init();
   return app;
 }

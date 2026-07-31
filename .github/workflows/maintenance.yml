@@ -65,7 +65,7 @@ jobs:
               '',
               'The extension itself makes no network requests, so this is almost',
               'certainly toolchain drift or a new AMO validation rule rather than a',
-              'regression in G-Container. Check the failing step before assuming a bug.',
+              'regression in Orbis. Check the failing step before assuming a bug.',
             ].join('\n');
             if (already) {
               await github.rest.issues.createComment({

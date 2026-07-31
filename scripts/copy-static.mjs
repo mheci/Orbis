@@ -4,6 +4,7 @@ import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 
 await mkdir('dist/popup', { recursive: true });
 await mkdir('dist/options', { recursive: true });
+await mkdir('dist/onboarding', { recursive: true });
 await mkdir('dist/icons', { recursive: true });
 
 // Keep manifest.version in lockstep with package.json — one source of truth.
@@ -17,6 +18,8 @@ const files = [
   ['src/popup/popup.css', 'dist/popup/popup.css'],
   ['src/options/options.html', 'dist/options/options.html'],
   ['src/options/options.css', 'dist/options/options.css'],
+  ['src/onboarding/index.html', 'dist/onboarding/index.html'],
+  ['src/onboarding/onboarding.css', 'dist/onboarding/onboarding.css'],
 ];
 for (const [from, to] of files) await cp(from, to);
 // Copy only the icon sizes the manifest actually references. The 512px master

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * esbuild bundling for the three entry points.
+ * esbuild bundling for entry points.
  * JSON domain files are inlined at build time, so the shipped add-on performs
  * no network access and no runtime file I/O.
  */
@@ -16,6 +16,7 @@ const options = {
     background: 'src/background/index.ts',
     'popup/popup': 'src/popup/popup.ts',
     'options/options': 'src/options/options.ts',
+    'onboarding/onboarding': 'src/onboarding/onboarding.ts',
   },
   outdir: 'dist',
   bundle: true,

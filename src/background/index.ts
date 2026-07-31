@@ -371,6 +371,24 @@ class Orbis {
     }
   }
 
+  async openOrbisTab(url = 'about:blank'): Promise<void> {
+    await this.init();
+    const containerId = await this.container.ensure(this.settings.container);
+    if (containerId === null) return;
+    const parsed = safeParse(url);
+    const finalUrl = parsed?.href ?? 'about:blank';
+    const tab = await browser.tabs.create({ url: finalUrl, cookieStoreId: containerId });
+    if (typeof tab.id === 'number') {
+      this.ourTabs.add(tab.id);
+      this.loopGuard.remember(tab.id, finalUrl, Date.now());
+      this.tabStores.set(tab.id, containerId);
+    }
+  }
+
+  async openGoogleInOrbis(): Promise<void> {
+    await this.openOrbisTab('https://www.google.com');
+  }
+
   // --------------------------------------------------------------- UI state
 
   async runtimeState(): Promise<RuntimeState> {
@@ -429,9 +447,7 @@ class Orbis {
     void action.setBadgeText({ text: active ? '' : 'off' });
     void action.setBadgeBackgroundColor?.({ color: '#8f8f8f' });
     void action.setTitle({
-      title: active
-        ? `Orbis — protecting ${this.settings.container.name}`
-        : 'Orbis — paused',
+      title: active ? `Orbis — protecting ${this.settings.container.name}` : 'Orbis — paused',
     });
   }
 
@@ -595,11 +611,11 @@ class Orbis {
       } catch {
         /* first run */
       }
-      create('gc-open-here', 'Open link in Google Container', ['link']);
-      create('gc-always', 'Always open this site in Google Container', ['page', 'link']);
-      create('gc-never', 'Never open this site in Google Container', ['page', 'link']);
-      create('gc-move-in', 'Move this tab into Google Container', ['page']);
-      create('gc-move-out', 'Move this tab out of Google Container', ['page']);
+      create('gc-open-here', 'Open link in Orbis', ['link']);
+      create('gc-always', 'Always open this site in Orbis', ['page', 'link']);
+      create('gc-never', 'Never open this site in Orbis', ['page', 'link']);
+      create('gc-move-in', 'Move this tab into Orbis', ['page']);
+      create('gc-move-out', 'Move this tab out of Orbis', ['page']);
     });
 
     menus.onClicked.addListener(async (info, tab) => {
@@ -653,6 +669,46 @@ class Orbis {
 const app = new Orbis();
 app.registerListeners();
 void app.init();
+
+// Hotkey support – one keypress = isolated tab, invisible efficiency
+const lastCommandTime = new Map<string, number>();
+function shouldHandleCommand(name: string): boolean {
+  const now = Date.now();
+  const last = lastCommandTime.get(name) ?? 0;
+  if (now - last < 350) return false;
+  lastCommandTime.set(name, now);
+  return true;
+}
+
+if (browser.commands?.onCommand) {
+  browser.commands.onCommand.addListener((command) => {
+    if (!shouldHandleCommand(command)) return;
+    if (command === 'open-orbis-tab') {
+      void app.openOrbisTab().catch(() => {});
+    } else if (command === 'open-google-in-orbis') {
+      void app.openGoogleInOrbis().catch(() => {});
+    }
+  });
+}
+
+// First-time onboarding – friendly, clear, theme-able
+browser.runtime.onInstalled.addListener((details) => {
+  if (details.reason !== 'install') return;
+  void (async () => {
+    try {
+      const stored = (await browser.storage.local.get('onboardingCompleted')) as Record<
+        string,
+        unknown
+      >;
+      if (stored['onboardingCompleted']) return;
+      await browser.tabs.create({
+        url: browser.runtime.getURL('onboarding/index.html'),
+      });
+    } catch {
+      // Best-effort
+    }
+  })();
+});
 
 // Exported for integration tests running in a mocked environment.
 export { Orbis };
