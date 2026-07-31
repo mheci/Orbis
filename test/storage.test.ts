@@ -51,7 +51,7 @@ describe('SettingsStore', () => {
     const store = new SettingsStore({ local, sync: null });
     const settings = await store.load();
     expect(settings.enabled).toBe(true);
-    expect(settings.container.name).toBe('Google');
+    expect(settings.container.name).toBe('Orbis');
   });
 
   it('tolerates a bare settings object written by an older build', async () => {

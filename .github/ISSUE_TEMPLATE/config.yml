@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Question or idea
-    url: https://github.com/astarling-x/g-container/discussions
+    url: https://github.com/mheci/Orbis/discussions
     about: Ask questions and propose features in Discussions.
   - name: Security vulnerability
-    url: https://github.com/astarling-x/g-container/security/advisories/new
+    url: https://github.com/mheci/Orbis/security/advisories/new
     about: Report privately. Please do not open a public issue.

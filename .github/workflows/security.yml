@@ -200,7 +200,7 @@ jobs:
           DEPS=$(node -p "Object.keys(require('./package.json').dependencies || {}).length")
           echo "runtime dependencies: $DEPS"
           if [ "$DEPS" != "0" ]; then
-            echo "::error::G-Container must ship zero runtime dependencies (found $DEPS)."
+            echo "::error::Orbis must ship zero runtime dependencies (found $DEPS)."
             echo "Adding one expands the supply-chain surface and complicates AMO review."
             exit 1
           fi

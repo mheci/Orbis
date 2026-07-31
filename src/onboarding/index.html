@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome to Orbis</title>
+    <link rel="stylesheet" href="../popup/popup.css" />
+    <link rel="stylesheet" href="onboarding.css" />
+  </head>
+  <body class="onboarding-body">
+    <div class="onboarding-container">
+      <header class="onboarding-header">
+        <img src="../icons/icon-96.png" width="72" height="72" alt="" />
+        <h1>Welcome to Orbis</h1>
+        <p>Keep Google in its own orbit. Private, fast, invisible.</p>
+      </header>
+
+      <div class="onboarding-progress">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill" style="width: 25%"></div>
+        </div>
+        <span id="progress-text">Step 1 of 4</span>
+      </div>
+
+      <main id="onboarding-content">
+        <section class="onboarding-step active" data-step="1">
+          <div class="step-icon">🛰️</div>
+          <h2>What is Orbis?</h2>
+          <p>
+            Orbis creates a separate <strong>container orbit</strong> for Google – an isolated space
+            where Google's cookies stay locked inside.
+          </p>
+          <p>
+            You stay signed into Google and it works normally, but other sites can't see your Google
+            session, and Google can't see your other browsing.
+          </p>
+          <div class="example-box">
+            <span>🔒</span>
+            <div>
+              <strong>Isolated orbit</strong>
+              <p>Google in its own box, everything else outside. No cross-tracking.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-step="2">
+          <div class="step-icon">⌨️</div>
+          <h2>Fastest way to use it</h2>
+          <p>One hotkey, zero clicks – feels native.</p>
+          <div class="hotkey-demo">
+            <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>
+            <span>New Orbis tab – Google in its own orbit</span>
+          </div>
+          <div class="hotkey-demo secondary">
+            <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>
+            <span>Open Google in Orbis container</span>
+          </div>
+          <p class="hint">Change shortcuts: Add-ons Manager → Gear → Manage Extension Shortcuts</p>
+          <div class="example-box">
+            <span>🖱️</span>
+            <div>
+              <strong>Or use your mouse</strong>
+              <p>
+                Toolbar button shows if page is protected, right-click any link →
+                <em>Open in Orbis</em>, or move tabs in/out.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="onboarding-step" data-step="3">
+          <div class="step-icon">🛡️</div>
+          <h2>Blocks trackers automatically</h2>
+          <p>
+            Separating cookies is half the job. Orbis also blocks Google trackers on other sites.
+          </p>
+          <div class="cleanup-visual">
+            <div class="cleanup-item">
+              <span class="cleanup-icon">📊</span>
+              <span>Analytics, Tag Manager</span>
+              <span class="check">Blocked</span>
+            </div>
+            <div class="cleanup-item">
+              <span class="cleanup-icon">📢</span>
+              <span>DoubleClick ads</span>
+              <span class="check">Blocked</span>
+            </div>
+            <div class="cleanup-item">
+              <span class="cleanup-icon">👥</span>
+              <span>Social widgets</span>
+              <span class="check">Blocked</span>
+            </div>
+            <div class="cleanup-item">
+              <span class="cleanup-icon">🔤</span>
+              <span>Fonts, Maps, reCAPTCHA</span>
+              <span class="check">Allowed</span>
+            </div>
+          </div>
+          <p class="hint">
+            Fonts, maps, embedded videos, reCAPTCHA and Sign-in with Google are left alone to avoid
+            breaking sites. Strict mode in settings blocks more, but sign-in stays allowed so you
+            never get locked out.
+          </p>
+        </section>
+
+        <section class="onboarding-step" data-step="4">
+          <div class="step-icon">🚀</div>
+          <h2>You're ready!</h2>
+          <p>That's it – no complicated configuration needed. It just works.</p>
+          <p>
+            Orbis automatically puts Google in its orbit, blocks trackers elsewhere, and never makes
+            network requests of its own.
+          </p>
+          <div class="final-actions">
+            <button id="try-orbis" class="button primary large">
+              <span>🛰️</span> Open Google in Orbis
+            </button>
+            <button id="open-dashboard" class="button secondary">Open dashboard</button>
+          </div>
+          <p class="hint">
+            Tip: Extension is invisible in background – no telemetry, no tracking, everything stays
+            on your device. Works great with uBlock Origin.
+          </p>
+        </section>
+      </main>
+
+      <footer class="onboarding-footer">
+        <button id="prev-step" class="button secondary" disabled>Back</button>
+        <div class="footer-dots">
+          <span class="dot active" data-step="1"></span>
+          <span class="dot" data-step="2"></span>
+          <span class="dot" data-step="3"></span>
+          <span class="dot" data-step="4"></span>
+        </div>
+        <button id="next-step" class="button primary">Next</button>
+      </footer>
+    </div>
+    <script src="onboarding.js"></script>
+  </body>
+</html>

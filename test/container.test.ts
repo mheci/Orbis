@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ContainerManager } from '../src/core/container.js';
 import { fakeIdentities } from './helpers.js';
 
-const SPEC = { name: 'Google', color: 'red', icon: 'fingerprint' } as const;
+const SPEC = { name: 'Orbis', color: 'red', icon: 'fingerprint' } as const;
 
 describe('ContainerManager', () => {
   it('creates the container on first use', async () => {
@@ -34,7 +34,7 @@ describe('ContainerManager', () => {
 
   it('adopts an existing container with the same name (survives reinstall)', async () => {
     const api = fakeIdentities([
-      { cookieStoreId: 'firefox-container-9', name: 'Google', color: 'blue', icon: 'briefcase' },
+      { cookieStoreId: 'firefox-container-9', name: 'Orbis', color: 'blue', icon: 'briefcase' },
     ]);
     const manager = new ContainerManager(api);
     expect(await manager.ensure(SPEC)).toBe('firefox-container-9');
@@ -43,7 +43,7 @@ describe('ContainerManager', () => {
 
   it('restores a persisted id across a restart', async () => {
     const api = fakeIdentities([
-      { cookieStoreId: 'firefox-container-3', name: 'Google', color: 'red', icon: 'fingerprint' },
+      { cookieStoreId: 'firefox-container-3', name: 'Orbis', color: 'red', icon: 'fingerprint' },
     ]);
     const manager = new ContainerManager(
       api,

@@ -17,7 +17,7 @@ describe('defaults', () => {
     const settings = defaultSettings();
     expect(settings.enabled).toBe(true);
     expect(settings.pausedUntil).toBe(0);
-    expect(settings.container.name).toBe('Google');
+    expect(settings.container.name).toBe('Orbis');
     expect(settings.domainSets['google']).toBe(true);
     expect(settings.domainSets['youtube']).toBe(true);
     // Risky sets stay off until the user opts in.
@@ -51,7 +51,7 @@ describe('sanitizeSettings', () => {
     });
     expect(result.enabled).toBe(true);
     expect(result.pausedUntil).toBe(0);
-    expect(result.container.name).toBe('Google');
+    expect(result.container.name).toBe('Orbis');
     expect(result.container.color).toBe('red');
     expect(result.container.icon).toBe('fingerprint');
     expect(result.behaviour.unwrapRedirectors).toBe(true);
@@ -110,7 +110,7 @@ describe('mergeSettings', () => {
     const merged = mergeSettings(base, { behaviour: { useSync: true } });
     expect(merged.behaviour.useSync).toBe(true);
     expect(merged.behaviour.unwrapRedirectors).toBe(true);
-    expect(merged.container.name).toBe('Google');
+    expect(merged.container.name).toBe('Orbis');
   });
 
   it('merges domain set toggles', () => {
