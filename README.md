@@ -1,241 +1,89 @@
 # Orbis
 
-Keep Google in its own box.
+**Keep Google in its own orbit.** One container, zero tracking, feels native.
 
-Orbis is a Firefox extension that automatically opens every Google site in a separate
-container, so the cookies Google sets there cannot be read anywhere else in your browsing.
+Orbis is a Firefox extension that automatically puts every Google site in a separate container – an isolated orbit where Google's cookies stay locked. Other sites can't see your Google session, and Google can't see your other browsing.
 
-[![CI](https://github.com/mheci/Orbis/actions/workflows/ci.yml/badge.svg)](https://github.com/mheci/Orbis/actions/workflows/ci.yml)
-[![Security](https://github.com/mheci/Orbis/actions/workflows/security.yml/badge.svg)](https://github.com/mheci/Orbis/actions/workflows/security.yml)
-[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
-[![Firefox 140+](https://img.shields.io/badge/firefox-140%2B-orange.svg)](https://www.mozilla.org/firefox/new/)
+## For Novices
 
-## The problem
+**What it does:** Separates Google (Search, YouTube, Gmail, Maps, etc.) into its own private box. You stay signed in and Google works normally, but its cookies can't follow you to other sites.
 
-You search on Google, watch a video on YouTube, check Gmail. Google sets cookies in your browser
-during all of that, which is normal and expected.
+**How it functions:**
+1. You open any Google site (from anywhere) – Orbis stops it and reopens in container named **Orbis**
+2. Everything else browses normally outside that container
+3. Google trackers on other sites (Analytics, DoubleClick) are blocked before they leave your machine
+4. Fonts, maps, videos, reCAPTCHA, Sign-in with Google are left alone to avoid breaking pages
 
-The catch is that those same cookies travel with you. Google services are embedded in a very large
-share of the web through analytics, fonts, embedded videos, reCAPTCHA boxes and sign-in buttons.
-Every time you load a page carrying one of those, your browser can hand over the identity you built
-up while signed into Google. Your activity across unrelated sites gets joined into one profile.
+**How it behaves:**
+- Automatic: No clicks needed, just browse. Link to Google lands in orbit on its own.
+- Isolated: Each orbit has its own cookie jar, storage, cache.
+- Protective: Blocks Google tracking code on other sites (standard: analytics/ads/social, strict: + fonts/maps/embeds)
+- Invisible: Non-persistent background, no polling, no network, no telemetry – runs entirely on your device
+- Fast: Hotkeys and right-click menus feel native
 
-## What Orbis does
-
-Two things, working together.
-
-**First, it keeps Google in a separate compartment.**
-
-Firefox has a built-in feature called containers. Each container is a sealed compartment with its
-own cookie jar, storage and cache. A site opened in one container cannot see anything belonging to
-another.
-
-Orbis puts that on autopilot for Google. Open any Google site, from anywhere, and it reopens
-in a container named Google. Everything else keeps browsing normally, outside that container.
-
-The result:
-
-- You stay signed into Google, and it still works exactly as before.
-- Google's cookies stay locked inside the container.
-- Other sites cannot see your Google session, and Google cannot see your other browsing.
-
-You do not have to remember anything or change how you browse. Click a Google link and it lands in
-the right place on its own.
-
-**Second, it stops Google trackers on other websites.**
-
-Separating cookies is only half the problem. When a news site loads Google Analytics, that request
-still tells Google your IP address, your browser, and which page you are reading, whether or not a
-cookie goes with it.
-
-So Orbis blocks those requests before they leave your machine. Analytics, advertising and
-social widgets are stopped on sites that are not Google. The popup shows how many were blocked on
-the page you are looking at.
-
-Things websites genuinely need keep working. Google Fonts, embedded maps and videos, reCAPTCHA
-boxes and "Sign in with Google" buttons are all left alone, because blocking those would break the
-page rather than protect you. If you want maximum separation and can accept some broken sites,
-strict mode in the settings blocks those too. Sign-in and reCAPTCHA stay allowed even then, so you
-cannot be locked out of an account.
-
-## What it does not do
-
-Being clear about the limits matters more than overselling.
-
-Orbis separates your browsing and blocks Google's tracking code on other sites. It is not a
-general ad blocker, and it only deals with Google. Trackers belonging to anyone else are untouched.
-
-Google can still see whatever you deliberately send them. Your IP address is unchanged when you
-visit Google directly, and your browser fingerprint is not hidden.
-
-For broad ad and tracker blocking across all companies, run something like uBlock Origin alongside
-it. The two do different jobs and work well together.
+First install shows a friendly 4-step intro overlay, theme-matched to your browser (light/dark), explaining everything in plain language.
 
 ## Install
 
-Download the signed file from the
-[latest release](https://github.com/mheci/Orbis/releases/latest), then in Firefox open
-`about:addons`, click the gear icon, and choose "Install Add-on From File".
+Firefox 140+ desktop required.
 
-The release is signed by Mozilla, so it installs permanently on any version of Firefox including
-the regular one. Requires Firefox 140 or newer on desktop. Android is not supported because it has
-no container feature.
+1. Download latest `-signed.xpi` from [Releases](https://github.com/mheci/Orbis/releases/latest)
+2. Open `about:addons` → Gear → Install Add-on From File → Select XPI → Approve
 
-Full instructions, including building from source, are in [INSTALL.md](INSTALL.md).
+## Use
 
-## Using it
+**Keyboard (fastest, invisible):**
+- `Ctrl+Shift+O` – New Orbis tab (Google in its orbit)
+- `Ctrl+Shift+G` – Open Google in Orbis
+- `Alt+Shift+O` – Open Orbis popup
 
-There is nothing to configure. A container named Google is created the first time you visit a
-Google site, and the defaults are the recommended setup.
+Change shortcuts: Add-ons Manager → Gear → Manage Extension Shortcuts
 
-Click the toolbar icon to see whether the current page is protected, how many Google trackers were
-blocked on it, move a tab in or out of the container by hand, or pause protection for half an hour.
+**Mouse:**
+- Toolbar button → See if current page is protected, blocked count, move tab in/out, pause
+- Right-click link → Open link in Orbis / Always open this site in Orbis / Never
+- Right-click page → Move tab into/out of Orbis
 
-If a website misbehaves, the popup has a button to allow Google resources on that site only.
+**Automatic cleanup:** Non-Google pages opened inside Orbis are moved back out, so orbit only ever holds Google activity. Redirect links unwrapped to real destination outside.
 
-For more control, open the settings page from the popup. You can:
+## What Counts as Google
 
-- Rename the container or change its colour and icon
-- Choose how much to block: off, standard or strict
-- Turn whole groups of domains on or off
-- List sites where Google resources should load normally
-- Force a specific site to always or never use the container
-- Save your settings to a file and load them back later
-- Check exactly why a given address was or was not put in the container
+Orbis knows 952+ addresses via JSON data:
 
-That last one is worth knowing about. If something behaves unexpectedly, go to Settings, then
-Diagnostics, and paste the address into the URL tester. It names the exact rule that matched, which
-usually explains the behaviour in a second.
+- **Google services** (713, on by default): Search, Gmail, Drive, Maps, YouTube (213), etc. – includes all country versions (google.co.uk) and brands (Fitbit, Nest, Waze, Kaggle, Tenor). Any `*.google` or `*.youtube` auto-recognized.
+- **Advertising** (16, off by default): DoubleClick, Analytics, Tag Manager – off because ad click-throughs breaking destination.
+- **App hosting** (10, off): appspot.com, web.app, firebaseapp.com – hosts others' apps.
 
-## What counts as Google
-
-The extension recognises 952 Google-owned addresses, grouped so you can switch parts off:
-
-**Google services** (on by default, 713 addresses)
-Search, Gmail, Drive, Docs, Maps, Photos, Calendar, Meet, Play, Cloud, Gemini and the rest. Includes
-every country version of Google such as google.co.uk and google.com.eg, plus brand domains like
-Fitbit, Nest, Waze, Kaggle and Tenor that Google owns but which kept their own names.
-
-**YouTube** (on by default, 213 addresses)
-youtube.com, youtu.be, the country versions, the no-cookie embed domain and the video servers.
-
-**Advertising and measurement** (off by default, 16 addresses)
-DoubleClick, Google Analytics, Tag Manager and similar. Off because landing on these is nearly
-always an ad click passing through on the way to somewhere else, and forcing those into the
-container tends to break the destination site. Cookie separation still applies either way, since
-the container has its own jar regardless.
-
-**App hosting** (off by default, 10 addresses)
-appspot.com, web.app, firebaseapp.com and similar. Google owns these, but they host applications
-built by other people that have nothing to do with Google. Leaving them out avoids dragging
-unrelated sites into the container.
-
-New Google services are usually covered without an update, because any address ending in .google or
-.youtube is recognised automatically.
-
-Adding a missing site is a one line change to a data file. See
-[DOMAIN_DATABASE.md](docs/DOMAIN_DATABASE.md).
-
-## Signing in to other sites with Google
-
-Plenty of sites offer a "Sign in with Google" button. Handled carelessly, containers break those,
-because the login would finish in the wrong compartment and the site never receives its answer.
-
-Orbis watches for this and lets the sign-in complete in the context of the site that started
-it. The button keeps working. If you would rather have stricter separation and can live with the
-occasional broken login, you can turn this off in the settings.
-
-## How it works
-
-Firefox tells the extension about a page load just before the request leaves your machine. The
-extension checks the address, and if it belongs to Google and the tab is not already in the
-container, it stops that request and reopens the page in the container instead.
-
-Stopping the request before it is sent is the important part. If the page were allowed to load
-first and moved afterwards, cookies from the wrong compartment would already have been sent, which
-is the exact leak the extension exists to prevent.
-
-The same logic runs in reverse. A non-Google page opened inside the container gets moved back out,
-so the container only ever holds Google activity. Links that pass through Google on the way
-somewhere else, like search result redirects, are followed to the real destination and opened
-outside.
-
-Address checking uses the parsed hostname rather than pattern matching on text, so lookalike
-addresses such as google.com.example.net are correctly treated as unrelated. There are tests
-covering that specifically.
-
-For a deeper explanation see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Adding a missing site is one line in `src/domains/*.json` – see [DOMAIN_DATABASE.md](docs/DOMAIN_DATABASE.md).
 
 ## Privacy
 
-The extension makes no network requests of its own. Not to Google, not to us, not to anyone. The
-list of Google addresses is built into the file you install.
+- No network requests of its own – list built into file you install
+- No telemetry, analytics, crash reporting, third-party code
+- Only reads URLs to decide containment, never page content, injects nothing
+- Counters kept locally, optional, clearable
+- Permissions explained in [PERMISSIONS.md](docs/PERMISSIONS.md)
 
-There is no telemetry, no analytics and no crash reporting. It ships no third party code at all.
-The usage counters shown in the popup are a handful of numbers kept on your own machine, and you
-can switch them off.
+## What It Doesn't Do (Honest Limits)
 
-It reads the address of pages you load, which is unavoidable for deciding where a page belongs. It
-does not read page content, and injects nothing into pages.
+- Not a general ad blocker – only Google, use uBlock Origin alongside for broad blocking
+- IP address unchanged when visiting Google directly, fingerprint not hidden
+- Can't guarantee erasure of HTTP cache, history, passwords – those aren't container-scoped (Firefox limitation)
+- Browser-exit cleanup runs on next startup (extensions can't block shutdown)
 
-Each permission it asks for is explained in [PERMISSIONS.md](docs/PERMISSIONS.md).
+## Development
 
-## Verifying what you install
-
-Builds are reproducible, so you can check the released file was built from the published source
-rather than trusting it:
-
-```bash
+```sh
 git clone https://github.com/mheci/Orbis.git
-cd orbis
+cd Orbis
 npm ci
-npm run package
-sha256sum web-ext-artifacts/g_container-1.1.0.zip
-```
-
-The result matches the checksum published with the release.
-
-## Contributing
-
-Bug reports are welcome, and reports of a Google site being missed are the most useful kind. Include
-the address and the output of the URL tester in Settings, then Diagnostics.
-
-```bash
-git clone https://github.com/mheci/Orbis.git
-cd orbis
-npm install
-npm test
+npm run check   # format, lint, typecheck, secrets, test, build verify
 npm run build
+npm run package # web-ext-artifacts/*.zip
 ```
 
-Written in TypeScript with no runtime dependencies. 292 automated tests cover address matching,
-navigation decisions, storage, container handling and performance. See
-[CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md), [TESTING.md](docs/TESTING.md).
 
-## Documentation
+## License
 
-| File                                               | What is in it                              |
-| -------------------------------------------------- | ------------------------------------------ |
-| [INSTALL.md](INSTALL.md)                           | Installing, building and signing           |
-| [CONTRIBUTING.md](CONTRIBUTING.md)                 | How to contribute                          |
-| [SECURITY.md](SECURITY.md)                         | Threat model and reporting a vulnerability |
-| [CHANGELOG.md](CHANGELOG.md)                       | What changed in each release               |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)       | How the code fits together                 |
-| [docs/DOMAIN_DATABASE.md](docs/DOMAIN_DATABASE.md) | Adding or correcting addresses             |
-| [docs/PERMISSIONS.md](docs/PERMISSIONS.md)         | Why each permission is needed              |
-| [docs/TESTING.md](docs/TESTING.md)                 | Test strategy and manual checks            |
-| [docs/ROADMAP.md](docs/ROADMAP.md)                 | What is planned                            |
-
-## Reporting a security issue
-
-Please do not open a public issue. Use
-[private vulnerability reporting](https://github.com/mheci/Orbis/security/advisories/new)
-instead. Details in [SECURITY.md](SECURITY.md).
-
-## Licence
-
-[MPL-2.0](LICENSE), the same licence Mozilla uses for its own container extensions.
-
-Built on the ideas behind [Facebook Container](https://github.com/mozilla/contain-facebook) and
-[Multi-Account Containers](https://github.com/mozilla/multi-account-containers). Not affiliated
-with Mozilla or Google.
+[MPL-2.0](LICENSE)
