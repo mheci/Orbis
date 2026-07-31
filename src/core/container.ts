@@ -141,7 +141,7 @@ export class ContainerManager {
     try {
       return await operation();
     } catch (error) {
-      console.warn('[g-container] container operation failed:', error);
+      console.warn('[orbis] container operation failed:', error);
       return fallback;
     }
   }

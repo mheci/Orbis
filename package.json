@@ -1,13 +1,13 @@
 {
-  "name": "g-container",
-  "version": "1.1.0",
-  "description": "G-Container \u2014 automatically isolate every Google-owned site into a dedicated Firefox Container.",
+  "name": "orbis",
+  "version": "2.0.0",
+  "description": "Orbis \u2014 Keep Google in its own orbit. Automatically isolate every Google-owned site into a dedicated Firefox Container with complete tracker blocking.",
   "private": true,
   "type": "module",
   "license": "MPL-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/astarling-x/g-container.git"
+    "url": "https://github.com/mheci/Orbis.git"
   },
   "engines": {
     "node": ">=20"
@@ -42,5 +42,6 @@
   },
   "overrides": {
     "brace-expansion": "^5.0.8"
-  }
+  },
+  "author": "Orbis contributors"
 }

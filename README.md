@@ -1,12 +1,12 @@
-# G-Container
+# Orbis
 
 Keep Google in its own box.
 
-G-Container is a Firefox extension that automatically opens every Google site in a separate
+Orbis is a Firefox extension that automatically opens every Google site in a separate
 container, so the cookies Google sets there cannot be read anywhere else in your browsing.
 
-[![CI](https://github.com/astarling-x/g-container/actions/workflows/ci.yml/badge.svg)](https://github.com/astarling-x/g-container/actions/workflows/ci.yml)
-[![Security](https://github.com/astarling-x/g-container/actions/workflows/security.yml/badge.svg)](https://github.com/astarling-x/g-container/actions/workflows/security.yml)
+[![CI](https://github.com/mheci/Orbis/actions/workflows/ci.yml/badge.svg)](https://github.com/mheci/Orbis/actions/workflows/ci.yml)
+[![Security](https://github.com/mheci/Orbis/actions/workflows/security.yml/badge.svg)](https://github.com/mheci/Orbis/actions/workflows/security.yml)
 [![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 [![Firefox 140+](https://img.shields.io/badge/firefox-140%2B-orange.svg)](https://www.mozilla.org/firefox/new/)
 
@@ -20,7 +20,7 @@ share of the web through analytics, fonts, embedded videos, reCAPTCHA boxes and 
 Every time you load a page carrying one of those, your browser can hand over the identity you built
 up while signed into Google. Your activity across unrelated sites gets joined into one profile.
 
-## What G-Container does
+## What Orbis does
 
 Two things, working together.
 
@@ -30,7 +30,7 @@ Firefox has a built-in feature called containers. Each container is a sealed com
 own cookie jar, storage and cache. A site opened in one container cannot see anything belonging to
 another.
 
-G-Container puts that on autopilot for Google. Open any Google site, from anywhere, and it reopens
+Orbis puts that on autopilot for Google. Open any Google site, from anywhere, and it reopens
 in a container named Google. Everything else keeps browsing normally, outside that container.
 
 The result:
@@ -48,7 +48,7 @@ Separating cookies is only half the problem. When a news site loads Google Analy
 still tells Google your IP address, your browser, and which page you are reading, whether or not a
 cookie goes with it.
 
-So G-Container blocks those requests before they leave your machine. Analytics, advertising and
+So Orbis blocks those requests before they leave your machine. Analytics, advertising and
 social widgets are stopped on sites that are not Google. The popup shows how many were blocked on
 the page you are looking at.
 
@@ -62,7 +62,7 @@ cannot be locked out of an account.
 
 Being clear about the limits matters more than overselling.
 
-G-Container separates your browsing and blocks Google's tracking code on other sites. It is not a
+Orbis separates your browsing and blocks Google's tracking code on other sites. It is not a
 general ad blocker, and it only deals with Google. Trackers belonging to anyone else are untouched.
 
 Google can still see whatever you deliberately send them. Your IP address is unchanged when you
@@ -74,7 +74,7 @@ it. The two do different jobs and work well together.
 ## Install
 
 Download the signed file from the
-[latest release](https://github.com/astarling-x/g-container/releases/latest), then in Firefox open
+[latest release](https://github.com/mheci/Orbis/releases/latest), then in Firefox open
 `about:addons`, click the gear icon, and choose "Install Add-on From File".
 
 The release is signed by Mozilla, so it installs permanently on any version of Firefox including
@@ -141,7 +141,7 @@ Adding a missing site is a one line change to a data file. See
 Plenty of sites offer a "Sign in with Google" button. Handled carelessly, containers break those,
 because the login would finish in the wrong compartment and the site never receives its answer.
 
-G-Container watches for this and lets the sign-in complete in the context of the site that started
+Orbis watches for this and lets the sign-in complete in the context of the site that started
 it. The button keeps working. If you would rather have stricter separation and can live with the
 occasional broken login, you can turn this off in the settings.
 
@@ -186,8 +186,8 @@ Builds are reproducible, so you can check the released file was built from the p
 rather than trusting it:
 
 ```bash
-git clone https://github.com/astarling-x/g-container.git
-cd g-container
+git clone https://github.com/mheci/Orbis.git
+cd orbis
 npm ci
 npm run package
 sha256sum web-ext-artifacts/g_container-1.1.0.zip
@@ -201,8 +201,8 @@ Bug reports are welcome, and reports of a Google site being missed are the most 
 the address and the output of the URL tester in Settings, then Diagnostics.
 
 ```bash
-git clone https://github.com/astarling-x/g-container.git
-cd g-container
+git clone https://github.com/mheci/Orbis.git
+cd orbis
 npm install
 npm test
 npm run build
@@ -229,7 +229,7 @@ navigation decisions, storage, container handling and performance. See
 ## Reporting a security issue
 
 Please do not open a public issue. Use
-[private vulnerability reporting](https://github.com/astarling-x/g-container/security/advisories/new)
+[private vulnerability reporting](https://github.com/mheci/Orbis/security/advisories/new)
 instead. Details in [SECURITY.md](SECURITY.md).
 
 ## Licence

@@ -161,14 +161,14 @@ describe('backup round-trip', () => {
   });
 
   it('rejects a newer schema version', () => {
-    expect(() => parseBackup({ format: 'g-container-backup', version: 99, settings: {} })).toThrow(
+    expect(() => parseBackup({ format: 'orbis-backup', version: 99, settings: {} })).toThrow(
       /newer than this extension/
     );
   });
 
   it('sanitises malicious imports', () => {
     const restored = parseBackup({
-      format: 'g-container-backup',
+      format: 'orbis-backup',
       version: 1,
       settings: {
         enabled: true,

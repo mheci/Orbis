@@ -1,5 +1,5 @@
 /**
- * Navigation decision engine — the pure, fully testable core of G-Container.
+ * Navigation decision engine — the pure, fully testable core of Orbis.
  *
  * `decideNavigation()` takes an immutable description of a top-level navigation
  * and returns what should happen. It performs no I/O, touches no browser API and

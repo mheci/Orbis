@@ -1,5 +1,5 @@
 /**
- * A behavioural mock of the subset of the WebExtension API that G-Container
+ * A behavioural mock of the subset of the WebExtension API that Orbis
  * uses.
  *
  * This exists because the background worker was previously untested: the pure

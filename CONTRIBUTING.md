@@ -6,8 +6,8 @@ quickly, so a small well tested change is always more welcome than a large cleve
 ## Getting set up
 
 ```bash
-git clone https://github.com/astarling-x/g-container.git
-cd g-container
+git clone https://github.com/mheci/Orbis.git
+cd orbis
 npm install
 npm test
 npm run build
