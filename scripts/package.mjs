@@ -8,7 +8,7 @@ import path from 'node:path';
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 const outDir = 'web-ext-artifacts';
 await mkdir(outDir, { recursive: true });
-const outFile = path.join(outDir, `g_container-${pkg.version}.zip`);
+const outFile = path.join(outDir, `orbis-${pkg.version}.zip`);
 
 /**
  * Files that must never reach users.
