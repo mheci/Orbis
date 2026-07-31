@@ -33,7 +33,7 @@ import type { Diagnostics, Message, RuntimeState, Settings, Statistics } from '.
 
 const CONTAINER_ID_STORAGE_KEY = 'containerId';
 
-class GContainer {
+class Orbis {
   private readonly store = new SettingsStore();
   private readonly loopGuard = new LoopGuard();
   private matcher: UrlMatcher;
@@ -240,7 +240,7 @@ class GContainer {
         await this.closePlaceholder(sourceTab.id);
       }
     } catch (error) {
-      console.warn('[g-container] failed to execute action', action.kind, error);
+      console.warn('[orbis] failed to execute action', action.kind, error);
       return false;
     }
 
@@ -366,7 +366,7 @@ class GContainer {
       if (typeof tab.id === 'number') await this.closePlaceholder(tab.id);
       return true;
     } catch (error) {
-      console.warn('[g-container] moveTab failed', error);
+      console.warn('[orbis] moveTab failed', error);
       return false;
     }
   }
@@ -430,8 +430,8 @@ class GContainer {
     void action.setBadgeBackgroundColor?.({ color: '#8f8f8f' });
     void action.setTitle({
       title: active
-        ? `G-Container — protecting ${this.settings.container.name}`
-        : 'G-Container — paused',
+        ? `Orbis — protecting ${this.settings.container.name}`
+        : 'Orbis — paused',
     });
   }
 
@@ -540,7 +540,7 @@ class GContainer {
 
     browser.runtime.onMessage.addListener((message) =>
       this.handleMessage(message as Message).catch((error: unknown) => {
-        console.warn('[g-container] message failed', error);
+        console.warn('[orbis] message failed', error);
         return { error: error instanceof Error ? error.message : String(error) };
       })
     );
@@ -585,7 +585,7 @@ class GContainer {
       try {
         menus.create({ id, title, contexts: contexts as never });
       } catch (error) {
-        console.warn('[g-container] menu create failed', id, error);
+        console.warn('[orbis] menu create failed', id, error);
       }
     };
 
@@ -650,9 +650,9 @@ class GContainer {
   }
 }
 
-const app = new GContainer();
+const app = new Orbis();
 app.registerListeners();
 void app.init();
 
 // Exported for integration tests running in a mocked environment.
-export { GContainer };
+export { Orbis };

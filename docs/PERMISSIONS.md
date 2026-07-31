@@ -1,7 +1,7 @@
 # Permissions
 
 Firefox shows a list of permissions when you install an extension. This page explains what each one
-is for in G-Container, and what would stop working without it.
+is for in Orbis, and what would stop working without it.
 
 The build fails automatically if a permission is added without being documented here, so this page
 cannot quietly fall out of date.

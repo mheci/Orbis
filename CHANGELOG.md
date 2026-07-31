@@ -81,8 +81,8 @@ including Release and Beta, with no `about:config` changes.
 
 - **Project moved to the `astarling-x` GitHub account.** The previous `mheci` repository has been
   deleted; all clone URLs, badges, issue links and the private security-reporting link now point at
-  `github.com/astarling-x/g-container`.
-- **Extension id changed** from `g-container@mheci.github.io` to `g-container@astarling-x.github.io`.
+  `github.com/mheci/Orbis`.
+- **Extension id changed** from `orbis@mheci.github.io` to `orbis@mheci.github.io`.
   This was done deliberately while the add-on has no published users. The id is a permanent identity
   key: had it been changed after an AMO release, Firefox would have treated the update as a
   different add-on and orphaned every user's container, cookies and settings. It is now pinned by
@@ -181,7 +181,7 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/astarling-x/g-container/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/astarling-x/g-container/compare/v1.0.1...v1.1.0
-[1.0.1]: https://github.com/astarling-x/g-container/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/astarling-x/g-container/releases/tag/v1.0.0
+[Unreleased]: https://github.com/mheci/Orbis/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/mheci/Orbis/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/mheci/Orbis/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/mheci/Orbis/releases/tag/v1.0.0

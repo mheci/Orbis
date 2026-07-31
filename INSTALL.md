@@ -1,4 +1,4 @@
-# Installing G-Container
+# Installing Orbis
 
 ## Before you start
 
@@ -15,7 +15,7 @@ and set `privacy.userContext.enabled` to true.
 Every release includes a file signed by Mozilla, which installs permanently on any version of
 Firefox including the standard release.
 
-1. Go to the [latest release](https://github.com/astarling-x/g-container/releases/latest).
+1. Go to the [latest release](https://github.com/mheci/Orbis/releases/latest).
 2. Download the file ending in `.xpi`.
 3. Open `about:addons` in Firefox.
 4. Click the gear icon near the top right, then choose "Install Add-on From File".
@@ -33,7 +33,7 @@ versions.
 If you just want a look without installing anything permanently, this takes about a minute and
 disappears when you close Firefox.
 
-1. Download the `.zip` from the [latest release](https://github.com/astarling-x/g-container/releases/latest).
+1. Download the `.zip` from the [latest release](https://github.com/mheci/Orbis/releases/latest).
 2. Open `about:debugging#/runtime/this-firefox`.
 3. Click "Load Temporary Add-on".
 4. Select the `.zip`. There is no need to unpack it.
@@ -41,8 +41,8 @@ disappears when you close Firefox.
 ## Building it yourself
 
 ```bash
-git clone https://github.com/astarling-x/g-container.git
-cd g-container
+git clone https://github.com/mheci/Orbis.git
+cd orbis
 npm install
 npm run build
 ```
@@ -76,8 +76,8 @@ Builds are reproducible, meaning the same source always produces an identical fi
 from source and compare against the released checksum:
 
 ```bash
-git clone https://github.com/astarling-x/g-container.git
-cd g-container
+git clone https://github.com/mheci/Orbis.git
+cd orbis
 npm ci
 npm run package
 sha256sum web-ext-artifacts/g_container-1.1.0.zip
@@ -97,7 +97,7 @@ Click the toolbar icon to see the current status.
 
 ## Removing it
 
-Open `about:addons`, find G-Container and choose Remove.
+Open `about:addons`, find Orbis and choose Remove.
 
 The Google container itself stays, along with its cookies, so you remain signed in. If you want to
 clear those too, go to Firefox Settings, then Privacy and Security, then Cookies and Site Data.
@@ -111,7 +111,7 @@ this page.
 
 **A Google site is not being caught.** Open the settings page, go to Diagnostics, and paste the
 address into the URL tester. It tells you which rule matched, or that none did. If none did, please
-[open an issue](https://github.com/astarling-x/g-container/issues) with that address.
+[open an issue](https://github.com/mheci/Orbis/issues) with that address.
 
 **A site that is not Google is being put in the container.** Check whether you added it to the
 always list. If not, please report it with the address.

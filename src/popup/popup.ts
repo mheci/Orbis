@@ -167,7 +167,7 @@ async function safeRender(): Promise<void> {
   } catch (error) {
     const verdict = document.getElementById('verdict');
     const host = document.getElementById('host');
-    if (host !== null) host.textContent = 'G-Container is starting…';
+    if (host !== null) host.textContent = 'Orbis is starting…';
     if (verdict !== null) {
       verdict.className = 'verdict outside';
       verdict.textContent =
@@ -175,7 +175,7 @@ async function safeRender(): Promise<void> {
           ? `Could not reach the extension: ${error.message}. Close and reopen this popup.`
           : 'Could not reach the extension. Close and reopen this popup.';
     }
-    console.warn('[g-container] popup render failed', error);
+    console.warn('[orbis] popup render failed', error);
   }
 }
 

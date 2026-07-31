@@ -5,7 +5,7 @@
 Please do not open a public issue for a security problem.
 
 Report it privately through
-[GitHub's private vulnerability reporting](https://github.com/astarling-x/g-container/security/advisories/new)
+[GitHub's private vulnerability reporting](https://github.com/mheci/Orbis/security/advisories/new)
 on this repository.
 
 Useful things to include:
