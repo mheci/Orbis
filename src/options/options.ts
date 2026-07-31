@@ -367,7 +367,7 @@ function wireData(): void {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `g-container-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    link.download = `orbis-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
     toast('Backup exported.');
@@ -391,7 +391,7 @@ function wireData(): void {
   });
 
   $('reset').addEventListener('click', async () => {
-    if (!window.confirm('Reset all G-Container settings to their defaults?')) return;
+    if (!window.confirm('Reset all Orbis settings to their defaults?')) return;
     settings = await send<Settings>({ type: 'reset' });
     render();
     toast('Settings reset.');

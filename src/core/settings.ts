@@ -57,7 +57,7 @@ export function defaultSettings(): Settings {
     schemaVersion: SETTINGS_SCHEMA_VERSION,
     enabled: true,
     pausedUntil: 0,
-    container: { name: 'Google', color: 'red', icon: 'fingerprint' },
+    container: { name: 'Orbis', color: 'red', icon: 'fingerprint' },
     behaviour: {
       unwrapRedirectors: true,
       oauthPassthrough: true,
@@ -286,7 +286,7 @@ export function migrateSettings(raw: unknown): Settings {
 
 export function buildBackup(settings: Settings): BackupDocument {
   return {
-    format: 'g-container-backup',
+    format: 'orbis-backup',
     version: SETTINGS_SCHEMA_VERSION,
     exportedAt: new Date().toISOString(),
     settings,
@@ -299,13 +299,14 @@ export function parseBackup(input: unknown): Settings {
     throw new Error('Backup must be a JSON object.');
   }
   const record = input as Record<string, unknown>;
-  if (record['format'] !== 'g-container-backup') {
-    throw new Error('Not a G-Container backup file (missing format marker).');
+  const format = record['format'];
+  if (format !== 'orbis-backup' && format !== 'g-container-backup') {
+    throw new Error('Not a Orbis backup file (missing format marker).');
   }
   const version = asFiniteNumber(record['version'], 0);
   if (version > SETTINGS_SCHEMA_VERSION) {
     throw new Error(
-      `Backup schema v${version} is newer than this extension supports (v${SETTINGS_SCHEMA_VERSION}). Please update G-Container.`
+      `Backup schema v${version} is newer than this extension supports (v${SETTINGS_SCHEMA_VERSION}). Please update Orbis.`
     );
   }
   return migrateSettings({ ...(record['settings'] as object), schemaVersion: version });

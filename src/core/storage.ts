@@ -55,7 +55,7 @@ export class SettingsStore {
     }`;
     this.errors.push(message);
     if (this.errors.length > 20) this.errors.shift();
-    console.warn('[g-container]', message);
+    console.warn('[orbis]', message);
   }
 
   private async read(area: StorageArea | null, scope: string): Promise<StoredEnvelope | null> {

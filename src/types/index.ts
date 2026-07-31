@@ -1,5 +1,5 @@
 /**
- * Shared type definitions for G-Container.
+ * Shared type definitions for Orbis.
  *
  * Everything that crosses a module boundary is typed here so that the
  * background worker, the popup and the options page all agree on the shape of
@@ -154,7 +154,7 @@ export interface Settings {
 
 /** The exported/imported backup envelope. */
 export interface BackupDocument {
-  readonly format: 'g-container-backup';
+  readonly format: 'orbis-backup';
   readonly version: number;
   readonly exportedAt: string;
   readonly settings: Settings;

@@ -240,7 +240,7 @@ Two values are locked and checked by the build.
 
 | Value        | Setting                             | Why                                                                                                                                                                                                                                                       |
 | ------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Extension ID | `g-container@astarling-x.github.io` | Firefox uses this to recognise the add-on. Changing it after release makes Firefox treat an update as a completely different extension, so users get no update and a fresh install would create a new empty container, losing their cookies and settings. |
+| Extension ID | `orbis@mheci.github.io` | Firefox uses this to recognise the add-on. Changing it after release makes Firefox treat an update as a completely different extension, so users get no update and a fresh install would create a new empty container, losing their cookies and settings. |
 | Account name | `astarling-x`                       | The project used to live elsewhere. A stale link is a dead end for users, and a dead security reporting link is worse than that.                                                                                                                          |
 
 If the project ever moves accounts again, move the repository and leave the extension ID alone.

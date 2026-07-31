@@ -80,6 +80,6 @@ programming language in the settings would be a foot gun and a security surface.
 
 ## Influencing this
 
-Open a [discussion](https://github.com/astarling-x/g-container/discussions) for ideas or an
-[issue](https://github.com/astarling-x/g-container/issues) for concrete problems. Reports of missed
+Open a [discussion](https://github.com/mheci/Orbis/discussions) for ideas or an
+[issue](https://github.com/mheci/Orbis/issues) for concrete problems. Reports of missed
 or wrongly caught sites are the most useful and are usually fixed within days.
