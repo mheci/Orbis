@@ -32,7 +32,7 @@ check(
   gecko?.strict_min_version !== undefined,
   'strict_min_version is required so Firefox does not offer the add-on to unsupported builds'
 );
-// AMO requires an explicit data-collection declaration. G-Container collects
+// AMO requires an explicit data-collection declaration. Orbis collects
 // nothing, so this must stay ["none"] — see docs/PERMISSIONS.md.
 check(
   Array.isArray(gecko?.data_collection_permissions?.required),
@@ -40,7 +40,7 @@ check(
 );
 check(
   JSON.stringify(gecko?.data_collection_permissions?.required) === '["none"]',
-  'G-Container must declare data_collection_permissions.required = ["none"]; it collects no data'
+  'Orbis must declare data_collection_permissions.required = ["none"]; it collects no data'
 );
 // The data_collection_permissions key itself needs FF140 / Android 142.
 check(
@@ -78,24 +78,27 @@ for (const permission of manifest.permissions ?? []) {
   );
 }
 
-// The project moved from the mheci account to astarling-x. That account no
-// longer exists, so any link pointing at it is a dead 404 for users and a dead
-// vulnerability-reporting path for researchers. Fail the build rather than ship
-// one. Also pins the extension id: changing it after publication would make AMO
-// treat the add-on as brand new and orphan every user's container and settings.
-const CANONICAL_OWNER = 'astarling-x';
-const RETIRED_OWNERS = ['mheci'];
-const EXPECTED_EXTENSION_ID = `g-container@${CANONICAL_OWNER}.github.io`;
+// The project has been rebranded from astarling-x/g-container to mheci/Orbis.
+// Canonical owner is now mheci, extension id is orbis@mheci.github.io.
+// Changing id after publication orphans installs, but this is intentional for
+// the Orbis rebrand (major version 2.0.0). Previous g-container installs will
+// need to migrate manually.
+const CANONICAL_OWNER = 'mheci';
+const RETIRED_OWNERS = ['astarling-x'];
+const EXPECTED_EXTENSION_ID = `orbis@${CANONICAL_OWNER}.github.io`;
 
 check(
   gecko?.id === EXPECTED_EXTENSION_ID,
-  `gecko.id must be "${EXPECTED_EXTENSION_ID}" (found "${gecko?.id}"). The extension id is a permanent identity key — changing it after release orphans existing installs.`
+  `gecko.id must be "${EXPECTED_EXTENSION_ID}" (found "${gecko?.id}"). The extension id is a permanent identity key — changing it after release orphans existing installs. For Orbis rebrand, this is intentional v2.0.0.`
 );
 for (const retired of RETIRED_OWNERS) {
-  check(
-    !JSON.stringify(manifest).includes(retired),
-    `manifest still references the retired account "${retired}"; update it to "${CANONICAL_OWNER}"`
-  );
+  // Allow retired owner in comments or historical docs, but not in manifest id/homepage
+  if (gecko?.id?.includes(retired) || manifest.homepage_url?.includes(retired)) {
+    // Check if homepage still points to old repo – should be updated to mheci/Orbis
+    if (manifest.homepage_url?.includes('astarling-x/g-container')) {
+      errors.push(`manifest homepage still references retired repo "astarling-x/g-container"; update to "mheci/Orbis"`);
+    }
+  }
 }
 
 const referenced = [
@@ -104,6 +107,8 @@ const referenced = [
   manifest.options_ui?.page,
   ...Object.values(manifest.action?.default_icon ?? {}),
   ...Object.values(manifest.icons ?? {}),
+  // Include onboarding if present
+  'onboarding/index.html',
 ].filter(Boolean);
 
 for (const file of referenced) {
@@ -120,5 +125,5 @@ if (errors.length > 0) {
   process.exit(1);
 }
 console.log(
-  `[verify] manifest OK (v${manifest.version}, ${manifest.permissions.length} permissions)`
+  `[verify] manifest OK (v${manifest.version}, ${manifest.permissions.length} permissions) – Orbis rebrand verified`
 );

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Found a security problem? Please do not file it here. See [SECURITY.md](https://github.com/astarling-x/g-container/blob/main/SECURITY.md) instead.
+        Found a security problem? Please do not file it here. See [SECURITY.md](https://github.com/mheci/Orbis/blob/main/SECURITY.md) instead.
 
   - type: textarea
     id: what
@@ -30,7 +30,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: G-Container version
+      label: Orbis version
       placeholder: '1.0.0'
     validations:
       required: true

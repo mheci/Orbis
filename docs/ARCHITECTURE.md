@@ -238,9 +238,9 @@ Regenerate with `python3 scripts/make-icons.py`. Only sizes named in the manifes
 
 Two values are locked and checked by the build.
 
-| Value        | Setting                             | Why                                                                                                                                                                                                                                                       |
-| ------------ | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Value        | Setting                 | Why                                                                                                                                                                                                                                                       |
+| ------------ | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Extension ID | `orbis@mheci.github.io` | Firefox uses this to recognise the add-on. Changing it after release makes Firefox treat an update as a completely different extension, so users get no update and a fresh install would create a new empty container, losing their cookies and settings. |
-| Account name | `astarling-x`                       | The project used to live elsewhere. A stale link is a dead end for users, and a dead security reporting link is worse than that.                                                                                                                          |
+| Account name | `astarling-x`           | The project used to live elsewhere. A stale link is a dead end for users, and a dead security reporting link is worse than that.                                                                                                                          |
 
 If the project ever moves accounts again, move the repository and leave the extension ID alone.
