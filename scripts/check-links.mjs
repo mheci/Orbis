@@ -57,15 +57,6 @@ function actionableReferences(line, retired) {
   return patterns.some((pattern) => pattern.test(line));
 }
 
-function actionableRepoReferences(line, retiredRepo) {
-  // Detect old repo name g-container in links
-  const patterns = [
-    new RegExp(`github\\.com/[^/]+/${retiredRepo}\\b`, 'i'),
-    new RegExp(`${retiredRepo}@`, 'i'),
-  ];
-  return patterns.some((pattern) => pattern.test(line));
-}
-
 for (const file of files) {
   const content = await readFile(file, 'utf8');
   const lines = content.split('\n');
