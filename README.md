@@ -9,12 +9,14 @@ Orbis is a Firefox extension that automatically puts every Google site in a sepa
 **What it does:** Separates Google (Search, YouTube, Gmail, Maps, etc.) into its own private box. You stay signed in and Google works normally, but its cookies can't follow you to other sites.
 
 **How it functions:**
+
 1. You open any Google site (from anywhere) – Orbis stops it and reopens in container named **Orbis**
 2. Everything else browses normally outside that container
 3. Google trackers on other sites (Analytics, DoubleClick) are blocked before they leave your machine
 4. Fonts, maps, videos, reCAPTCHA, Sign-in with Google are left alone to avoid breaking pages
 
 **How it behaves:**
+
 - Automatic: No clicks needed, just browse. Link to Google lands in orbit on its own.
 - Isolated: Each orbit has its own cookie jar, storage, cache.
 - Protective: Blocks Google tracking code on other sites (standard: analytics/ads/social, strict: + fonts/maps/embeds)
@@ -33,6 +35,7 @@ Firefox 140+ desktop required.
 ## Use
 
 **Keyboard (fastest, invisible):**
+
 - `Ctrl+Shift+O` – New Orbis tab (Google in its orbit)
 - `Ctrl+Shift+G` – Open Google in Orbis
 - `Alt+Shift+O` – Open Orbis popup
@@ -40,6 +43,7 @@ Firefox 140+ desktop required.
 Change shortcuts: Add-ons Manager → Gear → Manage Extension Shortcuts
 
 **Mouse:**
+
 - Toolbar button → See if current page is protected, blocked count, move tab in/out, pause
 - Right-click link → Open link in Orbis / Always open this site in Orbis / Never
 - Right-click page → Move tab into/out of Orbis
