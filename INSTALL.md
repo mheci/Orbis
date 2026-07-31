@@ -1,62 +1,42 @@
 # Installing Orbis
 
-## Before you start
+## Requirements
 
-You need Firefox 140 or newer on desktop. Check with Help, then About Firefox.
+Firefox 140+ desktop. Check Help → About Firefox. Android not supported (no containers). Ensure `privacy.userContext.enabled` true in `about:config`.
 
-Firefox for Android is not supported. It has no container feature, so there is nothing for the
-extension to use.
+## Signed Release (Recommended)
 
-Containers are switched on in Firefox by default. If they have been disabled, open `about:config`
-and set `privacy.userContext.enabled` to true.
+Signed XPI installs permanently on regular Firefox.
 
-## Recommended: install the signed file
+1. Go to [latest release](https://github.com/mheci/Orbis/releases/latest)
+2. Download `.xpi` file
+3. Open `about:addons` → Gear → Install Add-on From File → Select XPI → Approve
 
-Every release includes a file signed by Mozilla, which installs permanently on any version of
-Firefox including the standard release.
+Permissions explained in [PERMISSIONS.md](docs/PERMISSIONS.md). File is unlisted, won't auto-update – watch releases.
 
-1. Go to the [latest release](https://github.com/mheci/Orbis/releases/latest).
-2. Download the file ending in `.xpi`.
-3. Open `about:addons` in Firefox.
-4. Click the gear icon near the top right, then choose "Install Add-on From File".
-5. Pick the file you downloaded and confirm.
+## Temporary (Try Without Installing)
 
-Firefox shows you the list of permissions before installing. Every one of them is explained in
-[docs/PERMISSIONS.md](docs/PERMISSIONS.md).
+1. Download `.zip` from latest release
+2. Open `about:debugging#/runtime/this-firefox`
+3. Load Temporary Add-on → Select ZIP (no unpack)
 
-One thing to know: the file is signed for direct distribution rather than listed in Mozilla's
-public add-on directory, so it will not update itself. Watch the repository releases page for new
-versions.
+Disappears when Firefox closes.
 
-## Trying it temporarily
-
-If you just want a look without installing anything permanently, this takes about a minute and
-disappears when you close Firefox.
-
-1. Download the `.zip` from the [latest release](https://github.com/mheci/Orbis/releases/latest).
-2. Open `about:debugging#/runtime/this-firefox`.
-3. Click "Load Temporary Add-on".
-4. Select the `.zip`. There is no need to unpack it.
-
-## Building it yourself
+## Build From Source
 
 ```bash
 git clone https://github.com/mheci/Orbis.git
-cd orbis
-npm install
-npm run build
+cd Orbis
+npm ci
+npm run build   # dist/
+npm run package # web-ext-artifacts/*.zip
 ```
 
-The finished extension appears in `dist/`. Load it through `about:debugging` as described above, or
-package it into a `.zip` with `npm run package`.
+Node 20+ required.
 
-Node.js 20 or newer is required to build.
+### Sign Your Own
 
-### Signing your own build
-
-An unsigned build cannot be installed permanently on standard Firefox. To sign one yourself you
-need free API credentials from
-[the Mozilla developer hub](https://addons.mozilla.org/developers/addon/api/key/).
+Unsigned can't install permanently on release Firefox. Get free API creds from [Mozilla dev hub](https://addons.mozilla.org/developers/addon/api/key/).
 
 ```bash
 npm run build
@@ -64,79 +44,55 @@ npx web-ext sign --source-dir=dist \
   --api-key="YOUR_JWT_ISSUER" \
   --api-secret="YOUR_JWT_SECRET" \
   --channel=unlisted
+# Signed XPI in web-ext-artifacts/
 ```
 
-The signed file lands in `web-ext-artifacts/`. Install it through `about:addons` as above.
+Keep creds private, never commit.
 
-Keep those credentials private. Never commit them.
+## Verify Download
 
-## Checking the download is genuine
-
-Builds are reproducible, meaning the same source always produces an identical file. You can rebuild
-from source and compare against the released checksum:
+Reproducible builds – same source → identical file:
 
 ```bash
 git clone https://github.com/mheci/Orbis.git
-cd orbis
+cd Orbis
 npm ci
 npm run package
-sha256sum web-ext-artifacts/g_container-1.1.0.zip
+sha256sum web-ext-artifacts/orbis-2.0.0.zip
 ```
 
-If the checksums match, the released file was built from the source you just read.
+Compare with published checksum.
 
-## First run
+## First Run
 
-Nothing needs setting up. The defaults are the recommended configuration.
+No setup needed – defaults are recommended.
 
-Visit google.com. The tab reloads once and comes back with a coloured stripe along the top, which
-is how Firefox shows that a tab is in a container. That single reload is normal and happens because
-the page is being moved; it should not repeat.
+Visit google.com → tab reloads once with coloured stripe (container). That's normal, happens once because page moves into Orbis orbit.
 
-Click the toolbar icon to see the current status.
+Toolbar icon shows status, blocked count. Right-click link → Open in Orbis, or use hotkeys `Ctrl+Shift+O` (new Orbis tab) / `Ctrl+Shift+G` (Google in Orbis).
 
-## Removing it
+On first install, onboarding overlay appears (4 steps, theme-matched).
 
-Open `about:addons`, find Orbis and choose Remove.
+## Removing
 
-The Google container itself stays, along with its cookies, so you remain signed in. If you want to
-clear those too, go to Firefox Settings, then Privacy and Security, then Cookies and Site Data.
-Leaving the container in place means reinstalling later picks up exactly where you left off.
+`about:addons` → Orbis → Remove. Container itself stays with cookies so you stay signed in and reinstall picks up. To clear cookies: Settings → Privacy and Security → Cookies and Site Data.
 
-## If something is wrong
+## Troubleshooting
 
-**Nothing is being put in a container.** Check the toolbar icon. A badge reading "off" means
-protection is paused or disabled. Also confirm containers are enabled, as described at the top of
-this page.
+- **Nothing contained:** Toolbar badge shows “off” if paused/disabled. Check containers enabled in about:config.
+- **Google site missed:** Settings → Diagnostics → URL tester – shows which rule matched. Open issue with address.
+- **Non-Google in container:** Check always list, report if unexpected.
+- **Sign-in with Google broken:** Ensure oauth passthrough enabled in settings, or add site to never list as workaround.
+- **Tabs flicker:** One reload per Google page expected (move into container). Repeated flicker = bug.
+- **Settings not saving:** Diagnostics shows storage availability and recent errors.
 
-**A Google site is not being caught.** Open the settings page, go to Diagnostics, and paste the
-address into the URL tester. It tells you which rule matched, or that none did. If none did, please
-[open an issue](https://github.com/mheci/Orbis/issues) with that address.
+## Dev
 
-**A site that is not Google is being put in the container.** Check whether you added it to the
-always list. If not, please report it with the address.
-
-**A "Sign in with Google" button is not working.** Open the settings page and confirm the sign-in
-pass-through option is enabled. As a workaround, add the site to the never list.
-
-**Tabs flicker when opening Google links.** One reload per page is expected, since the page is
-being moved into the container. Repeated flickering is a bug worth reporting.
-
-**Settings are not saving.** The Diagnostics section of the settings page reports whether storage is
-available and lists recent errors.
-
-## Development
-
-```bash
-npm run watch          # rebuild automatically while editing
-npm test               # run the test suite
-npm run lint           # check formatting and code style
-npm run typecheck      # check types
-npm run ci             # everything the build server runs
-```
-
-To run a throwaway Firefox profile with the extension loaded and reloading on each change:
-
-```bash
-npx web-ext run --source-dir=dist
+```sh
+npm run watch          # rebuild on edit
+npm test
+npm run lint
+npm run typecheck
+npm run ci             # full CI
+npx web-ext run --source-dir=dist  # throwaway profile with auto-reload
 ```
