@@ -96,7 +96,9 @@ for (const retired of RETIRED_OWNERS) {
   if (gecko?.id?.includes(retired) || manifest.homepage_url?.includes(retired)) {
     // Check if homepage still points to old repo – should be updated to mheci/Orbis
     if (manifest.homepage_url?.includes('astarling-x/g-container')) {
-      errors.push(`manifest homepage still references retired repo "astarling-x/g-container"; update to "mheci/Orbis"`);
+      errors.push(
+        `manifest homepage still references retired repo "astarling-x/g-container"; update to "mheci/Orbis"`
+      );
     }
   }
 }
