@@ -431,6 +431,22 @@ class Orbis {
     await this.openOrbisTab('https://www.google.com');
   }
 
+  /** Move the active tab of the current window into or out of the container. */
+  async moveActiveTab(into: boolean): Promise<boolean> {
+    await this.init();
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (typeof tab?.id !== 'number') return false;
+    return this.moveTab(tab.id, into);
+  }
+
+  /** Flip the pause state; returns true when now paused. */
+  async togglePause(): Promise<boolean> {
+    await this.init();
+    const paused = this.settings.pausedUntil > Date.now();
+    await this.updateSettings({ pausedUntil: paused ? 0 : Date.now() + 30 * 60_000 });
+    return !paused;
+  }
+
   // --------------------------------------------------------------- UI state
 
   async runtimeState(): Promise<RuntimeState> {
@@ -721,7 +737,8 @@ const app = new Orbis();
 app.registerListeners();
 void app.init();
 
-// Hotkey support – one keypress = isolated tab, invisible efficiency
+// Keyboard shortcuts (browser.commands). The debounce stops a single held
+// keypress from firing the command repeatedly.
 const lastCommandTime = new Map<string, number>();
 function shouldHandleCommand(name: string): boolean {
   const now = Date.now();
@@ -734,10 +751,22 @@ function shouldHandleCommand(name: string): boolean {
 if (browser.commands?.onCommand) {
   browser.commands.onCommand.addListener((command) => {
     if (!shouldHandleCommand(command)) return;
-    if (command === 'open-orbis-tab') {
-      void app.openOrbisTab().catch(() => {});
-    } else if (command === 'open-google-in-orbis') {
-      void app.openGoogleInOrbis().catch(() => {});
+    switch (command) {
+      case 'open-orbis-tab':
+        void app.openOrbisTab().catch(() => {});
+        break;
+      case 'open-google-in-orbis':
+        void app.openGoogleInOrbis().catch(() => {});
+        break;
+      case 'move-tab-into':
+        void app.moveActiveTab(true).catch(() => {});
+        break;
+      case 'move-tab-out':
+        void app.moveActiveTab(false).catch(() => {});
+        break;
+      case 'pause-toggle':
+        void app.togglePause().catch(() => {});
+        break;
     }
   });
 }
