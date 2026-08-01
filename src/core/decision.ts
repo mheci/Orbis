@@ -25,6 +25,8 @@ export interface NavigationContext {
   readonly openerTabId: number | null;
   /** Cookie store of the opener tab, when known. */
   readonly openerCookieStoreId: string | null;
+  /** URL of the page that initiated this navigation (link source or redirect step). */
+  readonly referrerUrl: string | null;
   /** True for private-window tabs. */
   readonly incognito: boolean;
   /** Monotonic timestamp (ms) used for loop detection. */
@@ -174,15 +176,24 @@ export function decideNavigation(context: NavigationContext, deps: DecisionDeps)
 
   // --- Case A: a Google URL loading outside the container -------------------
   if (!inContainer && match.isGoogle) {
-    // Third-party sign-in: keep the OAuth handshake in the caller's context so
-    // the relying party receives its cookies/callback in the right jar.
+    // Third-party sign-in (OAuth bridge): route the handshake through the
+    // Google container so the user's Google session is present (no repeat
+    // logins) and Google cookies never touch the default browsing jar. The
+    // callback is then released back out in Case B3, landing in the relying
+    // party's own cookie jar with the opener relationship intact.
     if (
       settings.behaviour.oauthPassthrough &&
       matcher.isOAuthEndpoint(url) &&
       context.openerTabId !== null &&
       context.openerCookieStoreId !== containerId
     ) {
-      return { kind: 'ignore', reason: 'oauth-passthrough' };
+      return {
+        kind: 'contain',
+        url,
+        cookieStoreId: containerId,
+        replaceTabId: tabId,
+        reason: 'oauth-bridge',
+      };
     }
     return {
       kind: 'contain',
@@ -208,6 +219,24 @@ export function decideNavigation(context: NavigationContext, deps: DecisionDeps)
           reason: 'redirector',
         };
       }
+    }
+
+    // B3: the OAuth callback leaving a sign-in flow. It must land in the
+    // relying party's cookie jar (the opener's context) for the handshake to
+    // complete, so it is released regardless of the releaseNonGoogle setting —
+    // otherwise the callback would load in the container and lose the user's
+    // session, silently breaking "Sign in with Google".
+    if (
+      !match.isGoogle &&
+      context.referrerUrl !== null &&
+      matcher.isOAuthEndpoint(context.referrerUrl)
+    ) {
+      return {
+        kind: 'release',
+        url,
+        replaceTabId: tabId,
+        reason: 'oauth-callback',
+      };
     }
 
     // B2: a genuinely non-Google page opened inside the container. Push it back
