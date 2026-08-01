@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The release pipeline now fails the whole run when AMO signing fails with credentials
+  configured, instead of silently publishing a release without the signed XPI.
+- Signed XPIs are renamed to the canonical `orbis-<version>-signed.xpi` before publication,
+  and the checksums file no longer lists an artifact twice.
+
 ## [2.0.2] - 2026-08-01
 
 ### Added
