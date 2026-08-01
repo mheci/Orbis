@@ -294,6 +294,71 @@ select {
   word-break: break-word;
 }
 
+.decision-log {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.decision-log th,
+.decision-log td {
+  text-align: left;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.decision-log th {
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.decision-log td {
+  white-space: nowrap;
+}
+
+.decision-log td.url {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.decision-log td.empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 14px;
+}
+
+.decision-log .badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.decision-log .badge.contain {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+.decision-log .badge.release {
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  color: var(--warn);
+}
+
+.decision-log .badge.unwrap {
+  background: color-mix(in srgb, #0089ff 14%, transparent);
+  color: #0089ff;
+}
+
+.decision-log .badge.ignore {
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+  color: var(--muted);
+}
+
 .danger-zone {
   border-color: var(--warn);
 }

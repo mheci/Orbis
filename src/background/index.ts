@@ -17,6 +17,7 @@ import {
   type NavigationAction,
   type NavigationContext,
 } from '../core/decision.js';
+import { DecisionLog, makeDecisionEntry, shouldLogDecision } from '../core/decisionLog.js';
 import { ContainerManager, type ContextualIdentitiesApi } from '../core/container.js';
 import { UrlMatcher, safeParse } from '../core/matcher.js';
 import { SubresourceClassifier } from '../core/subresource.js';
@@ -32,15 +33,18 @@ import {
 import type { Diagnostics, Message, RuntimeState, Settings, Statistics } from '../types/index.js';
 
 const CONTAINER_ID_STORAGE_KEY = 'containerId';
+const DECISION_LOG_STORAGE_KEY = 'decisionLog';
 
 class Orbis {
   private readonly store = new SettingsStore();
   private readonly loopGuard = new LoopGuard();
+  private readonly decisionLog = new DecisionLog();
   private matcher: UrlMatcher;
   private container: ContainerManager;
   private settings: Settings;
   private ready: Promise<void> | null = null;
   private statsFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private logFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private blocker: SubresourceClassifier;
   /** Per-tab count of Google resources blocked, for the popup and badge. */
   private readonly blockedPerTab = new Map<number, number>();
@@ -75,6 +79,8 @@ class Orbis {
         this.settings = await this.store.load();
         this.rebuildMatcher();
         await this.container.ensure(this.settings.container);
+        const stored = await browser.storage.local.get(DECISION_LOG_STORAGE_KEY);
+        this.decisionLog.restore(stored?.[DECISION_LOG_STORAGE_KEY]);
         this.updateBadge();
       })();
     }
@@ -126,6 +132,27 @@ class Orbis {
       this.statsFlushTimer = null;
       void this.store.save(this.settings);
     }, 5000);
+  }
+
+  /** Record a decision in the local ring buffer and persist it lazily. */
+  private logDecision(action: NavigationAction, url: string, tabId: number, now: number): void {
+    if (!shouldLogDecision(action)) return;
+    this.decisionLog.record(makeDecisionEntry(action, url, tabId, now));
+    if (this.logFlushTimer !== null) return;
+    this.logFlushTimer = setTimeout(() => {
+      this.logFlushTimer = null;
+      void browser.storage.local.set({ [DECISION_LOG_STORAGE_KEY]: this.decisionLog.snapshot() });
+    }, 2000);
+  }
+
+  private clearDecisionLog(): number {
+    this.decisionLog.clear();
+    if (this.logFlushTimer !== null) {
+      clearTimeout(this.logFlushTimer);
+      this.logFlushTimer = null;
+    }
+    void browser.storage.local.remove(DECISION_LOG_STORAGE_KEY);
+    return this.decisionLog.size;
   }
 
   // -------------------------------------------------------------- navigation
@@ -186,6 +213,11 @@ class Orbis {
       matcher: this.matcher,
       loopGuard: this.loopGuard,
     });
+
+    // Keep a bounded local record of what happened and why (see the
+    // Diagnostics panel). Routine ignores are filtered out so the log stays
+    // readable; writes are debounced because navigation bursts are common.
+    this.logDecision(action, details.url, details.tabId, now);
 
     if (action.kind === 'ignore') {
       if (action.reason === 'exception' || action.reason.startsWith('never')) {
@@ -447,6 +479,7 @@ class Orbis {
       storage: this.store.available(),
       matcherBuildMs: this.matcher.buildMs,
       recentErrors: this.store.recentErrors(),
+      recentDecisions: this.decisionLog.snapshot(),
     };
   }
 
@@ -523,6 +556,8 @@ class Orbis {
       }
       case 'get-blocked':
         return this.blockedPerTab.get(message.tabId) ?? 0;
+      case 'clear-decision-log':
+        return this.clearDecisionLog();
       case 'diagnostics':
         return this.diagnostics();
       default:
