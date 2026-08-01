@@ -29,5 +29,5 @@
     "/signin/v2",
     "/gsi/"
   ],
-  "notesOauthPaths": "Paths on accounts.google.com that form part of a third-party OAuth flow. When such a navigation is started by a non-Google opener and 'oauthPassthrough' is enabled, the flow stays in the originating context so the relying party receives its callback in the right cookie jar."
+  "notesOauthPaths": "Paths on accounts.google.com that form part of a third-party OAuth flow. When such a navigation is started by a non-Google opener and 'oauthPassthrough' is enabled, the flow runs inside the Google container (so the Google session is reused) and the callback is released back to the relying party's own cookie jar."
 }

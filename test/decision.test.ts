@@ -23,6 +23,7 @@ function context(overrides: Partial<NavigationContext> = {}): NavigationContext 
     containerId: CONTAINER,
     openerTabId: null,
     openerCookieStoreId: null,
+    referrerUrl: null,
     incognito: false,
     now: 1_000_000,
     ...overrides,
@@ -114,8 +115,8 @@ describe('redirector unwrapping', () => {
   });
 });
 
-describe('OAuth pass-through', () => {
-  it('keeps a third-party sign-in flow outside the container', () => {
+describe('OAuth bridge', () => {
+  it('contains a third-party sign-in popup so the Google session is used', () => {
     const action = decideNavigation(
       context({
         url: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=x&redirect_uri=y',
@@ -124,8 +125,11 @@ describe('OAuth pass-through', () => {
       }),
       deps()
     );
-    expect(action.kind).toBe('ignore');
-    if (action.kind === 'ignore') expect(action.reason).toBe('oauth-passthrough');
+    expect(action.kind).toBe('contain');
+    if (action.kind === 'contain') {
+      expect(action.cookieStoreId).toBe(CONTAINER);
+      expect(action.reason).toBe('oauth-bridge');
+    }
   });
 
   it('contains the OAuth page when the user navigated there directly', () => {
@@ -158,6 +162,43 @@ describe('OAuth pass-through', () => {
       deps({ behaviour: { oauthPassthrough: false } })
     );
     expect(action.kind).toBe('contain');
+  });
+
+  it('releases the callback back to the relying party even when releaseNonGoogle is off', () => {
+    const action = decideNavigation(
+      context({
+        url: 'https://app.example.com/oauth/callback?code=abc',
+        cookieStoreId: CONTAINER,
+        referrerUrl: 'https://accounts.google.com/o/oauth2/v2/auth?client_id=x',
+      }),
+      deps({ behaviour: { releaseNonGoogle: false } })
+    );
+    expect(action.kind).toBe('release');
+    if (action.kind === 'release') expect(action.reason).toBe('oauth-callback');
+  });
+
+  it('does not release a normal navigation whose referrer merely comes from Google', () => {
+    const action = decideNavigation(
+      context({
+        url: 'https://app.example.com/settings',
+        cookieStoreId: CONTAINER,
+        referrerUrl: 'https://www.google.com/search?q=orbis',
+      }),
+      deps({ behaviour: { releaseNonGoogle: false } })
+    );
+    expect(action.kind).toBe('ignore');
+  });
+
+  it('does not release a callback when the referrer is unknown', () => {
+    const action = decideNavigation(
+      context({
+        url: 'https://app.example.com/oauth/callback?code=abc',
+        cookieStoreId: CONTAINER,
+        referrerUrl: null,
+      }),
+      deps({ behaviour: { releaseNonGoogle: false } })
+    );
+    expect(action.kind).toBe('ignore');
   });
 });
 

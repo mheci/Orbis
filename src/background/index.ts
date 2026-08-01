@@ -168,6 +168,15 @@ class Orbis {
       containerId,
       openerTabId,
       openerCookieStoreId,
+      // For a top-level navigation this is the page that started it (a link
+      // click) or the last hop of a redirect chain — used to recognise OAuth
+      // callbacks leaving a Google sign-in flow.
+      referrerUrl:
+        typeof details.originUrl === 'string'
+          ? details.originUrl
+          : typeof details.documentUrl === 'string'
+            ? details.documentUrl
+            : null,
       incognito: tab.incognito === true,
       now,
     };
