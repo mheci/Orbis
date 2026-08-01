@@ -19,6 +19,10 @@ const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 
 check(manifest.manifest_version === 3, 'manifest_version must be 3');
+check(
+  manifest.content_security_policy?.extension_pages === "script-src 'self'; object-src 'none';",
+  "extension_pages CSP must be exactly \"script-src 'self'; object-src 'none';\" (see docs/ARCHITECTURE.md)"
+);
 check(manifest.version === pkg.version, `version mismatch: ${manifest.version} vs ${pkg.version}`);
 check(/^\d+\.\d+\.\d+$/.test(manifest.version), `version must be semver: ${manifest.version}`);
 check(typeof manifest.name === 'string' && manifest.name.length > 0, 'name is required');
