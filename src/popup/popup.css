@@ -3,11 +3,11 @@
   --fg: #15141a;
   --muted: #5b5b66;
   --line: #e0e0e6;
-  --accent: #0060df;
+  --accent: #5b52e8;
   --accent-fg: #ffffff;
   --ok: #017a40;
   --warn: #c50042;
-  --radius: 8px;
+  --radius: 10px;
   color-scheme: light dark;
 }
 
@@ -17,8 +17,8 @@
     --fg: #fbfbfe;
     --muted: #b1b1bb;
     --line: #3a3944;
-    --accent: #00ddff;
-    --accent-fg: #15141a;
+    --accent: #8f84ff;
+    --accent-fg: #16143a;
     --ok: #54ffbd;
     --warn: #ff9aa2;
   }
@@ -32,7 +32,11 @@ body {
   margin: 0;
   width: 320px;
   padding: 12px;
-  background: var(--bg);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 7%, var(--bg)),
+    var(--bg) 110px
+  );
   color: var(--fg);
   font:
     13px/1.45 system-ui,
@@ -67,17 +71,25 @@ body {
 }
 
 .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 15px;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .icon-btn:hover {
   background: var(--line);
+  color: var(--fg);
 }
 
 .card {

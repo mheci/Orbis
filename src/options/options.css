@@ -4,7 +4,7 @@
   --fg: #15141a;
   --muted: #5b5b66;
   --line: #d7d7db;
-  --accent: #0060df;
+  --accent: #5b52e8;
   --accent-fg: #fff;
   --warn: #c50042;
   --radius: 10px;
@@ -18,8 +18,8 @@
     --fg: #fbfbfe;
     --muted: #b1b1bb;
     --line: #52525e;
-    --accent: #00ddff;
-    --accent-fg: #15141a;
+    --accent: #8f84ff;
+    --accent-fg: #16143a;
     --warn: #ff9aa2;
   }
 }
@@ -30,7 +30,13 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(
+      900px 360px at 50% -120px,
+      color-mix(in srgb, var(--accent) 10%, transparent),
+      transparent 70%
+    ),
+    var(--bg);
   color: var(--fg);
   font:
     14px/1.5 system-ui,
@@ -43,6 +49,19 @@ body {
   max-width: 820px;
   margin: 0 auto;
   padding: 28px 20px 60px;
+}
+
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.page-head .logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
 }
 
 .page-head h1 {
