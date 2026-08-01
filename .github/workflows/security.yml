@@ -171,6 +171,9 @@ jobs:
 
   dependency-review:
     name: Dependency review (PRs)
+    # Needs a base and head ref, which only PR events provide. Pushes to main
+    # would otherwise fail the job on every merge.
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
