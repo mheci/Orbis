@@ -614,8 +614,10 @@ class Orbis {
       create('gc-open-here', 'Open link in Orbis', ['link']);
       create('gc-always', 'Always open this site in Orbis', ['page', 'link']);
       create('gc-never', 'Never open this site in Orbis', ['page', 'link']);
-      create('gc-move-in', 'Move this tab into Orbis', ['page']);
-      create('gc-move-out', 'Move this tab out of Orbis', ['page']);
+      // The tab context makes moving available from the tab strip itself,
+      // where a "page" menu item is not offered.
+      create('gc-move-in', 'Move this tab into Orbis', ['page', 'tab']);
+      create('gc-move-out', 'Move this tab out of Orbis', ['page', 'tab']);
     });
 
     menus.onClicked.addListener(async (info, tab) => {
