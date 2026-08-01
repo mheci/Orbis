@@ -85,6 +85,18 @@ jobs:
           fi
           echo "Signature verified: $(basename "$XPI")"
 
+      - name: Rename signed XPI to the canonical artifact name
+        if: steps.sign.outcome == 'success'
+        run: |
+          # AMO names the downloaded file after its upload UUID, e.g.
+          # 3b298fb89a6740f880cd-2.0.2.xpi. Canonicalise it so the checksums,
+          # release notes and INSTALL.md all agree on the artifact name.
+          XPI=$(ls web-ext-artifacts/*.xpi 2>/dev/null | head -n1 || true)
+          CANONICAL="orbis-${GITHUB_REF_NAME#v}-signed.xpi"
+          if [ -n "$XPI" ] && [ "$(basename "$XPI")" != "$CANONICAL" ]; then
+            mv "$XPI" "web-ext-artifacts/$CANONICAL"
+          fi
+
       - name: Create source archives (deterministic)
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -94,7 +106,9 @@ jobs:
       - name: Generate SHA-256 checksums
         run: |
           cd web-ext-artifacts
-          sha256sum orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null > SHA256SUMS.txt
+          # xargs -r skips the whole command when no artifact matches, so a
+          # signing-less run still produces a valid checksums file.
+          ls orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null | xargs -r sha256sum > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Generate release notes
