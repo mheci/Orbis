@@ -55,7 +55,6 @@ jobs:
 
       - name: Sign with AMO signing service (unlisted — signature only, never published)
         id: sign
-        continue-on-error: true
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
@@ -85,6 +84,18 @@ jobs:
           fi
           echo "Signature verified: $(basename "$XPI")"
 
+      - name: Rename signed XPI to the canonical artifact name
+        if: steps.sign.outcome == 'success'
+        run: |
+          # AMO names the downloaded file after its upload UUID, e.g.
+          # 3b298fb89a6740f880cd-2.0.2.xpi. Canonicalise it so the checksums,
+          # release notes and INSTALL.md all agree on the artifact name.
+          XPI=$(ls web-ext-artifacts/*.xpi 2>/dev/null | head -n1 || true)
+          CANONICAL="orbis-${GITHUB_REF_NAME#v}-signed.xpi"
+          if [ -n "$XPI" ] && [ "$(basename "$XPI")" != "$CANONICAL" ]; then
+            mv "$XPI" "web-ext-artifacts/$CANONICAL"
+          fi
+
       - name: Create source archives (deterministic)
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
@@ -94,7 +105,10 @@ jobs:
       - name: Generate SHA-256 checksums
         run: |
           cd web-ext-artifacts
-          sha256sum orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null > SHA256SUMS.txt
+          # xargs -r skips the whole command when no artifact matches, and
+          # sort -u drops the source.zip duplicate that matches two globs, so
+          # a signing-less run still produces a valid checksums file.
+          ls orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null | sort -u | xargs -r sha256sum > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Generate release notes
