@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Firefox 140+ desktop. Check Help → About Firefox. Android not supported (no containers). Ensure `privacy.userContext.enabled` true in `about:config`.
+Firefox 140+ on desktop. Check Help → About Firefox. Ensure `privacy.userContext.enabled` is `true` in `about:config`.
 
 ## Signed Release (Recommended)
 
@@ -58,7 +58,7 @@ git clone https://github.com/mheci/Orbis.git
 cd Orbis
 npm ci
 npm run package
-sha256sum web-ext-artifacts/orbis-2.0.0.zip
+sha256sum web-ext-artifacts/orbis-<version>.zip
 ```
 
 Compare with published checksum.
