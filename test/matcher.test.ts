@@ -85,6 +85,13 @@ describe('core Google properties', () => {
     'https://proxy.googlezip.net/',
     'https://goo.gl/maps/abc',
     'https://g.co/kgs/abc',
+    'https://www.chrome.com/',
+    'https://www.chromecast.com/',
+    'https://angular.io/',
+    'https://dart.dev/',
+    'https://flutter.dev/',
+    'https://go.dev/',
+    'https://fuchsia.dev/',
   ];
 
   it.each(googleUrls)('containerizes %s', (url) => {
