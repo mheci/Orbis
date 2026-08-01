@@ -169,6 +169,20 @@
           </div>
           <ul class="list" id="neverList"></ul>
         </fieldset>
+
+        <fieldset>
+          <legend>Exceptions</legend>
+          <p class="hint">
+            Sites that must never be pulled into the container, even when they match Google.
+            Disabled exceptions are kept but ignored.
+          </p>
+          <div class="inline">
+            <input type="text" id="exceptionInput" placeholder="example.com or example.com/sso" />
+            <input type="text" id="exceptionNote" placeholder="optional note" />
+            <button class="btn primary" id="exceptionAdd">Add exception</button>
+          </div>
+          <ul class="list exceptions" id="exceptionList"></ul>
+        </fieldset>
       </section>
 
       <section class="panel" id="panel-data" role="tabpanel">
