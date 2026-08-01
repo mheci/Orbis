@@ -14,6 +14,7 @@ import {
   type DecisionEntry,
   type DeepPartial,
   type Diagnostics,
+  type ExceptionRule,
   type MatchResult,
   type Message,
   type Settings,
@@ -186,6 +187,90 @@ function renderBlockAllowList(): void {
   }
 }
 
+/** Replace one exception in the current settings, returning the next list. */
+function withException(
+  pattern: string,
+  patch: Partial<Pick<ExceptionRule, 'note' | 'enabled'>>
+): ExceptionRule[] {
+  return settings.exceptions.map((rule) =>
+    rule.pattern === pattern ? { ...rule, ...patch } : rule
+  );
+}
+
+async function saveExceptions(next: ExceptionRule[]): Promise<void> {
+  settings = await send<Settings>({ type: 'set-exceptions', exceptions: next });
+  render();
+}
+
+function renderExceptions(): void {
+  const host = $('exceptionList');
+  host.textContent = '';
+  if (settings.exceptions.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'No exceptions yet.';
+    host.append(li);
+    return;
+  }
+  for (const rule of settings.exceptions) {
+    const li = document.createElement('li');
+    li.className = 'exception-row';
+    if (!rule.enabled) li.classList.add('disabled');
+
+    const toggle = document.createElement('input');
+    toggle.type = 'checkbox';
+    toggle.checked = rule.enabled;
+    toggle.title = rule.enabled ? 'Enabled — disable to ignore' : 'Disabled — enable to apply';
+    toggle.addEventListener('change', () => {
+      void saveExceptions(withException(rule.pattern, { enabled: toggle.checked })).catch((error) =>
+        toast(`Could not update: ${error instanceof Error ? error.message : String(error)}`)
+      );
+    });
+
+    const pattern = document.createElement('span');
+    pattern.className = 'pattern';
+    pattern.textContent = rule.pattern;
+    pattern.title = `Added ${new Date(rule.created).toLocaleDateString()}`;
+
+    const note = document.createElement('input');
+    note.type = 'text';
+    note.className = 'note';
+    note.maxLength = 200;
+    note.value = rule.note ?? '';
+    note.placeholder = 'note';
+    note.title = 'Optional note';
+    note.addEventListener('change', () => {
+      const value = note.value.trim().slice(0, 200);
+      void saveExceptions(withException(rule.pattern, { note: value === '' ? undefined : value }))
+        .then(() => {
+          note.value = value;
+          toast('Note saved.');
+        })
+        .catch((error) => {
+          note.value = rule.note ?? '';
+          toast(`Could not save: ${error instanceof Error ? error.message : String(error)}`);
+        });
+    });
+
+    const remove = document.createElement('button');
+    remove.className = 'remove';
+    remove.type = 'button';
+    remove.title = `Remove exception ${rule.pattern}`;
+    remove.textContent = '✕';
+    remove.addEventListener('click', async () => {
+      try {
+        await saveExceptions(settings.exceptions.filter((r) => r.pattern !== rule.pattern));
+        toast('Exception removed.');
+      } catch (error) {
+        toast(`Could not remove: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    });
+
+    li.append(toggle, pattern, note, remove);
+    host.append(li);
+  }
+}
+
 function renderStats(): void {
   const s = settings.statistics;
   const items: Array<[string, string]> = [
@@ -238,6 +323,7 @@ function render(): void {
   renderDomainSets(null);
   renderList($('alwaysList'), settings.alwaysContainerize, 'always');
   renderList($('neverList'), settings.neverContainerize, 'never');
+  renderExceptions();
   renderStats();
 }
 
@@ -406,6 +492,34 @@ function wireRules(): void {
   });
   neverInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') void add('never', neverInput);
+  });
+
+  const exceptionInput = $('exceptionInput') as HTMLInputElement;
+  const exceptionNote = $('exceptionNote') as HTMLInputElement;
+  const addException = async (): Promise<void> => {
+    const pattern = exceptionInput.value.trim();
+    if (pattern === '') return;
+    const note = exceptionNote.value.trim().slice(0, 200);
+    try {
+      await saveExceptions([
+        ...settings.exceptions,
+        {
+          pattern,
+          note: note === '' ? undefined : note,
+          enabled: true,
+          created: Date.now(),
+        },
+      ]);
+      exceptionInput.value = '';
+      exceptionNote.value = '';
+      toast('Exception added.');
+    } catch (error) {
+      toast(`Could not add exception: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+  $('exceptionAdd').addEventListener('click', () => void addException());
+  exceptionInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') void addException();
   });
 }
 

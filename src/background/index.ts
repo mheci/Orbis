@@ -527,6 +527,11 @@ class Orbis {
         const next = this.settings[key].filter((p) => p !== message.pattern);
         return this.updateSettings({ [key]: next } as Parameters<typeof mergeSettings>[1]);
       }
+      case 'set-exceptions':
+        // The whole list is replaced and re-sanitised wholesale; invalid or
+        // duplicate entries are dropped by sanitizeSettings, so a UI bug can
+        // never corrupt the matcher's exception set.
+        return this.updateSettings({ exceptions: message.exceptions });
       case 'export':
         return buildBackup(this.settings);
       case 'import': {

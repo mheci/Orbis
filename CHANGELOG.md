@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A decision log in the Diagnostics tab: the last 200 decisions (contain, release, unwrap and
   the meaningful ignores) with their reasons, kept in a bounded ring buffer. It is stored
   locally only and never leaves the browser.
+- A proper Exceptions panel in Rules &amp; exceptions: add exceptions with an optional note,
+  toggle them on and off without deleting them, and see when each was created. The underlying
+  rule support already existed; this is the first UI for it.
 
 ### Changed
 

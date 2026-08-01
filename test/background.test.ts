@@ -12,7 +12,13 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockBrowser } from './mock-browser.js';
-import type { Diagnostics, MatchResult, Message, RuntimeState } from '../src/types/index.js';
+import type {
+  Diagnostics,
+  MatchResult,
+  Message,
+  RuntimeState,
+  Settings,
+} from '../src/types/index.js';
 
 /** `handleMessage` is intentionally typed `unknown`; narrow it in tests. */
 type App = {
@@ -327,6 +333,43 @@ describe('background: messaging contract', () => {
     await expect(
       app.handleMessage({ type: 'add-rule', list: 'never', pattern: 'javascript:alert(1)' })
     ).rejects.toThrow(/Invalid pattern/);
+  });
+
+  it('applies exceptions and keeps disabled ones inert', async () => {
+    const app = await loadApp(mock);
+    await app.handleMessage({
+      type: 'set-exceptions',
+      exceptions: [
+        { pattern: 'docs.google.com', enabled: true, created: 1 },
+        { pattern: 'drive.google.com', note: 'work files', enabled: false, created: 2 },
+      ],
+    });
+
+    let match = await ask<MatchResult>(app, {
+      type: 'match-url',
+      url: 'https://docs.google.com/x',
+    });
+    expect(match.isGoogle).toBe(false);
+    expect(match.source).toBe('exception');
+
+    // Disabled exceptions are ignored by the matcher.
+    match = await ask<MatchResult>(app, { type: 'match-url', url: 'https://drive.google.com/x' });
+    expect(match.isGoogle).toBe(true);
+  });
+
+  it('rejects invalid exception patterns silently but keeps the rest', async () => {
+    const app = await loadApp(mock);
+    await app.handleMessage({
+      type: 'set-exceptions',
+      exceptions: [
+        { pattern: 'docs.google.com', enabled: true, created: 1 },
+        { pattern: 'javascript:alert(1)', enabled: true, created: 2 },
+        { pattern: 'docs.google.com', enabled: true, created: 3 },
+      ],
+    });
+    const settings = await ask<Settings>(app, { type: 'get-settings' });
+    expect(settings.exceptions).toHaveLength(1);
+    expect(settings.exceptions[0]!.pattern).toBe('docs.google.com');
   });
 
   it('produces diagnostics without leaking browsing data', async () => {

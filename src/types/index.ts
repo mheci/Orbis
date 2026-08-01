@@ -171,6 +171,7 @@ export type Message =
   | { type: 'resume' }
   | { type: 'add-rule'; list: 'always' | 'never'; pattern: string }
   | { type: 'remove-rule'; list: 'always' | 'never'; pattern: string }
+  | { type: 'set-exceptions'; exceptions: ExceptionRule[] }
   | { type: 'export' }
   | { type: 'import'; document: unknown }
   | { type: 'reset' }
