@@ -169,6 +169,26 @@ jobs:
           # Suppressions live in zizmor.yml, each with its reasoning.
           ZIZMOR_CONFIG: zizmor.yml
 
+  dependency-review:
+    name: Dependency review (PRs)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Reviews every dependency added or changed in a PR against the advisory
+      # database. Orbis ships zero runtime dependencies, so a violation here
+      # means a new supply-chain risk was introduced on purpose or by accident.
+      - name: Review changed dependencies
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: true
+
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
