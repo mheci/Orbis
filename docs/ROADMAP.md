@@ -3,32 +3,29 @@
 Ordered by how much difference something makes to users, not by how interesting it is to build.
 Anything that adds moving parts has to earn its place, because being dependable is the point.
 
-## Done, version 1.0
+## Done, version 2.0
 
-- Automatic containment of Google services
-- 952 addresses covering country domains and brand endings
-- Moving non-Google pages back out of the container
-- Following Google redirect links to their real destination
-- Keeping third party "Sign in with Google" working
-- Loop prevention
-- Settings page, popup, right click menu
-- Always and never lists
-- Backup, restore, reset and optional sync
-- Diagnostics with a URL tester
-- 292 tests, automated builds, full documentation
-- Signed releases
+- Rebrand from G-Container to Orbis, with the extension id pinned to `orbis@mheci.github.io`
+- Four-step onboarding page on first install
+- Keyboard commands for opening an Orbis tab, Google in Orbis, and the popup
+- Subresource blocking (from 1.1): Google analytics, advertising and social widgets are
+  cancelled before they leave the machine, in standard and strict modes
+- Deterministic, reproducible builds with a CI gate that proves two clean builds are identical
+- Security scanning: CodeQL, Trivy, Gitleaks, OSV Scanner, Zizmor, npm audit, dependency review
+- GitHub-only distribution: releases are signed by Mozilla's signing service
+  (`--channel=unlisted`) but never submitted or published to addons.mozilla.org
+- Release artifacts: signed XPI (signature verified), unsigned ZIP, source archives, checksums
 
-## Next, version 1.1
+## Next
 
 Polish and reach.
 
-- **Translations.** Move every visible string into message files so the extension can be translated.
-- **Better exceptions screen.** The data already stores notes, an enabled flag and a date for each
-  exception, but the settings page only shows a flat list.
+- **Translations.** Move every visible string into message files so the extension can be
+  translated.
+- **Better exceptions screen.** The data already stores notes, an enabled flag and a date for
+  each exception, but the settings page only shows a flat list.
 - **Keyboard shortcuts** for moving a tab in or out and for pausing.
-- **A short welcome page** on first install explaining what will change and what will not.
 - **Accessibility review** covering keyboard navigation, screen readers and colour contrast.
-- **Listing on Mozilla's add-on site**, which needs screenshots, store text and review notes.
 
 ## After that, version 1.2
 
@@ -61,6 +58,11 @@ Listed so nobody spends time proposing them.
 both badly is worse than doing one well.
 
 **Any telemetry**, even anonymous and opt in.
+
+**Publishing on addons.mozilla.org.** Orbis is distributed exclusively through GitHub Releases.
+Artifacts are signed by Mozilla's signing service so they install on release Firefox, but the
+add-on is never submitted to the store; a store listing would add a review surface without
+benefit for the people it would serve.
 
 **Remote configuration or remotely loaded code**, in any form.
 

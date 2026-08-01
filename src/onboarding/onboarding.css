@@ -116,15 +116,6 @@
     transform: translateY(0);
   }
 }
-.step-icon {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: #fef0ed;
-  border-radius: 12px;
-  font-size: 24px;
-}
 .onboarding-step h2 {
   margin: 0;
   font-size: 20px;
@@ -142,10 +133,6 @@
   background: #f7f9fa;
   border: 1px solid #d8e0e4;
   border-radius: 10px;
-}
-.example-box > span {
-  font-size: 20px;
-  flex: none;
 }
 .example-box strong {
   display: block;
@@ -200,7 +187,7 @@
 }
 .cleanup-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 10px;
   padding: 6px 0;
@@ -209,10 +196,6 @@
 }
 .cleanup-item:last-child {
   border-bottom: 0;
-}
-.cleanup-icon {
-  width: 24px;
-  text-align: center;
 }
 .check {
   color: #16744a;

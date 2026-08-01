@@ -7,7 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Seven additional verified Google-owned domains (`chrome.com`, `chromecast.com`, `angular.io`,
+  `dart.dev`, `flutter.dev`, `go.dev`, `fuchsia.dev`), each covered by a matcher test.
+- Move-tab actions are now offered from the tab strip context menu as well as the page menu.
+- GitHub dependency review on pull requests: changed dependencies are checked against the
+  advisory database and fail the build above high severity.
+- Release artifacts now include deterministic source archives and a `SHA256SUMS.txt`.
+
+### Changed
+
+- Release signing uses `--channel=unlisted`. The add-on is signed by Mozilla's signing service
+  but is never submitted or published to addons.mozilla.org; Orbis is distributed exclusively
+  through GitHub Releases.
+- Signed XPIs are verified (`META-INF/mozilla.rsa`) before release, and CI builds are checked
+  for byte-for-byte reproducibility across two clean builds.
+- The extension-page CSP is declared explicitly (`script-src 'self'; object-src 'none';`) and
+  enforced by the manifest verification step, so a future weakening fails the build.
+- The onboarding page loads its script as an ES module, matching the popup and options pages.
+- The onboarding page no longer uses emoji as decoration.
+
+## [2.0.1] - 2026-07-31
+
+### Changed
+
+- Version bumped for the signed mass-production release of the Orbis rebrand.
+
+## [2.0.0] - 2026-07-31
+
+Rebrand from G-Container to Orbis.
+
+### Added
+
+- Four-step onboarding page shown on first install.
+- Keyboard commands: new Orbis tab, open Google in Orbis, and a popup shortcut.
+- Popup and options pages rebuilt around the new identity.
+
+### Changed
+
+- Extension renamed from G-Container to Orbis. The extension id is now pinned to
+  `orbis@mheci.github.io`. An extension id is a permanent identity key: changing it after
+  publication orphans existing installs, so this was done once, deliberately, while the add-on
+  has no published users. It is enforced by the build from here on.
+- Project moved to the `mheci` GitHub account; clone URLs, badges and reporting paths updated.
 
 ## [1.1.0] - 2026-07-28
 
@@ -181,7 +224,9 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/mheci/Orbis/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/mheci/Orbis/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/mheci/Orbis/compare/v2.0.0...v2.0.1
+[2.0.0]: https://github.com/mheci/Orbis/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/mheci/Orbis/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/mheci/Orbis/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/mheci/Orbis/releases/tag/v1.0.0
