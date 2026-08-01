@@ -1,0 +1,4 @@
+# Force LF in the working tree on every OS. The repo stores LF; with
+# core.autocrlf=true on Windows, checkouts become CRLF and the Prettier
+# endOfLine check (part of `npm run ci`) fails locally for every file.
+* text=auto eol=lf
