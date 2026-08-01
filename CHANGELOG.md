@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- “Sign in with Google” on third-party sites is now an OAuth bridge: the handshake runs inside
+  the Google container (so your Google session is reused and Google cookies never touch your
+  default browsing jar), and the callback is released back into the relying party’s own cookie
+  jar so the sign-in completes as if nothing happened.
+
 ## [2.0.3] - 2026-08-01
 
 ### Added
