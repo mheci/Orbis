@@ -1,12 +1,17 @@
 name: Release
 
+# Orbis is distributed exclusively through GitHub Releases. The add-on is
+# signed with Mozilla's signing service (web-ext sign) so Firefox accepts it
+# on release builds, but nothing is ever submitted or published to
+# addons.mozilla.org: --channel=unlisted requests a signature only.
+
 on:
   push:
     tags: ['v*.*.*']
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g. 1.1.0)'
+        description: 'Version to release (e.g. 2.0.1)'
         required: true
 
 permissions:
@@ -48,7 +53,7 @@ jobs:
       - name: Build and package
         run: npm run package
 
-      - name: Sign with AMO
+      - name: Sign with AMO signing service (unlisted — signature only, never published)
         id: sign
         continue-on-error: true
         env:
@@ -63,8 +68,34 @@ jobs:
             --source-dir=dist \
             --api-key="$AMO_JWT_ISSUER" \
             --api-secret="$AMO_JWT_SECRET" \
-            --channel=listed \
+            --channel=unlisted \
             --artifacts-dir=web-ext-artifacts
+
+      - name: Verify signature structure of the signed XPI
+        if: steps.sign.outcome == 'success'
+        run: |
+          XPI=$(ls web-ext-artifacts/*.xpi 2>/dev/null | head -n1 || true)
+          if [ -z "$XPI" ]; then
+            echo "::error::Signing step reported success but no .xpi was produced"
+            exit 1
+          fi
+          if ! unzip -l "$XPI" | grep -q "META-INF/mozilla.rsa"; then
+            echo "::error::Signed XPI is missing META-INF/mozilla.rsa — signature verification failed"
+            exit 1
+          fi
+          echo "Signature verified: $(basename "$XPI")"
+
+      - name: Create source archives (deterministic)
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          git archive --format=tar HEAD | gzip -n > "web-ext-artifacts/orbis-${VERSION}-source.tar.gz"
+          git archive --format=zip HEAD > "web-ext-artifacts/orbis-${VERSION}-source.zip"
+
+      - name: Generate SHA-256 checksums
+        run: |
+          cd web-ext-artifacts
+          sha256sum orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null > SHA256SUMS.txt
+          cat SHA256SUMS.txt
 
       - name: Generate release notes
         id: notes
@@ -80,7 +111,9 @@ jobs:
             echo ""
             echo "---"
             echo ""
-            echo "**Install:** download the \`.zip\` below, or see [INSTALL.md](https://github.com/mheci/Orbis/blob/main/INSTALL.md)."
+            echo "**Install:** download the \`-signed.xpi\` below (signature verified) and open it in Firefox, or see [INSTALL.md](https://github.com/mheci/Orbis/blob/main/INSTALL.md)."
+            echo ""
+            echo "Verify the download: \`sha256sum -c SHA256SUMS.txt\` after saving it next to the artifacts."
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -92,6 +125,12 @@ jobs:
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
-            web-ext-artifacts/*.zip
-            web-ext-artifacts/*.xpi
+            web-ext-artifacts/orbis-*.zip
+            web-ext-artifacts/orbis-*.xpi
+            web-ext-artifacts/orbis-*-source.tar.gz
+            web-ext-artifacts/orbis-*-source.zip
+            web-ext-artifacts/SHA256SUMS.txt
+          # Signing is skipped when AMO credentials are absent, so the signed
+          # XPI must be optional; the unsigned zip, checksums and source
+          # archives are always required.
           fail_on_unmatched_files: false
