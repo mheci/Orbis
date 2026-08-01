@@ -7,8 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A fingerprint-globe brand icon (`src/icons/icon.svg`), rendered to every PNG size, replacing
+  the previous placeholder icon set.
+
 ### Changed
 
+- The whole UI is rebranded to a deep-space indigo palette: popup, options and onboarding share
+  the same accent tokens, the popup settings button is now a crisp inline SVG instead of a
+  decorative character, and the options and onboarding pages gained branded headers,
+  backgrounds and orbit-ring decoration.
 - The release pipeline now fails the whole run when AMO signing fails with credentials
   configured, instead of silently publishing a release without the signed XPI.
 - Signed XPIs are renamed to the canonical `orbis-<version>-signed.xpi` before publication,
