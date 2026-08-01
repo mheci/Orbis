@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-08-01
+
 ### Added
 
 - Seven additional verified Google-owned domains (`chrome.com`, `chromecast.com`, `angular.io`,
@@ -25,8 +27,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   for byte-for-byte reproducibility across two clean builds.
 - The extension-page CSP is declared explicitly (`script-src 'self'; object-src 'none';`) and
   enforced by the manifest verification step, so a future weakening fails the build.
-- The onboarding page loads its script as an ES module, matching the popup and options pages.
-- The onboarding page no longer uses emoji as decoration.
+- The onboarding page loads its script as an ES module, matching the popup and options pages,
+  and no longer uses emoji as decoration.
+- The blocking navigation listener now fetches the tab and the container id in parallel, so a
+  page load waits on one API round-trip instead of two.
+- Documentation corrected for accuracy: the changelog's historical entries were restored, the
+  README and INSTALL now list the commands that actually exist, and the architecture, roadmap
+  and test-count references were brought in line with the code.
+
+### Removed
+
+- Dead code: a write-only tab-tracking set and an unused classifier accessor.
 
 ## [2.0.1] - 2026-07-31
 
@@ -224,7 +235,8 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/mheci/Orbis/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/mheci/Orbis/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/mheci/Orbis/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/mheci/Orbis/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/mheci/Orbis/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/mheci/Orbis/compare/v1.0.1...v1.1.0
