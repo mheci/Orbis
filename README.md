@@ -81,9 +81,11 @@ Adding a missing site is one line in `src/domains/*.json` – see [DOMAIN_DATABA
 git clone https://github.com/mheci/Orbis.git
 cd Orbis
 npm ci
-npm run check   # format, lint, typecheck, secrets, test, build verify
-npm run build
-npm run package # web-ext-artifacts/*.zip
+npm run lint        # eslint + prettier
+npm run typecheck
+npm test
+npm run build       # dist/ + full verification
+npm run package     # web-ext-artifacts/*.zip
 ```
 
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md), [TESTING.md](docs/TESTING.md).
