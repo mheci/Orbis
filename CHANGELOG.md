@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- A decision log in the Diagnostics tab: the last 200 decisions (contain, release, unwrap and
+  the meaningful ignores) with their reasons, kept in a bounded ring buffer. It is stored
+  locally only and never leaves the browser.
+
 ### Changed
 
 - “Sign in with Google” on third-party sites is now an OAuth bridge: the handshake runs inside
