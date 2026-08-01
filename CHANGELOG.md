@@ -18,6 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Keyboard shortcuts: `Ctrl+Alt+O` moves the current tab into the container, `Ctrl+Alt+X` moves
   it back out, and `Ctrl+Alt+P` pauses or resumes protection. All are rebindable from
   Firefox’s add-on shortcuts page.
+- Full WebExtensions i18n support: every visible string in the popup, options and onboarding
+  pages, the badge tooltip, the context-menu labels and the manifest description live in a
+  single locale catalog (`_locales/en/messages.json`). The build verifies the catalog against
+  every reference (HTML attributes, `getMessage` calls and `__MSG_*__` manifest tokens) and
+  fails on drift, so a missing translation can never ship.
 
 ### Changed
 

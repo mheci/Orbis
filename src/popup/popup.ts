@@ -7,6 +7,7 @@
  */
 
 import type { Message, RuntimeState } from '../types/index.js';
+import { getMessage, localizePage } from '../shared/i18n.js';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const element = document.getElementById(id);
@@ -32,15 +33,15 @@ async function send<T>(message: Message): Promise<T> {
 }
 
 function describeMatch(state: RuntimeState): string {
-  if (state.currentHost === null) return 'No page loaded.';
+  if (state.currentHost === null) return getMessage('popupNoPage');
   if (state.currentMatch.isGoogle) {
     return state.currentTabInContainer
-      ? `Protected — isolated in ${state.containerName}.`
-      : `Google site detected (${state.currentMatch.source}).`;
+      ? getMessage('popupVerdictProtected', state.containerName)
+      : getMessage('popupVerdictGoogle', state.currentMatch.source);
   }
   return state.currentTabInContainer
-    ? 'Non-Google site currently inside the container.'
-    : 'Not a Google site — browsing normally.';
+    ? getMessage('popupVerdictInside')
+    : getMessage('popupVerdictNormal');
 }
 
 async function render(): Promise<void> {
@@ -48,10 +49,16 @@ async function render(): Promise<void> {
   const active = state.enabled && !state.paused;
 
   $('statusDot').classList.toggle('off', !active);
-  $('statusText').textContent = active ? 'Active' : state.paused ? 'Paused' : 'Disabled';
+  $('statusText').textContent = active
+    ? getMessage('popupActive')
+    : state.paused
+      ? getMessage('popupPaused')
+      : getMessage('popupDisabled');
   $('containerName').textContent = state.containerName;
   $('host').textContent = state.currentHost ?? '—';
-  $('tabState').textContent = state.currentTabInContainer ? 'In container' : 'Normal browsing';
+  $('tabState').textContent = state.currentTabInContainer
+    ? getMessage('popupInContainer')
+    : getMessage('popupNormalBrowsing');
 
   const verdict = $('verdict');
   verdict.textContent = describeMatch(state);
@@ -65,17 +72,17 @@ async function render(): Promise<void> {
   const blockHint = $('blockHint');
   const allowButton = $('allowSite') as HTMLButtonElement;
   if (state.blockingMode === 'off') {
-    blockHint.textContent = 'Tracker blocking is switched off in settings.';
+    blockHint.textContent = getMessage('popupBlockHintOff');
   } else if (state.siteAllowlisted) {
-    blockHint.textContent = 'You have allowed Google resources on this site.';
+    blockHint.textContent = getMessage('popupBlockHintAllowed');
   } else if (state.blockedHere === 0) {
-    blockHint.textContent = 'No Google trackers found on this page.';
+    blockHint.textContent = getMessage('popupBlockHintNone');
   } else {
-    blockHint.textContent = 'Google trackers stopped before they loaded.';
+    blockHint.textContent = getMessage('popupBlockedHint');
   }
   allowButton.textContent = state.siteAllowlisted
-    ? 'Block Google resources on this site again'
-    : 'Allow Google resources on this site';
+    ? getMessage('popupBlockAgain')
+    : getMessage('popupAllowSite');
   allowButton.disabled = state.currentHost === null || state.blockingMode === 'off';
 
   ($('moveIn') as HTMLButtonElement).disabled =
@@ -167,17 +174,18 @@ async function safeRender(): Promise<void> {
   } catch (error) {
     const verdict = document.getElementById('verdict');
     const host = document.getElementById('host');
-    if (host !== null) host.textContent = 'Orbis is starting…';
+    if (host !== null) host.textContent = getMessage('popupStarting');
     if (verdict !== null) {
       verdict.className = 'verdict outside';
       verdict.textContent =
         error instanceof Error && error.message.length > 0
-          ? `Could not reach the extension: ${error.message}. Close and reopen this popup.`
-          : 'Could not reach the extension. Close and reopen this popup.';
+          ? getMessage('popupUnreachableDetail', error.message)
+          : getMessage('popupUnreachable');
     }
     console.warn('[orbis] popup render failed', error);
   }
 }
 
+localizePage();
 wire();
 void safeRender();

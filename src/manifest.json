@@ -2,9 +2,10 @@
   "manifest_version": 3,
   "name": "Orbis",
   "version": "2.0.3",
-  "description": "Keep Google in its own orbit. Isolate Google, YouTube and every Google service in a dedicated container with tracker blocking.",
+  "description": "__MSG_manifestDescription__",
   "homepage_url": "https://github.com/mheci/Orbis",
   "author": "Orbis contributors",
+  "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
       "id": "orbis@mheci.github.io",
@@ -59,42 +60,42 @@
         "default": "Alt+Shift+O",
         "mac": "MacCtrl+Shift+O"
       },
-      "description": "Open Orbis"
+      "description": "__MSG_commandOpenAction__"
     },
     "open-orbis-tab": {
       "suggested_key": {
         "default": "Ctrl+Shift+O",
         "mac": "MacCtrl+Shift+O"
       },
-      "description": "Open new Orbis tab"
+      "description": "__MSG_commandOpenTab__"
     },
     "open-google-in-orbis": {
       "suggested_key": {
         "default": "Ctrl+Shift+G",
         "mac": "MacCtrl+Shift+G"
       },
-      "description": "Open Google in Orbis container"
+      "description": "__MSG_commandOpenGoogle__"
     },
     "move-tab-into": {
       "suggested_key": {
         "default": "Ctrl+Alt+O",
         "mac": "MacCtrl+Alt+O"
       },
-      "description": "Move the current tab into the Orbis container"
+      "description": "__MSG_commandMoveIn__"
     },
     "move-tab-out": {
       "suggested_key": {
         "default": "Ctrl+Alt+X",
         "mac": "MacCtrl+Alt+X"
       },
-      "description": "Move the current tab out of the Orbis container"
+      "description": "__MSG_commandMoveOut__"
     },
     "pause-toggle": {
       "suggested_key": {
         "default": "Ctrl+Alt+P",
         "mac": "MacCtrl+Alt+P"
       },
-      "description": "Pause or resume protection"
+      "description": "__MSG_commandPauseToggle__"
     }
   }
 }
