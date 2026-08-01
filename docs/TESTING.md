@@ -1,7 +1,7 @@
 # Testing
 
 ```bash
-npm test              # run everything, 292 tests
+npm test              # run everything, 366 tests
 npm run test:watch    # rerun as you edit
 npm run test:coverage # with coverage limits enforced
 npm run ci            # everything the build server runs
