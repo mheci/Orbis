@@ -11,6 +11,7 @@ import {
   CONTAINER_COLORS,
   CONTAINER_ICONS,
   type BackupDocument,
+  type DecisionEntry,
   type DeepPartial,
   type Diagnostics,
   type MatchResult,
@@ -254,10 +255,58 @@ function wireTabs(): void {
   }
 }
 
+const KIND_LABELS: Record<DecisionEntry['kind'], string> = {
+  contain: 'Contain',
+  release: 'Release',
+  unwrap: 'Unwrap',
+  ignore: 'Ignore',
+};
+
+function renderDecisionLog(entries: readonly DecisionEntry[]): void {
+  const body = $('logBody');
+  body.textContent = '';
+  $('logCount').textContent = `${entries.length} entries kept (newest first).`;
+  if (entries.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.className = 'empty';
+    cell.textContent = 'Nothing recorded yet.';
+    row.append(cell);
+    body.append(row);
+    return;
+  }
+  // Newest first: the log is stored oldest-first, so walk it backwards.
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const entry = entries[i]!;
+    const row = document.createElement('tr');
+    const when = document.createElement('td');
+    when.textContent = new Date(entry.at).toLocaleTimeString();
+    const kind = document.createElement('td');
+    const badge = document.createElement('span');
+    badge.className = `badge ${entry.kind}`;
+    badge.textContent = KIND_LABELS[entry.kind];
+    kind.append(badge);
+    const reason = document.createElement('td');
+    reason.textContent = entry.reason;
+    const site = document.createElement('td');
+    site.textContent = entry.host ?? '—';
+    const url = document.createElement('td');
+    url.className = 'url';
+    url.textContent = entry.url;
+    url.title = entry.url;
+    row.append(when, kind, reason, site, url);
+    body.append(row);
+  }
+}
+
 async function refreshDiagnostics(): Promise<void> {
   try {
     const diagnostics = await send<Diagnostics>({ type: 'diagnostics' });
-    $('diagnostics').textContent = JSON.stringify(diagnostics, null, 2);
+    // The decision log has its own table; keep the JSON dump about state.
+    const { recentDecisions, ...rest } = diagnostics;
+    $('diagnostics').textContent = JSON.stringify(rest, null, 2);
+    renderDecisionLog(recentDecisions);
     renderDomainSets(diagnostics);
   } catch (error) {
     $('diagnostics').textContent = `Diagnostics unavailable: ${String(error)}`;
@@ -400,6 +449,15 @@ function wireData(): void {
 
 function wireDiagnostics(): void {
   $('refreshDiag').addEventListener('click', () => void refreshDiagnostics());
+  $('clearLog').addEventListener('click', async () => {
+    try {
+      const size = await send<number>({ type: 'clear-decision-log' });
+      await refreshDiagnostics();
+      toast(size === 0 ? 'Log already empty.' : 'Decision log cleared.');
+    } catch (error) {
+      toast(`Could not clear log: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
   const input = $('testInput') as HTMLInputElement;
   const run = async (): Promise<void> => {
     const value = input.value.trim();

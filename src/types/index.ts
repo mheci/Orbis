@@ -176,7 +176,8 @@ export type Message =
   | { type: 'reset' }
   | { type: 'diagnostics' }
   | { type: 'allowlist-site'; host: string; allow: boolean }
-  | { type: 'get-blocked'; tabId: number };
+  | { type: 'get-blocked'; tabId: number }
+  | { type: 'clear-decision-log' };
 
 /** Snapshot of runtime state used to render the popup. */
 export interface RuntimeState {
@@ -212,6 +213,29 @@ export interface Diagnostics {
   readonly storage: { local: boolean; sync: boolean };
   readonly matcherBuildMs: number;
   readonly recentErrors: string[];
+  /** Recent navigation decisions, newest kept via a bounded ring buffer. */
+  readonly recentDecisions: DecisionEntry[];
+}
+
+/**
+ * One decision the engine made, kept in a bounded local log.
+ *
+ * The log exists purely for diagnostics: it explains why a given navigation
+ * was or was not containerized. It is stored locally and never leaves the
+ * browser.
+ */
+export interface DecisionEntry {
+  /** Epoch ms. */
+  readonly at: number;
+  /** What happened. */
+  readonly kind: 'contain' | 'release' | 'unwrap' | 'ignore';
+  /** Machine-readable reason; mirrors `NavigationAction.reason`. */
+  readonly reason: string;
+  /** The navigated URL, truncated for storage. */
+  readonly url: string;
+  readonly tabId: number;
+  /** Host of the URL, when parseable. */
+  readonly host: string | null;
 }
 
 /** Recursive partial, used for settings patches. */

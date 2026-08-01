@@ -199,6 +199,29 @@
           <pre id="diagnostics" class="code"></pre>
         </fieldset>
         <fieldset>
+          <legend>Decision log</legend>
+          <p class="hint">
+            The most recent decisions the engine made: every action taken (contain, release, unwrap)
+            plus ignores worth knowing about. Stored locally only, never synced or sent anywhere.
+          </p>
+          <div class="inline">
+            <button class="btn" id="clearLog">Clear log</button>
+            <span class="hint" id="logCount" style="margin: 0"></span>
+          </div>
+          <table class="decision-log">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>Action</th>
+                <th>Reason</th>
+                <th>Site</th>
+                <th>URL</th>
+              </tr>
+            </thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </fieldset>
+        <fieldset>
           <legend>Test a URL</legend>
           <div class="inline">
             <input type="text" id="testInput" placeholder="https://mail.google.com/" />
