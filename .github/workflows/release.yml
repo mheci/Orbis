@@ -55,7 +55,6 @@ jobs:
 
       - name: Sign with AMO signing service (unlisted — signature only, never published)
         id: sign
-        continue-on-error: true
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
@@ -106,9 +105,10 @@ jobs:
       - name: Generate SHA-256 checksums
         run: |
           cd web-ext-artifacts
-          # xargs -r skips the whole command when no artifact matches, so a
-          # signing-less run still produces a valid checksums file.
-          ls orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null | xargs -r sha256sum > SHA256SUMS.txt
+          # xargs -r skips the whole command when no artifact matches, and
+          # sort -u drops the source.zip duplicate that matches two globs, so
+          # a signing-less run still produces a valid checksums file.
+          ls orbis-*.zip orbis-*.xpi orbis-*-source.* 2>/dev/null | sort -u | xargs -r sha256sum > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Generate release notes
