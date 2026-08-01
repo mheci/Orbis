@@ -27,6 +27,8 @@ type App = {
     d: browser.webRequest._OnBeforeRequestDetails
   ): Promise<browser.webRequest.BlockingResponse | undefined>;
   handleMessage(m: Message): Promise<unknown>;
+  moveActiveTab(into: boolean): Promise<boolean>;
+  togglePause(): Promise<boolean>;
 };
 const ask = async <T>(app: App, message: Message): Promise<T> =>
   (await app.handleMessage(message)) as T;
@@ -326,6 +328,33 @@ describe('background: messaging contract', () => {
   it('rejects an unknown message rather than failing silently', async () => {
     const app = await loadApp(mock);
     await expect(app.handleMessage({ type: 'nope' } as never)).rejects.toThrow(/Unknown message/);
+  });
+
+  it('moves the active tab into the container and back out', async () => {
+    const app = await loadApp(mock);
+    const containerId = [...mock.identities.keys()][0]!;
+    mock.addTab({ url: 'https://example.com/', active: true });
+
+    expect(await app.moveActiveTab(true)).toBe(true);
+    expect(mock.createdTabs[0]!.cookieStoreId).toBe(containerId);
+    expect(mock.createdTabs[0]!.active).toBe(true);
+
+    mock.addTab({ url: 'https://www.google.com/', active: true, cookieStoreId: containerId });
+    expect(await app.moveActiveTab(false)).toBe(true);
+    expect(mock.createdTabs[1]!.cookieStoreId).toBe('firefox-default');
+  });
+
+  it('togglePause flips protection on and off', async () => {
+    const app = await loadApp(mock);
+    expect(await app.togglePause()).toBe(true);
+    const tab = mock.addTab();
+    expect(await app.onBeforeRequest(mainFrame('https://www.google.com/', tab.id))).toBeUndefined();
+
+    expect(await app.togglePause()).toBe(false);
+    const tab2 = mock.addTab();
+    expect(await app.onBeforeRequest(mainFrame('https://www.google.com/', tab2.id))).toEqual({
+      cancel: true,
+    });
   });
 
   it('rejects an invalid rule pattern', async () => {
