@@ -50,6 +50,9 @@
   ],
   "host_permissions": ["http://*/*", "https://*/*"],
   "web_accessible_resources": [],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none';"
+  },
   "commands": {
     "_execute_action": {
       "suggested_key": {
