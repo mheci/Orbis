@@ -74,6 +74,27 @@
         "mac": "MacCtrl+Shift+G"
       },
       "description": "Open Google in Orbis container"
+    },
+    "move-tab-into": {
+      "suggested_key": {
+        "default": "Ctrl+Alt+O",
+        "mac": "MacCtrl+Alt+O"
+      },
+      "description": "Move the current tab into the Orbis container"
+    },
+    "move-tab-out": {
+      "suggested_key": {
+        "default": "Ctrl+Alt+X",
+        "mac": "MacCtrl+Alt+X"
+      },
+      "description": "Move the current tab out of the Orbis container"
+    },
+    "pause-toggle": {
+      "suggested_key": {
+        "default": "Ctrl+Alt+P",
+        "mac": "MacCtrl+Alt+P"
+      },
+      "description": "Pause or resume protection"
     }
   }
 }
