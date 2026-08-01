@@ -134,7 +134,7 @@ cookie separation into an actual defence against being followed around the web.
 
 ### Changed
 
-- **Commit history rewritten to a single maintainer identity** (`astarling-x`). Dependabot
+- **Commit history rewritten to a single maintainer identity.** Dependabot
   authorship is preserved, since rewriting it would misrepresent who wrote those changes. File
   contents are byte-identical, the tree hash is unchanged and only commit metadata differs.
 - Hardened workflows: explicit least-privilege `permissions` blocks on every job.
@@ -151,7 +151,7 @@ including Release and Beta, with no `about:config` changes.
 
 ### Changed
 
-- **Project moved to the `astarling-x` GitHub account.** The previous `mheci` repository has been
+- **Project moved to its own GitHub account.** The previous repository location has been
   deleted; all clone URLs, badges, issue links and the private security-reporting link now point at
   `github.com/mheci/Orbis`.
 - **Extension id changed** from `orbis@mheci.github.io` to `orbis@mheci.github.io`.

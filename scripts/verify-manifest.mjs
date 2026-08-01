@@ -82,30 +82,20 @@ for (const permission of manifest.permissions ?? []) {
   );
 }
 
-// The project has been rebranded from astarling-x/g-container to mheci/Orbis.
-// Canonical owner is now mheci, extension id is orbis@mheci.github.io.
-// Changing id after publication orphans installs, but this is intentional for
-// the Orbis rebrand (major version 2.0.0). Previous g-container installs will
-// need to migrate manually.
+// The extension id and homepage are permanent identity keys pinned to the
+// canonical owner: changing them after release orphans existing installs.
 const CANONICAL_OWNER = 'mheci';
-const RETIRED_OWNERS = ['astarling-x'];
+const CANONICAL_HOMEPAGE = `https://github.com/${CANONICAL_OWNER}/Orbis`;
 const EXPECTED_EXTENSION_ID = `orbis@${CANONICAL_OWNER}.github.io`;
 
 check(
   gecko?.id === EXPECTED_EXTENSION_ID,
-  `gecko.id must be "${EXPECTED_EXTENSION_ID}" (found "${gecko?.id}"). The extension id is a permanent identity key — changing it after release orphans existing installs. For Orbis rebrand, this is intentional v2.0.0.`
+  `gecko.id must be "${EXPECTED_EXTENSION_ID}" (found "${gecko?.id}"). The extension id is a permanent identity key — changing it after release orphans existing installs.`
 );
-for (const retired of RETIRED_OWNERS) {
-  // Allow retired owner in comments or historical docs, but not in manifest id/homepage
-  if (gecko?.id?.includes(retired) || manifest.homepage_url?.includes(retired)) {
-    // Check if homepage still points to old repo – should be updated to mheci/Orbis
-    if (manifest.homepage_url?.includes('astarling-x/g-container')) {
-      errors.push(
-        `manifest homepage still references retired repo "astarling-x/g-container"; update to "mheci/Orbis"`
-      );
-    }
-  }
-}
+check(
+  manifest.homepage_url === CANONICAL_HOMEPAGE,
+  `manifest homepage_url must be "${CANONICAL_HOMEPAGE}" (found "${manifest.homepage_url}")`
+);
 
 const referenced = [
   ...(manifest.background?.scripts ?? []),
