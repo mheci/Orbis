@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-08-01
+
 ### Added
 
 - A fingerprint-globe brand icon (`src/icons/icon.svg`), rendered to every PNG size, replacing
@@ -251,7 +253,8 @@ First production release.
 - Seven permissions, each documented and enforced by a CI check.
 - Hostname-based matching that resists suffix, query-string and userinfo spoofing.
 
-[Unreleased]: https://github.com/mheci/Orbis/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/mheci/Orbis/compare/v2.0.3...HEAD
+[2.0.3]: https://github.com/mheci/Orbis/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/mheci/Orbis/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/mheci/Orbis/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/mheci/Orbis/compare/v1.1.0...v2.0.0
