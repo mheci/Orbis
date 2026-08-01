@@ -195,6 +195,14 @@ is cheap to rebuild. Setup is safe to call repeatedly and every entry point wait
 
 Counter writes are delayed by five seconds so a burst of page loads does not hammer storage.
 
+## Content security policy
+
+Extension pages (popup, options, onboarding) declare an explicit CSP in the
+manifest: `script-src 'self'; object-src 'none'`. No inline scripts, no remote
+code and no plugin objects can ever execute inside them, regardless of how the
+HTML evolves. This is the same policy the Firefox default enforces for MV3, made
+explicit so a future change cannot silently weaken it.
+
 ## Rules that must hold
 
 Breaking any of these is a bug.
