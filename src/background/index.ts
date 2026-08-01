@@ -40,8 +40,6 @@ class Orbis {
   private container: ContainerManager;
   private settings: Settings;
   private ready: Promise<void> | null = null;
-  /** Tabs we created ourselves, so we can close the placeholder safely. */
-  private readonly ourTabs = new Set<number>();
   private statsFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private blocker: SubresourceClassifier;
   /** Per-tab count of Google resources blocked, for the popup and badge. */
@@ -147,7 +145,13 @@ class Orbis {
     const now = Date.now();
     if (!isProtectionActive(this.settings, now)) return undefined;
 
-    const tab = await this.getTab(details.tabId);
+    // The blocking listener stalls the navigation, so every serial round-trip
+    // here is visible as page-load latency. Fetch the tab facts and the
+    // container id concurrently instead of one after the other.
+    const [tab, containerId] = await Promise.all([
+      this.getTab(details.tabId),
+      this.container.ensure(this.settings.container),
+    ]);
     if (tab === null) return undefined;
 
     const openerTabId = typeof tab.openerTabId === 'number' ? tab.openerTabId : null;
@@ -161,7 +165,7 @@ class Orbis {
       url: details.url,
       tabId: details.tabId,
       cookieStoreId: tab.cookieStoreId ?? DEFAULT_COOKIE_STORE,
-      containerId: await this.container.ensure(this.settings.container),
+      containerId,
       openerTabId,
       openerCookieStoreId,
       incognito: tab.incognito === true,
@@ -228,7 +232,6 @@ class Orbis {
             : undefined,
       });
       if (typeof created.id === 'number') {
-        this.ourTabs.add(created.id);
         this.loopGuard.remember(created.id, action.url, Date.now());
       }
 
@@ -360,7 +363,6 @@ class Orbis {
         windowId: tab.windowId,
       });
       if (typeof created.id === 'number') {
-        this.ourTabs.add(created.id);
         this.loopGuard.remember(created.id, tab.url, Date.now());
       }
       if (typeof tab.id === 'number') await this.closePlaceholder(tab.id);
@@ -379,7 +381,6 @@ class Orbis {
     const finalUrl = parsed?.href ?? 'about:blank';
     const tab = await browser.tabs.create({ url: finalUrl, cookieStoreId: containerId });
     if (typeof tab.id === 'number') {
-      this.ourTabs.add(tab.id);
       this.loopGuard.remember(tab.id, finalUrl, Date.now());
       this.tabStores.set(tab.id, containerId);
     }
@@ -563,7 +564,6 @@ class Orbis {
 
     browser.tabs.onRemoved.addListener((tabId) => {
       this.loopGuard.forgetTab(tabId);
-      this.ourTabs.delete(tabId);
       this.blockedPerTab.delete(tabId);
       this.tabStores.delete(tabId);
     });

@@ -333,9 +333,4 @@ export class SubresourceClassifier {
       allowlist: this.allowlist.length,
     };
   }
-
-  /** Unused reference kept for future rules that need the full database. */
-  get database(): DomainDatabase | undefined {
-    return this.db;
-  }
 }
