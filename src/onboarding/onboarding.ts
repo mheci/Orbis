@@ -1,3 +1,5 @@
+import { getMessage, localizePage } from '../shared/i18n.js';
+
 let currentStep = 1;
 const totalSteps = 4;
 
@@ -12,7 +14,7 @@ function updateProgress(): void {
   const text = element<HTMLElement>('#progress-text');
   const percent = (currentStep / totalSteps) * 100;
   fill.style.width = `${percent}%`;
-  text.textContent = `Step ${currentStep} of ${totalSteps}`;
+  text.textContent = getMessage('onboardingStepCount', [String(currentStep), String(totalSteps)]);
   document.querySelectorAll<HTMLElement>('.dot').forEach((dot) => {
     const step = Number(dot.dataset['step']);
     dot.classList.toggle('active', step === currentStep);
@@ -20,7 +22,8 @@ function updateProgress(): void {
   const prev = element<HTMLButtonElement>('#prev-step');
   const next = element<HTMLButtonElement>('#next-step');
   prev.disabled = currentStep === 1;
-  next.textContent = currentStep === totalSteps ? 'Done' : 'Next';
+  next.textContent =
+    currentStep === totalSteps ? getMessage('onboardingDone') : getMessage('onboardingNext');
 }
 
 function showStep(step: number): void {
@@ -66,6 +69,8 @@ function bind(): void {
     }
   });
 }
+
+localizePage();
 
 try {
   bind();

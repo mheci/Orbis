@@ -1,0 +1,614 @@
+{
+  "manifestDescription": {
+    "message": "Keep Google in its own orbit. Isolate Google, YouTube and every Google service in a dedicated container with tracker blocking."
+  },
+  "commandOpenAction": {
+    "message": "Open Orbis"
+  },
+  "commandOpenTab": {
+    "message": "Open new Orbis tab"
+  },
+  "commandOpenGoogle": {
+    "message": "Open Google in Orbis container"
+  },
+  "commandMoveIn": {
+    "message": "Move the current tab into the Orbis container"
+  },
+  "commandMoveOut": {
+    "message": "Move the current tab out of the Orbis container"
+  },
+  "commandPauseToggle": {
+    "message": "Pause or resume protection"
+  },
+  "menuOpenLink": {
+    "message": "Open link in Orbis"
+  },
+  "menuAlways": {
+    "message": "Always open this site in Orbis"
+  },
+  "menuNever": {
+    "message": "Never open this site in Orbis"
+  },
+  "menuMoveIn": {
+    "message": "Move this tab into Orbis"
+  },
+  "menuMoveOut": {
+    "message": "Move this tab out of Orbis"
+  },
+  "tooltipActive": {
+    "message": "Orbis — protecting $1"
+  },
+  "tooltipPaused": {
+    "message": "Orbis — paused"
+  },
+  "popupOpenSettings": {
+    "message": "Open settings"
+  },
+  "popupCurrentSite": {
+    "message": "Current site"
+  },
+  "popupChecking": {
+    "message": "Checking…"
+  },
+  "popupProtection": {
+    "message": "Protection"
+  },
+  "popupContainer": {
+    "message": "Container"
+  },
+  "popupThisTab": {
+    "message": "This tab"
+  },
+  "popupMoveIn": {
+    "message": "Move tab into container"
+  },
+  "popupMoveOut": {
+    "message": "Move tab out of container"
+  },
+  "popupAlways": {
+    "message": "Always containerize this site"
+  },
+  "popupNever": {
+    "message": "Never containerize this site"
+  },
+  "popupBlockedOnPage": {
+    "message": "Blocked on this page"
+  },
+  "popupBlockedHint": {
+    "message": "Google trackers stopped before they loaded."
+  },
+  "popupAllowSite": {
+    "message": "Allow Google resources on this site"
+  },
+  "popupContained": {
+    "message": "Contained"
+  },
+  "popupReleased": {
+    "message": "Released"
+  },
+  "popupTrackersBlocked": {
+    "message": "Trackers blocked"
+  },
+  "popupPause30": {
+    "message": "Pause 30 min"
+  },
+  "popupResume": {
+    "message": "Resume protection"
+  },
+  "popupNoPage": {
+    "message": "No page loaded."
+  },
+  "popupVerdictProtected": {
+    "message": "Protected — isolated in $1."
+  },
+  "popupVerdictGoogle": {
+    "message": "Google site detected ($1)."
+  },
+  "popupVerdictInside": {
+    "message": "Non-Google site currently inside the container."
+  },
+  "popupVerdictNormal": {
+    "message": "Not a Google site — browsing normally."
+  },
+  "popupActive": {
+    "message": "Active"
+  },
+  "popupPaused": {
+    "message": "Paused"
+  },
+  "popupDisabled": {
+    "message": "Disabled"
+  },
+  "popupInContainer": {
+    "message": "In container"
+  },
+  "popupNormalBrowsing": {
+    "message": "Normal browsing"
+  },
+  "popupBlockHintOff": {
+    "message": "Tracker blocking is switched off in settings."
+  },
+  "popupBlockHintAllowed": {
+    "message": "You have allowed Google resources on this site."
+  },
+  "popupBlockHintNone": {
+    "message": "No Google trackers found on this page."
+  },
+  "popupBlockAgain": {
+    "message": "Block Google resources on this site again"
+  },
+  "popupStarting": {
+    "message": "Orbis is starting…"
+  },
+  "popupUnreachableDetail": {
+    "message": "Could not reach the extension: $1. Close and reopen this popup."
+  },
+  "popupUnreachable": {
+    "message": "Could not reach the extension. Close and reopen this popup."
+  },
+  "optionsPageTitle": {
+    "message": "Orbis settings"
+  },
+  "optionsSubtitle": {
+    "message": "Every Google-owned site is isolated in its own Firefox Container, so Google cookies never touch the rest of your browsing."
+  },
+  "optionsTabGeneral": {
+    "message": "General"
+  },
+  "optionsTabDomains": {
+    "message": "Domains"
+  },
+  "optionsTabRules": {
+    "message": "Rules & exceptions"
+  },
+  "optionsTabData": {
+    "message": "Backup & data"
+  },
+  "optionsTabDiagnostics": {
+    "message": "Diagnostics"
+  },
+  "optionsProtection": {
+    "message": "Protection"
+  },
+  "optionsBehaviour": {
+    "message": "Behaviour"
+  },
+  "optionsEnableOrbis": {
+    "message": "Enable Orbis"
+  },
+  "optionsPause30": {
+    "message": "Pause 30 minutes"
+  },
+  "optionsResumeNow": {
+    "message": "Resume now"
+  },
+  "optionsContainerAppearance": {
+    "message": "Container appearance"
+  },
+  "optionsName": {
+    "message": "Name"
+  },
+  "optionsColour": {
+    "message": "Colour"
+  },
+  "optionsIcon": {
+    "message": "Icon"
+  },
+  "optionsRenameHint": {
+    "message": "Renaming updates the existing container in place; your cookies and logins stay intact."
+  },
+  "optionsBlockingTitle": {
+    "message": "Blocking Google trackers on other websites"
+  },
+  "optionsBlockingIntro": {
+    "message": "Google code is embedded across much of the web. Even without cookies, loading it tells Google your IP address and which page you are reading. Blocking stops the request before it is sent."
+  },
+  "optionsBlockingOff": {
+    "message": "<strong>Off.</strong> Load every embedded Google resource as normal."
+  },
+  "optionsBlockingStandard": {
+    "message": "<strong>Standard, recommended.</strong> Block Google analytics, advertising and social widgets on sites that are not Google. Fonts, maps, sign-in, reCAPTCHA and embedded videos keep working."
+  },
+  "optionsBlockingStrict": {
+    "message": "<strong>Strict.</strong> Also block fonts, hosted script libraries, maps and embedded players. <em>This will visibly break some websites.</em> Sign-in and reCAPTCHA are still allowed, so you cannot be locked out of an account."
+  },
+  "optionsShowBadge": {
+    "message": "Show the number blocked on the toolbar icon"
+  },
+  "optionsAllowlistHint": {
+    "message": "Sites where Google resources are allowed to load normally:"
+  },
+  "optionsAllowAdd": {
+    "message": "Add"
+  },
+  "optionsUnwrap": {
+    "message": "Unwrap Google redirect links (<code>google.com/url?q=…</code>) so external sites open outside the container"
+  },
+  "optionsOAuth": {
+    "message": "Let “Sign in with Google” on third-party sites work (the handshake runs in the container, the callback lands back on the site)"
+  },
+  "optionsReleaseNonGoogle": {
+    "message": "Push non-Google pages opened inside the container back out"
+  },
+  "optionsPrivateWindows": {
+    "message": "Also act in private windows"
+  },
+  "optionsCollectStats": {
+    "message": "Keep local statistics (never leaves your device)"
+  },
+  "optionsUseSync": {
+    "message": "Mirror settings through Firefox Sync when available"
+  },
+  "optionsDomainSets": {
+    "message": "Domain sets"
+  },
+  "optionsDomainSetsHint": {
+    "message": "The domain database ships with the extension and needs no network access. See <code>docs/DOMAIN_DATABASE.md</code> to add domains."
+  },
+  "optionsAlwaysTitle": {
+    "message": "Always containerize"
+  },
+  "optionsAlwaysHint": {
+    "message": "Extra hosts that should always open in the Google container."
+  },
+  "optionsNeverTitle": {
+    "message": "Never containerize"
+  },
+  "optionsNeverHint": {
+    "message": "Highest priority. Use for sites that must stay in normal browsing even when they redirect through Google."
+  },
+  "optionsExceptionsTitle": {
+    "message": "Exceptions"
+  },
+  "optionsExceptionsHint": {
+    "message": "Sites that must never be pulled into the container, even when they match Google. Disabled exceptions are kept but ignored."
+  },
+  "optionsExceptionAdd": {
+    "message": "Add exception"
+  },
+  "optionsBackupTitle": {
+    "message": "Backup"
+  },
+  "optionsBackupHint": {
+    "message": "Versioned, human-readable JSON. Imports are validated and sanitised."
+  },
+  "optionsExport": {
+    "message": "Export settings"
+  },
+  "optionsImport": {
+    "message": "Import settings"
+  },
+  "optionsStatsTitle": {
+    "message": "Statistics"
+  },
+  "optionsResetTitle": {
+    "message": "Reset"
+  },
+  "optionsResetHint": {
+    "message": "Restores defaults. Your container and its cookies are not deleted."
+  },
+  "optionsResetBtn": {
+    "message": "Reset all settings"
+  },
+  "optionsDiagTitle": {
+    "message": "Diagnostics"
+  },
+  "optionsDiagRefresh": {
+    "message": "Refresh"
+  },
+  "optionsLogTitle": {
+    "message": "Decision log"
+  },
+  "optionsLogHint": {
+    "message": "The most recent decisions the engine made: every action taken (contain, release, unwrap) plus ignores worth knowing about. Stored locally only, never synced or sent anywhere."
+  },
+  "optionsLogClear": {
+    "message": "Clear log"
+  },
+  "optionsLogWhen": {
+    "message": "When"
+  },
+  "optionsLogAction": {
+    "message": "Action"
+  },
+  "optionsLogReason": {
+    "message": "Reason"
+  },
+  "optionsLogSite": {
+    "message": "Site"
+  },
+  "optionsLogUrl": {
+    "message": "URL"
+  },
+  "optionsTestTitle": {
+    "message": "Test a URL"
+  },
+  "optionsTestBtn": {
+    "message": "Check"
+  },
+  "setTitleGoogle": {
+    "message": "Google core properties"
+  },
+  "setTitleYoutube": {
+    "message": "YouTube & video delivery"
+  },
+  "setTitleTrackers": {
+    "message": "Advertising & measurement"
+  },
+  "setTitleHosting": {
+    "message": "User-content hosting"
+  },
+  "setDescGoogle": {
+    "message": "google.com, all country domains, Gmail, Drive, Maps, the .google gTLD and more."
+  },
+  "setDescYoutube": {
+    "message": "youtube.com, youtu.be, youtube-nocookie.com, localized YouTube domains, video CDNs."
+  },
+  "setDescTrackers": {
+    "message": "doubleclick.net, google-analytics.com, googletagmanager.com… Off by default: top-level visits are usually ad click-throughs belonging to the originating site."
+  },
+  "setDescHosting": {
+    "message": "appspot.com, web.app, firebaseapp.com… Off by default: these host unrelated third-party apps."
+  },
+  "optionsHostCount": {
+    "message": "$1 host patterns loaded in total."
+  },
+  "optionsListEmpty": {
+    "message": "No entries yet."
+  },
+  "optionsRemoveRule": {
+    "message": "Remove $1"
+  },
+  "optionsRemoved": {
+    "message": "Removed."
+  },
+  "optionsNoSites": {
+    "message": "No sites yet."
+  },
+  "optionsStatContained": {
+    "message": "Contained navigations"
+  },
+  "optionsStatReleased": {
+    "message": "Released navigations"
+  },
+  "optionsStatUnwrapped": {
+    "message": "Links unwrapped"
+  },
+  "optionsStatExceptions": {
+    "message": "Exceptions applied"
+  },
+  "optionsStatTrackers": {
+    "message": "Trackers blocked"
+  },
+  "optionsStatSince": {
+    "message": "Counting since"
+  },
+  "optionsStatLastEvent": {
+    "message": "Last event"
+  },
+  "optionsStatNever": {
+    "message": "—"
+  },
+  "optionsPausedUntil": {
+    "message": "Paused until $1."
+  },
+  "optionsRunning": {
+    "message": "Protection is running."
+  },
+  "optionsSaved": {
+    "message": "Saved."
+  },
+  "optionsSaveFailed": {
+    "message": "Could not save: $1"
+  },
+  "optionsPaused30": {
+    "message": "Paused for 30 minutes."
+  },
+  "optionsResumed": {
+    "message": "Protection resumed."
+  },
+  "optionsSiteAdded": {
+    "message": "Site added."
+  },
+  "optionsAddFailed": {
+    "message": "Could not add: $1"
+  },
+  "optionsRuleAdded": {
+    "message": "Rule added."
+  },
+  "optionsRuleAddFailed": {
+    "message": "Could not add rule: $1"
+  },
+  "optionsBackupExported": {
+    "message": "Backup exported."
+  },
+  "optionsSettingsImported": {
+    "message": "Settings imported."
+  },
+  "optionsImportFailed": {
+    "message": "Import failed: $1"
+  },
+  "optionsResetConfirm": {
+    "message": "Reset all Orbis settings to their defaults?"
+  },
+  "optionsSettingsReset": {
+    "message": "Settings reset."
+  },
+  "optionsDiagUnavailable": {
+    "message": "Diagnostics unavailable: $1"
+  },
+  "optionsLogCount": {
+    "message": "$1 entries kept (newest first)."
+  },
+  "optionsLogEmpty": {
+    "message": "Nothing recorded yet."
+  },
+  "optionsLogKindContain": {
+    "message": "Contain"
+  },
+  "optionsLogKindRelease": {
+    "message": "Release"
+  },
+  "optionsLogKindUnwrap": {
+    "message": "Unwrap"
+  },
+  "optionsLogKindIgnore": {
+    "message": "Ignore"
+  },
+  "optionsLogAlreadyEmpty": {
+    "message": "Log already empty."
+  },
+  "optionsLogCleared": {
+    "message": "Decision log cleared."
+  },
+  "optionsLogClearFailed": {
+    "message": "Could not clear log: $1"
+  },
+  "optionsNoExceptions": {
+    "message": "No exceptions yet."
+  },
+  "optionsExceptionEnabledTitle": {
+    "message": "Enabled — disable to ignore"
+  },
+  "optionsExceptionDisabledTitle": {
+    "message": "Disabled — enable to apply"
+  },
+  "optionsExceptionUpdateFailed": {
+    "message": "Could not update: $1"
+  },
+  "optionsExceptionAddedDate": {
+    "message": "Added $1"
+  },
+  "optionsExceptionNotePlaceholder": {
+    "message": "note"
+  },
+  "optionsExceptionNoteTitle": {
+    "message": "Optional note"
+  },
+  "optionsNoteSaved": {
+    "message": "Note saved."
+  },
+  "optionsNoteSaveFailed": {
+    "message": "Could not save: $1"
+  },
+  "optionsRemoveException": {
+    "message": "Remove exception $1"
+  },
+  "optionsExceptionRemoved": {
+    "message": "Exception removed."
+  },
+  "optionsExceptionRemoveFailed": {
+    "message": "Could not remove: $1"
+  },
+  "optionsExceptionAdded": {
+    "message": "Exception added."
+  },
+  "optionsExceptionAddFailed": {
+    "message": "Could not add exception: $1"
+  },
+  "optionsTestContained": {
+    "message": "✅ Containerized — rule: $1"
+  },
+  "optionsTestNormal": {
+    "message": "➖ Normal browsing — reason: $1"
+  },
+  "onboardingTitle": {
+    "message": "Welcome to Orbis"
+  },
+  "onboardingSubtitle": {
+    "message": "Keep Google in its own orbit. Private, fast, invisible."
+  },
+  "onboardingStepCount": {
+    "message": "Step $1 of $2"
+  },
+  "onboardingStep1Title": {
+    "message": "What is Orbis?"
+  },
+  "onboardingStep1Body": {
+    "message": "Orbis creates a separate <strong>container orbit</strong> for Google – an isolated space where Google's cookies stay locked inside."
+  },
+  "onboardingStep1Body2": {
+    "message": "You stay signed into Google and it works normally, but other sites can't see your Google session, and Google can't see your other browsing."
+  },
+  "onboardingOrbitTitle": {
+    "message": "Isolated orbit"
+  },
+  "onboardingOrbitBody": {
+    "message": "Google in its own box, everything else outside. No cross-tracking."
+  },
+  "onboardingStep2Title": {
+    "message": "Fastest way to use it"
+  },
+  "onboardingStep2Body": {
+    "message": "One hotkey, zero clicks – feels native."
+  },
+  "onboardingHotkey1Desc": {
+    "message": "New Orbis tab – Google in its own orbit"
+  },
+  "onboardingHotkey2Desc": {
+    "message": "Open Google in Orbis container"
+  },
+  "onboardingShortcutsHint": {
+    "message": "Change shortcuts: Add-ons Manager → Gear → Manage Extension Shortcuts"
+  },
+  "onboardingMouseTitle": {
+    "message": "Or use your mouse"
+  },
+  "onboardingMouseBody": {
+    "message": "Toolbar button shows if page is protected, right-click any link → <em>Open in Orbis</em>, or move tabs in/out."
+  },
+  "onboardingStep3Title": {
+    "message": "Blocks trackers automatically"
+  },
+  "onboardingStep3Body": {
+    "message": "Separating cookies is half the job. Orbis also blocks Google trackers on other sites."
+  },
+  "onboardingCleanupAnalytics": {
+    "message": "Analytics, Tag Manager"
+  },
+  "onboardingCleanupAds": {
+    "message": "DoubleClick ads"
+  },
+  "onboardingCleanupSocial": {
+    "message": "Social widgets"
+  },
+  "onboardingCleanupFonts": {
+    "message": "Fonts, Maps, reCAPTCHA"
+  },
+  "onboardingBlocked": {
+    "message": "Blocked"
+  },
+  "onboardingAllowed": {
+    "message": "Allowed"
+  },
+  "onboardingStep3Hint": {
+    "message": "Fonts, maps, embedded videos, reCAPTCHA and Sign-in with Google are left alone to avoid breaking sites. Strict mode in settings blocks more, but sign-in stays allowed so you never get locked out."
+  },
+  "onboardingStep4Title": {
+    "message": "You're ready!"
+  },
+  "onboardingStep4Body": {
+    "message": "That's it – no complicated configuration needed. It just works."
+  },
+  "onboardingStep4Body2": {
+    "message": "Orbis automatically puts Google in its orbit, blocks trackers elsewhere, and never makes network requests of its own."
+  },
+  "onboardingTryOrbis": {
+    "message": "Open Google in Orbis"
+  },
+  "onboardingOpenDashboard": {
+    "message": "Open dashboard"
+  },
+  "onboardingTip": {
+    "message": "Tip: Extension is invisible in background – no telemetry, no tracking, everything stays on your device. Works great with uBlock Origin."
+  },
+  "onboardingBack": {
+    "message": "Back"
+  },
+  "onboardingNext": {
+    "message": "Next"
+  },
+  "onboardingDone": {
+    "message": "Done"
+  }
+}

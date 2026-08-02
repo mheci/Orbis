@@ -11,7 +11,12 @@
       <span class="dot" id="statusDot" aria-hidden="true"></span>
       <img src="../icons/icon-16.png" width="16" height="16" alt="" />
       <h1>Orbis</h1>
-      <button id="openOptions" class="icon-btn" title="Open settings" aria-label="Open settings">
+      <button
+        id="openOptions"
+        class="icon-btn"
+        data-i18n-title="popupOpenSettings"
+        data-i18n-aria-label="popupOpenSettings"
+      >
         <svg
           viewBox="0 0 24 24"
           fill="none"
@@ -30,60 +35,70 @@
     </header>
 
     <section class="card" aria-live="polite">
-      <p class="label">Current site</p>
+      <p class="label" data-i18n="popupCurrentSite">Current site</p>
       <p class="host" id="host">—</p>
-      <p class="verdict" id="verdict">Checking…</p>
+      <p class="verdict" id="verdict" data-i18n="popupChecking">Checking…</p>
     </section>
 
     <section class="card">
       <div class="row">
-        <span class="label">Protection</span>
+        <span class="label" data-i18n="popupProtection">Protection</span>
         <span class="value" id="statusText">—</span>
       </div>
       <div class="row">
-        <span class="label">Container</span>
+        <span class="label" data-i18n="popupContainer">Container</span>
         <span class="value" id="containerName">—</span>
       </div>
       <div class="row">
-        <span class="label">This tab</span>
+        <span class="label" data-i18n="popupThisTab">This tab</span>
         <span class="value" id="tabState">—</span>
       </div>
     </section>
 
     <section class="actions">
-      <button id="moveIn" class="btn primary">Move tab into container</button>
-      <button id="moveOut" class="btn">Move tab out of container</button>
-      <button id="always" class="btn subtle">Always containerize this site</button>
-      <button id="never" class="btn subtle">Never containerize this site</button>
+      <button id="moveIn" class="btn primary" data-i18n="popupMoveIn">
+        Move tab into container
+      </button>
+      <button id="moveOut" class="btn" data-i18n="popupMoveOut">Move tab out of container</button>
+      <button id="always" class="btn subtle" data-i18n="popupAlways">
+        Always containerize this site
+      </button>
+      <button id="never" class="btn subtle" data-i18n="popupNever">
+        Never containerize this site
+      </button>
     </section>
 
     <section class="card" id="blockCard">
       <div class="row">
-        <span class="label">Blocked on this page</span>
+        <span class="label" data-i18n="popupBlockedOnPage">Blocked on this page</span>
         <span class="value" id="blockedHere">0</span>
       </div>
-      <p class="hint" id="blockHint">Google trackers stopped before they loaded.</p>
-      <button id="allowSite" class="btn subtle">Allow Google resources on this site</button>
+      <p class="hint" id="blockHint" data-i18n="popupBlockedHint">
+        Google trackers stopped before they loaded.
+      </p>
+      <button id="allowSite" class="btn subtle" data-i18n="popupAllowSite">
+        Allow Google resources on this site
+      </button>
     </section>
 
     <section class="card">
       <div class="row">
-        <span class="label">Contained</span>
+        <span class="label" data-i18n="popupContained">Contained</span>
         <span class="value" id="statContained">0</span>
       </div>
       <div class="row">
-        <span class="label">Released</span>
+        <span class="label" data-i18n="popupReleased">Released</span>
         <span class="value" id="statReleased">0</span>
       </div>
       <div class="row">
-        <span class="label">Trackers blocked</span>
+        <span class="label" data-i18n="popupTrackersBlocked">Trackers blocked</span>
         <span class="value" id="statBlocked">0</span>
       </div>
     </section>
 
     <footer class="foot">
-      <button id="pause" class="btn danger">Pause 30 min</button>
-      <button id="resume" class="btn hidden">Resume protection</button>
+      <button id="pause" class="btn danger" data-i18n="popupPause30">Pause 30 min</button>
+      <button id="resume" class="btn hidden" data-i18n="popupResume">Resume protection</button>
     </footer>
 
     <script src="popup.js" type="module"></script>

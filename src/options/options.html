@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Orbis settings</title>
+    <title data-i18n="optionsPageTitle">Orbis settings</title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
@@ -12,7 +12,7 @@
         <img class="logo" src="../icons/icon-48.png" width="48" height="48" alt="" />
         <div>
           <h1>Orbis</h1>
-          <p class="sub">
+          <p class="sub" data-i18n="optionsSubtitle">
             Every Google-owned site is isolated in its own Firefox Container, so Google cookies
             never touch the rest of your browsing.
           </p>
@@ -20,125 +20,123 @@
       </header>
 
       <nav class="tabs" role="tablist">
-        <button class="tab active" data-panel="general" role="tab">General</button>
-        <button class="tab" data-panel="domains" role="tab">Domains</button>
-        <button class="tab" data-panel="rules" role="tab">Rules &amp; exceptions</button>
-        <button class="tab" data-panel="data" role="tab">Backup &amp; data</button>
-        <button class="tab" data-panel="diagnostics" role="tab">Diagnostics</button>
+        <button class="tab active" data-panel="general" role="tab" data-i18n="optionsTabGeneral">
+          General
+        </button>
+        <button class="tab" data-panel="domains" role="tab" data-i18n="optionsTabDomains">
+          Domains
+        </button>
+        <button class="tab" data-panel="rules" role="tab" data-i18n="optionsTabRules">
+          Rules &amp; exceptions
+        </button>
+        <button class="tab" data-panel="data" role="tab" data-i18n="optionsTabData">
+          Backup &amp; data
+        </button>
+        <button class="tab" data-panel="diagnostics" role="tab" data-i18n="optionsTabDiagnostics">
+          Diagnostics
+        </button>
       </nav>
 
       <section class="panel active" id="panel-general" role="tabpanel">
         <fieldset>
-          <legend>Protection</legend>
+          <legend data-i18n="optionsProtection">Protection</legend>
           <label class="check"
-            ><input type="checkbox" id="enabled" /> <span>Enable Orbis</span></label
+            ><input type="checkbox" id="enabled" />
+            <span data-i18n="optionsEnableOrbis">Enable Orbis</span></label
           >
           <p class="hint" id="pauseState"></p>
           <div class="inline">
-            <button class="btn" id="pause30">Pause 30 minutes</button>
-            <button class="btn" id="resume">Resume now</button>
+            <button class="btn" id="pause30" data-i18n="optionsPause30">Pause 30 minutes</button>
+            <button class="btn" id="resume" data-i18n="optionsResumeNow">Resume now</button>
           </div>
         </fieldset>
 
         <fieldset>
-          <legend>Container appearance</legend>
+          <legend data-i18n="optionsContainerAppearance">Container appearance</legend>
           <label class="field"
-            ><span>Name</span><input type="text" id="containerName" maxlength="64"
+            ><span data-i18n="optionsName">Name</span
+            ><input type="text" id="containerName" maxlength="64"
           /></label>
           <label class="field"
-            ><span>Colour</span
+            ><span data-i18n="optionsColour">Colour</span
             ><select id="containerColor"></select
           ></label>
           <label class="field"
-            ><span>Icon</span
+            ><span data-i18n="optionsIcon">Icon</span
             ><select id="containerIcon"></select
           ></label>
-          <p class="hint">
+          <p class="hint" data-i18n="optionsRenameHint">
             Renaming updates the existing container in place; your cookies and logins stay intact.
           </p>
         </fieldset>
 
         <fieldset>
-          <legend>Blocking Google trackers on other websites</legend>
-          <p class="hint">
+          <legend data-i18n="optionsBlockingTitle">
+            Blocking Google trackers on other websites
+          </legend>
+          <p class="hint" data-i18n="optionsBlockingIntro">
             Google code is embedded across much of the web. Even without cookies, loading it tells
             Google your IP address and which page you are reading. Blocking stops the request before
             it is sent.
           </p>
           <label class="check">
             <input type="radio" name="blockMode" value="off" id="blockOff" />
-            <span><strong>Off.</strong> Load every embedded Google resource as normal.</span>
+            <span data-i18n-html="optionsBlockingOff"></span>
           </label>
           <label class="check">
             <input type="radio" name="blockMode" value="standard" id="blockStandard" />
-            <span>
-              <strong>Standard, recommended.</strong> Block Google analytics, advertising and social
-              widgets on sites that are not Google. Fonts, maps, sign-in, reCAPTCHA and embedded
-              videos keep working.
-            </span>
+            <span data-i18n-html="optionsBlockingStandard"></span>
           </label>
           <label class="check">
             <input type="radio" name="blockMode" value="strict" id="blockStrict" />
-            <span>
-              <strong>Strict.</strong> Also block fonts, hosted script libraries, maps and embedded
-              players. <em>This will visibly break some websites.</em> Sign-in and reCAPTCHA are
-              still allowed, so you cannot be locked out of an account.
-            </span>
+            <span data-i18n-html="optionsBlockingStrict"></span>
           </label>
           <label class="check">
             <input type="checkbox" id="showBadge" />
-            <span>Show the number blocked on the toolbar icon</span>
+            <span data-i18n="optionsShowBadge">Show the number blocked on the toolbar icon</span>
           </label>
 
-          <p class="hint" style="margin-top: 12px">
+          <p class="hint" style="margin-top: 12px" data-i18n="optionsAllowlistHint">
             Sites where Google resources are allowed to load normally:
           </p>
           <div class="inline">
             <input type="text" id="blockAllowInput" placeholder="example.com" />
-            <button class="btn primary" id="blockAllowAdd">Add</button>
+            <button class="btn primary" id="blockAllowAdd" data-i18n="optionsAllowAdd">Add</button>
           </div>
           <ul class="list" id="blockAllowList"></ul>
         </fieldset>
 
         <fieldset>
-          <legend>Behaviour</legend>
+          <legend data-i18n="optionsBehaviour">Behaviour</legend>
           <label class="check"
             ><input type="checkbox" id="unwrapRedirectors" />
-            <span
-              >Unwrap Google redirect links (<code>google.com/url?q=…</code>) so external sites open
-              outside the container</span
-            ></label
-          >
+            <span data-i18n-html="optionsUnwrap"></span
+          ></label>
           <label class="check"
-            ><input type="checkbox" id="oauthPassthrough" />
-            <span
-              >Let “Sign in with Google” on third-party sites work (the handshake runs in the
-              container, the callback lands back on the site)</span
-            ></label
-          >
+            ><input type="checkbox" id="oauthPassthrough" /> <span data-i18n="optionsOAuth"></span
+          ></label>
           <label class="check"
             ><input type="checkbox" id="releaseNonGoogle" />
-            <span>Push non-Google pages opened inside the container back out</span></label
-          >
+            <span data-i18n="optionsReleaseNonGoogle"></span
+          ></label>
           <label class="check"
             ><input type="checkbox" id="handlePrivateWindows" />
-            <span>Also act in private windows</span></label
-          >
+            <span data-i18n="optionsPrivateWindows"></span
+          ></label>
           <label class="check"
             ><input type="checkbox" id="collectStatistics" />
-            <span>Keep local statistics (never leaves your device)</span></label
-          >
+            <span data-i18n="optionsCollectStats"></span
+          ></label>
           <label class="check"
-            ><input type="checkbox" id="useSync" />
-            <span>Mirror settings through Firefox Sync when available</span></label
-          >
+            ><input type="checkbox" id="useSync" /> <span data-i18n="optionsUseSync"></span
+          ></label>
         </fieldset>
       </section>
 
       <section class="panel" id="panel-domains" role="tabpanel">
         <fieldset>
-          <legend>Domain sets</legend>
-          <p class="hint">
+          <legend data-i18n="optionsDomainSets">Domain sets</legend>
+          <p class="hint" data-i18n-html="optionsDomainSetsHint">
             The domain database ships with the extension and needs no network access. See
             <code>docs/DOMAIN_DATABASE.md</code> to add domains.
           </p>
@@ -148,38 +146,47 @@
 
       <section class="panel" id="panel-rules" role="tabpanel">
         <fieldset>
-          <legend>Always containerize</legend>
-          <p class="hint">Extra hosts that should always open in the Google container.</p>
+          <legend data-i18n="optionsAlwaysTitle">Always containerize</legend>
+          <p class="hint" data-i18n="optionsAlwaysHint">
+            Extra hosts that should always open in the Google container.
+          </p>
           <div class="inline">
             <input type="text" id="alwaysInput" placeholder="example.com or example.com/path" />
-            <button class="btn primary" id="alwaysAdd">Add</button>
+            <button class="btn primary" id="alwaysAdd" data-i18n="optionsAllowAdd">Add</button>
           </div>
           <ul class="list" id="alwaysList"></ul>
         </fieldset>
 
         <fieldset>
-          <legend>Never containerize</legend>
-          <p class="hint">
+          <legend data-i18n="optionsNeverTitle">Never containerize</legend>
+          <p class="hint" data-i18n="optionsNeverHint">
             Highest priority. Use for sites that must stay in normal browsing even when they
             redirect through Google.
           </p>
           <div class="inline">
             <input type="text" id="neverInput" placeholder="mail.example.com" />
-            <button class="btn primary" id="neverAdd">Add</button>
+            <button class="btn primary" id="neverAdd" data-i18n="optionsAllowAdd">Add</button>
           </div>
           <ul class="list" id="neverList"></ul>
         </fieldset>
 
         <fieldset>
-          <legend>Exceptions</legend>
-          <p class="hint">
+          <legend data-i18n="optionsExceptionsTitle">Exceptions</legend>
+          <p class="hint" data-i18n="optionsExceptionsHint">
             Sites that must never be pulled into the container, even when they match Google.
             Disabled exceptions are kept but ignored.
           </p>
           <div class="inline">
             <input type="text" id="exceptionInput" placeholder="example.com or example.com/sso" />
-            <input type="text" id="exceptionNote" placeholder="optional note" />
-            <button class="btn primary" id="exceptionAdd">Add exception</button>
+            <input
+              type="text"
+              id="exceptionNote"
+              data-i18n-placeholder="optionsExceptionNotePlaceholder"
+              placeholder="optional note"
+            />
+            <button class="btn primary" id="exceptionAdd" data-i18n="optionsExceptionAdd">
+              Add exception
+            </button>
           </div>
           <ul class="list exceptions" id="exceptionList"></ul>
         </fieldset>
@@ -187,59 +194,65 @@
 
       <section class="panel" id="panel-data" role="tabpanel">
         <fieldset>
-          <legend>Backup</legend>
-          <p class="hint">Versioned, human-readable JSON. Imports are validated and sanitised.</p>
+          <legend data-i18n="optionsBackupTitle">Backup</legend>
+          <p class="hint" data-i18n="optionsBackupHint">
+            Versioned, human-readable JSON. Imports are validated and sanitised.
+          </p>
           <div class="inline">
-            <button class="btn" id="export">Export settings</button>
-            <button class="btn" id="importBtn">Import settings</button>
+            <button class="btn" id="export" data-i18n="optionsExport">Export settings</button>
+            <button class="btn" id="importBtn" data-i18n="optionsImport">Import settings</button>
             <input type="file" id="importFile" accept="application/json,.json" hidden />
           </div>
         </fieldset>
         <fieldset>
-          <legend>Statistics</legend>
+          <legend data-i18n="optionsStatsTitle">Statistics</legend>
           <div id="stats" class="stats"></div>
         </fieldset>
         <fieldset class="danger-zone">
-          <legend>Reset</legend>
-          <p class="hint">Restores defaults. Your container and its cookies are not deleted.</p>
-          <button class="btn danger" id="reset">Reset all settings</button>
+          <legend data-i18n="optionsResetTitle">Reset</legend>
+          <p class="hint" data-i18n="optionsResetHint">
+            Restores defaults. Your container and its cookies are not deleted.
+          </p>
+          <button class="btn danger" id="reset" data-i18n="optionsResetBtn">
+            Reset all settings
+          </button>
         </fieldset>
       </section>
 
       <section class="panel" id="panel-diagnostics" role="tabpanel">
         <fieldset>
-          <legend>Diagnostics</legend>
-          <button class="btn" id="refreshDiag">Refresh</button>
+          <legend data-i18n="optionsDiagTitle">Diagnostics</legend>
+          <button class="btn" id="refreshDiag" data-i18n="optionsDiagRefresh">Refresh</button>
           <pre id="diagnostics" class="code"></pre>
         </fieldset>
         <fieldset>
-          <legend>Decision log</legend>
-          <p class="hint">
+          <legend data-i18n="optionsLogTitle">Decision log</legend>
+          <p class="hint" data-i18n="optionsLogHint">
             The most recent decisions the engine made: every action taken (contain, release, unwrap)
             plus ignores worth knowing about. Stored locally only, never synced or sent anywhere.
           </p>
           <div class="inline">
-            <button class="btn" id="clearLog">Clear log</button>
+            <button class="btn" id="clearLog" data-i18n="optionsLogClear">Clear log</button>
             <span class="hint" id="logCount" style="margin: 0"></span>
           </div>
           <table class="decision-log">
             <thead>
               <tr>
-                <th>When</th>
-                <th>Action</th>
-                <th>Reason</th>
-                <th>Site</th>
-                <th>URL</th>
+                <th data-i18n="optionsLogWhen">When</th>
+                <th data-i18n="optionsLogAction">Action</th>
+                <th data-i18n="optionsLogReason">Reason</th>
+                <th data-i18n="optionsLogSite">Site</th>
+                <th data-i18n="optionsLogUrl">URL</th>
               </tr>
             </thead>
             <tbody id="logBody"></tbody>
           </table>
         </fieldset>
         <fieldset>
-          <legend>Test a URL</legend>
+          <legend data-i18n="optionsTestTitle">Test a URL</legend>
           <div class="inline">
             <input type="text" id="testInput" placeholder="https://mail.google.com/" />
-            <button class="btn primary" id="testBtn">Check</button>
+            <button class="btn primary" id="testBtn" data-i18n="optionsTestBtn">Check</button>
           </div>
           <p id="testResult" class="hint"></p>
         </fieldset>
