@@ -7,6 +7,7 @@
   --accent: #5b52e8;
   --accent-fg: #fff;
   --warn: #c50042;
+  --info: #0054c0;
   --radius: 10px;
   color-scheme: light dark;
 }
@@ -21,11 +22,27 @@
     --accent: #8f84ff;
     --accent-fg: #16143a;
     --warn: #ff9aa2;
+    --info: #54c3ff;
   }
 }
 
 * {
   box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {
@@ -272,7 +289,6 @@ select {
 .exception-row .note:focus {
   background: var(--bg);
   border-color: var(--accent);
-  outline: none;
 }
 
 .exception-row.disabled .pattern {
@@ -393,8 +409,8 @@ select {
 }
 
 .decision-log .badge.unwrap {
-  background: color-mix(in srgb, #0089ff 14%, transparent);
-  color: #0089ff;
+  background: color-mix(in srgb, var(--info) 14%, transparent);
+  color: var(--info);
 }
 
 .decision-log .badge.ignore {

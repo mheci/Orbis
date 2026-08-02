@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bulk editing for the “Always” and “Never” lists: paste any number of patterns at once
   (one per line, or comma- or semicolon-separated). Invalid entries are skipped and reported
   in the status message while the rest are applied.
+- Accessibility pass: visible keyboard focus (`:focus-visible`) across all pages, reduced-motion
+  support, proper ARIA on the options tabs (arrow-key navigation, roving focus, `aria-selected`)
+  and the onboarding progress bar, screen-reader labels for every icon-only and note control,
+  and contrast fixes — including a previously unreadable dark-mode onboarding text.
 - Keyboard shortcuts: `Ctrl+Alt+O` moves the current tab into the container, `Ctrl+Alt+X` moves
   it back out, and `Ctrl+Alt+P` pauses or resumes protection. All are rebindable from
   Firefox’s add-on shortcuts page.

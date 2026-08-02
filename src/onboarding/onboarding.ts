@@ -11,9 +11,11 @@ function element<T extends HTMLElement>(selector: string): T {
 
 function updateProgress(): void {
   const fill = element<HTMLElement>('#progress-fill');
+  const bar = element<HTMLElement>('.progress-bar');
   const text = element<HTMLElement>('#progress-text');
   const percent = (currentStep / totalSteps) * 100;
   fill.style.width = `${percent}%`;
+  bar.setAttribute('aria-valuenow', String(currentStep));
   text.textContent = getMessage('onboardingStepCount', [String(currentStep), String(totalSteps)]);
   document.querySelectorAll<HTMLElement>('.dot').forEach((dot) => {
     const step = Number(dot.dataset['step']);
@@ -32,6 +34,9 @@ function showStep(step: number): void {
   });
   currentStep = step;
   updateProgress();
+  // Move focus to the step heading so keyboard and screen-reader users land
+  // on the new content instead of being stranded on the previous step.
+  document.querySelector<HTMLElement>(`.onboarding-step.active h2`)?.focus({ preventScroll: true });
 }
 
 function bind(): void {
