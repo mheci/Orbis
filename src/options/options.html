@@ -20,24 +20,69 @@
       </header>
 
       <nav class="tabs" role="tablist">
-        <button class="tab active" data-panel="general" role="tab" data-i18n="optionsTabGeneral">
+        <button
+          class="tab active"
+          id="tab-general"
+          data-panel="general"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-general"
+          data-i18n="optionsTabGeneral"
+        >
           General
         </button>
-        <button class="tab" data-panel="domains" role="tab" data-i18n="optionsTabDomains">
+        <button
+          class="tab"
+          id="tab-domains"
+          data-panel="domains"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-domains"
+          data-i18n="optionsTabDomains"
+        >
           Domains
         </button>
-        <button class="tab" data-panel="rules" role="tab" data-i18n="optionsTabRules">
+        <button
+          class="tab"
+          id="tab-rules"
+          data-panel="rules"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-rules"
+          data-i18n="optionsTabRules"
+        >
           Rules &amp; exceptions
         </button>
-        <button class="tab" data-panel="data" role="tab" data-i18n="optionsTabData">
+        <button
+          class="tab"
+          id="tab-data"
+          data-panel="data"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-data"
+          data-i18n="optionsTabData"
+        >
           Backup &amp; data
         </button>
-        <button class="tab" data-panel="diagnostics" role="tab" data-i18n="optionsTabDiagnostics">
+        <button
+          class="tab"
+          id="tab-diagnostics"
+          data-panel="diagnostics"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-diagnostics"
+          data-i18n="optionsTabDiagnostics"
+        >
           Diagnostics
         </button>
       </nav>
 
-      <section class="panel active" id="panel-general" role="tabpanel">
+      <section
+        class="panel active"
+        id="panel-general"
+        role="tabpanel"
+        aria-labelledby="tab-general"
+      >
         <fieldset>
           <legend data-i18n="optionsProtection">Protection</legend>
           <label class="check"
@@ -133,7 +178,7 @@
         </fieldset>
       </section>
 
-      <section class="panel" id="panel-domains" role="tabpanel">
+      <section class="panel" id="panel-domains" role="tabpanel" aria-labelledby="tab-domains">
         <fieldset>
           <legend data-i18n="optionsDomainSets">Domain sets</legend>
           <p class="hint" data-i18n-html="optionsDomainSetsHint">
@@ -144,7 +189,7 @@
         </fieldset>
       </section>
 
-      <section class="panel" id="panel-rules" role="tabpanel">
+      <section class="panel" id="panel-rules" role="tabpanel" aria-labelledby="tab-rules">
         <fieldset>
           <legend data-i18n="optionsAlwaysTitle">Always containerize</legend>
           <p class="hint" id="alwaysHint" data-i18n="optionsAlwaysHint">
@@ -204,7 +249,7 @@
         </fieldset>
       </section>
 
-      <section class="panel" id="panel-data" role="tabpanel">
+      <section class="panel" id="panel-data" role="tabpanel" aria-labelledby="tab-data">
         <fieldset>
           <legend data-i18n="optionsBackupTitle">Backup</legend>
           <p class="hint" data-i18n="optionsBackupHint">
@@ -231,7 +276,12 @@
         </fieldset>
       </section>
 
-      <section class="panel" id="panel-diagnostics" role="tabpanel">
+      <section
+        class="panel"
+        id="panel-diagnostics"
+        role="tabpanel"
+        aria-labelledby="tab-diagnostics"
+      >
         <fieldset>
           <legend data-i18n="optionsDiagTitle">Diagnostics</legend>
           <button class="btn" id="refreshDiag" data-i18n="optionsDiagRefresh">Refresh</button>
@@ -250,11 +300,11 @@
           <table class="decision-log">
             <thead>
               <tr>
-                <th data-i18n="optionsLogWhen">When</th>
-                <th data-i18n="optionsLogAction">Action</th>
-                <th data-i18n="optionsLogReason">Reason</th>
-                <th data-i18n="optionsLogSite">Site</th>
-                <th data-i18n="optionsLogUrl">URL</th>
+                <th scope="col" data-i18n="optionsLogWhen">When</th>
+                <th scope="col" data-i18n="optionsLogAction">Action</th>
+                <th scope="col" data-i18n="optionsLogReason">Reason</th>
+                <th scope="col" data-i18n="optionsLogSite">Site</th>
+                <th scope="col" data-i18n="optionsLogUrl">URL</th>
               </tr>
             </thead>
             <tbody id="logBody"></tbody>

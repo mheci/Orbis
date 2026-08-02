@@ -99,6 +99,7 @@ function renderList(
     remove.className = 'remove';
     remove.type = 'button';
     remove.title = getMessage('optionsRemoveRule', entry);
+    remove.setAttribute('aria-label', getMessage('optionsRemoveRule', entry));
     remove.textContent = '✕';
     remove.addEventListener('click', async () => {
       settings = await send<Settings>({ type: 'remove-rule', list, pattern: entry });
@@ -176,6 +177,7 @@ function renderBlockAllowList(): void {
     remove.className = 'remove';
     remove.type = 'button';
     remove.title = getMessage('optionsRemoveRule', entry);
+    remove.setAttribute('aria-label', getMessage('optionsRemoveRule', entry));
     remove.textContent = 'x';
     remove.addEventListener('click', async () => {
       settings = await send<Settings>({ type: 'allowlist-site', host: entry, allow: false });
@@ -220,9 +222,11 @@ function renderExceptions(): void {
     const toggle = document.createElement('input');
     toggle.type = 'checkbox';
     toggle.checked = rule.enabled;
-    toggle.title = getMessage(
+    const toggleTitle = getMessage(
       rule.enabled ? 'optionsExceptionEnabledTitle' : 'optionsExceptionDisabledTitle'
     );
+    toggle.title = toggleTitle;
+    toggle.setAttribute('aria-label', toggleTitle);
     toggle.addEventListener('change', () => {
       void saveExceptions(withException(rule.pattern, { enabled: toggle.checked })).catch((error) =>
         toast(
@@ -249,6 +253,7 @@ function renderExceptions(): void {
     note.value = rule.note ?? '';
     note.placeholder = getMessage('optionsExceptionNotePlaceholder');
     note.title = getMessage('optionsExceptionNoteTitle');
+    note.setAttribute('aria-label', getMessage('optionsExceptionNoteTitle'));
     note.addEventListener('change', () => {
       const value = note.value.trim().slice(0, 200);
       void saveExceptions(withException(rule.pattern, { note: value === '' ? undefined : value }))
@@ -271,6 +276,7 @@ function renderExceptions(): void {
     remove.className = 'remove';
     remove.type = 'button';
     remove.title = getMessage('optionsRemoveException', rule.pattern);
+    remove.setAttribute('aria-label', getMessage('optionsRemoveException', rule.pattern));
     remove.textContent = '✕';
     remove.addEventListener('click', async () => {
       try {
@@ -353,15 +359,45 @@ function render(): void {
 // -------------------------------------------------------------------- wiring
 
 function wireTabs(): void {
-  for (const tab of document.querySelectorAll<HTMLButtonElement>('.tab')) {
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('.tab')];
+  for (const tab of tabs) {
+    tab.tabIndex = tab.classList.contains('active') ? 0 : -1;
     tab.addEventListener('click', () => {
-      for (const other of document.querySelectorAll('.tab')) other.classList.remove('active');
-      for (const panel of document.querySelectorAll('.panel')) panel.classList.remove('active');
-      tab.classList.add('active');
-      document.getElementById(`panel-${tab.dataset['panel']}`)?.classList.add('active');
-      if (tab.dataset['panel'] === 'diagnostics') void refreshDiagnostics();
+      selectTab(tab);
+      tab.focus();
+    });
+    tab.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const index = tabs.indexOf(tab);
+      const target =
+        event.key === 'Home'
+          ? tabs[0]!
+          : event.key === 'End'
+            ? tabs[tabs.length - 1]!
+            : tabs[
+                event.key === 'ArrowRight'
+                  ? (index + 1) % tabs.length
+                  : (index - 1 + tabs.length) % tabs.length
+              ]!;
+      selectTab(target);
+      target.focus();
     });
   }
+}
+
+function selectTab(tab: HTMLButtonElement): void {
+  for (const other of document.querySelectorAll<HTMLButtonElement>('.tab')) {
+    other.classList.remove('active');
+    other.setAttribute('aria-selected', 'false');
+    other.tabIndex = -1;
+  }
+  for (const panel of document.querySelectorAll('.panel')) panel.classList.remove('active');
+  tab.classList.add('active');
+  tab.setAttribute('aria-selected', 'true');
+  tab.tabIndex = 0;
+  document.getElementById(`panel-${tab.dataset['panel']}`)?.classList.add('active');
+  if (tab.dataset['panel'] === 'diagnostics') void refreshDiagnostics();
 }
 
 const KIND_LABELS: Record<DecisionEntry['kind'], string> = {
