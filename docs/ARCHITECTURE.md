@@ -232,13 +232,14 @@ Enforced by the performance tests.
 Generated from source by `scripts/make-icons.py` rather than stored as image files, so it can be
 reviewed as a normal change and regenerated at any size.
 
-The mark is a capital G inside a broken ring, the ring standing for the container boundary. Colours
-are deliberately not Google's own, since using them on an unaffiliated extension would invite a
+The mark is an orb held in a tilted orbit ring with a satellite riding the lower ring. The ring is
+the container boundary: everything on it stays quarantined in its own orbit. Colours are
+deliberately not Google's own, since using them on an unaffiliated extension would invite a
 trademark complaint.
 
-The G is drawn by cutting shapes out of a filled circle rather than stroking a curve. A stroked
-curve closes up into an unreadable blob at 16 pixels. Detail also varies by size: below 20 pixels
-the broken ring turns to mush, so small sizes use a solid one.
+The orb is drawn as a gradient circle with the lower ring arc overlaid on top, which reads as
+"contained". Detail also varies by size: below 24 pixels the satellite and fine ring turn to
+mush, so small sizes use a thicker ring and no satellite.
 
 Regenerate with `python3 scripts/make-icons.py`. Only sizes named in the manifest are packaged.
 

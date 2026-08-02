@@ -5,6 +5,21 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Redesigned the popup around the new brand: a header with an inline SVG version of the new
+  “orb in orbit” icon (no more raster logo, so it can no longer go missing from the package), a
+  status pill that shows protection state at a glance, icon rows for container and tab state, a
+  verdict chip on the current-site card, side-by-side action buttons and a three-up statistics
+  strip.
+- New brand mark: an orb held in a tilted orbit ring with a satellite on the lower ring, still in
+  the indigo/cyan palette. `scripts/make-icons.py` draws it geometrically at every size and the
+  small sizes drop the satellite and thicken the ring so it stays legible at 16px.
+- The popup’s fixed width is now scoped to the popup page itself, so the onboarding page renders
+  at its full window width instead of inheriting the popup’s 320px.
+
 ## [2.1.0] - 2026-08-02
 
 ### Added

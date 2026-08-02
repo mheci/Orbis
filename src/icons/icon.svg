@@ -1,27 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Orbis icon">
   <defs>
-    <linearGradient id="globe" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8676f5" />
-      <stop offset="1" stop-color="#4636c4" />
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6858ff" />
+      <stop offset="1" stop-color="#2a1c96" />
+    </linearGradient>
+    <linearGradient id="orb" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0eeff" />
+      <stop offset="1" stop-color="#c6bfff" />
     </linearGradient>
   </defs>
 
-  <circle cx="256" cy="256" r="232" fill="url(#globe)" />
+  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#plate)" />
 
-  <g stroke="#ffffff" fill="none" stroke-linecap="round">
-    <ellipse cx="256" cy="256" rx="232" ry="86" opacity="0.3" stroke-width="8" />
-    <ellipse cx="256" cy="256" rx="86" ry="232" opacity="0.3" stroke-width="8" />
-    <ellipse cx="256" cy="256" rx="232" ry="152" opacity="0.18" stroke-width="8" />
-    <ellipse cx="256" cy="256" rx="232" ry="200" opacity="0.14" stroke-width="8" />
+  <g transform="rotate(-24 256 256)">
+    <ellipse cx="256" cy="256" rx="184" ry="77" fill="none" stroke="#22e9db" stroke-width="21" />
   </g>
 
-  <ellipse cx="168" cy="118" rx="96" ry="60" fill="#ffffff" opacity="0.12" transform="rotate(-28 168 118)" />
+  <circle cx="256" cy="256" r="110" fill="url(#orb)" />
+  <ellipse cx="210" cy="196" rx="60" ry="42" fill="#ffffff" opacity="0.35" />
 
-  <g stroke="#ffffff" fill="none" stroke-linecap="round">
-    <path d="M 173.01 170.95 A 34 34 0 1 1 206.22 228.43" stroke-width="14" />
-    <path d="M 173.59 146.87 A 54 54 0 1 1 195.53 250.00" stroke-width="14" />
-    <path d="M 187.62 122.47 A 74 74 0 1 1 172.52 266.17" stroke-width="14" />
-    <path d="M 214.74 103.89 A 94 94 0 1 1 140.09 271.57" stroke-width="14" />
-    <path d="M 250.40 95.82 A 114 114 0 1 1 104.36 263.81" stroke-width="14" />
+  <g transform="rotate(-24 256 256)">
+    <path d="M 72 256 A 184 77 0 0 1 440 256" fill="none" stroke="#22e9db" stroke-width="21" />
+    <circle cx="164" cy="323" r="22" fill="#22e9db" />
   </g>
 </svg>
