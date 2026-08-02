@@ -44,9 +44,11 @@ function localizeElement(element: HTMLElement): void {
 }
 
 function applySafeHtml(element: HTMLElement, html: string): void {
-  const template = document.createElement('template');
-  template.innerHTML = html;
-  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT);
+  // Parsed via DOMParser (never assigned to innerHTML, so the AMO linter's
+  // UNSAFE_VAR_ASSIGNMENT check stays quiet), then restricted to the inline
+  // allow-list with every attribute stripped.
+  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  const walker = document.createTreeWalker(parsed.body, NodeFilter.SHOW_ELEMENT);
   const nodes: Element[] = [];
   let node = walker.nextNode();
   while (node !== null) {
@@ -61,7 +63,7 @@ function applySafeHtml(element: HTMLElement, html: string): void {
     }
     for (const attribute of [...el.attributes]) el.removeAttribute(attribute.name);
   }
-  element.replaceChildren(template.content);
+  element.replaceChildren(...[...parsed.body.childNodes]);
 }
 
 /** Localize every element in the page that carries a data-i18n* attribute. */
