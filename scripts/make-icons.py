@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate the G-Container icon set.
+Generate the Orbis icon set.
 
 Icons are drawn geometrically rather than shipped as opaque binaries, so the
 whole set is reproducible from source, reviewable in a diff, and trivially
@@ -8,9 +8,10 @@ re-tintable if the branding changes.
 
 Design
 ------
-A bold "G" enclosed in a dashed ring. The ring is the metaphor: a container
-boundary that quarantines what is inside it. The dashes read as "isolated /
-sandboxed" rather than merely "circled".
+An orb held in a tilted orbit ring, with a small satellite riding the lower
+ring. The ring is the container boundary: everything on it stays quarantined
+in its own orbit. The satellite gives the mark a sense of motion and reads as
+"watched / contained" at a glance.
 
 Deliberately NOT Google's four-colour palette. Using Google's actual logo
 colours on an add-on that is not affiliated with Google invites a trademark
@@ -18,11 +19,12 @@ objection during AMO review, so the palette is a distinct indigo/cyan.
 
 Rendering notes
 ---------------
-- Everything is drawn on an 8x supersampled canvas and downsampled with LANCZOS,
-  which is what produces clean antialiased curves without a vector rasteriser.
-- Detail is size-aware: at 16px a 12-dash ring collapses into visual noise, so
-  small sizes use fewer, chunkier dashes and a slightly heavier stroke. This is
-  standard optical compensation, not a hack.
+- Everything is drawn on an 8x supersampled canvas and downsampled with
+  LANCZOS, which is what produces clean antialiased curves without a vector
+  rasteriser.
+- Detail is size-aware: at 16px the satellite and fine ring collapse into
+  noise, so small sizes use a thicker ring, no satellite and a solid plate.
+  This is standard optical compensation, not a hack.
 """
 
 import math
@@ -32,108 +34,108 @@ from PIL import Image, ImageDraw
 SS = 8  # supersampling factor
 
 # Palette
-INDIGO = (26, 16, 66, 255)  # background disc
-CYAN = (34, 233, 219, 255)  # G + ring
+INDIGO_TOP = (104, 88, 255, 255)    # plate gradient, top
+INDIGO_BOTTOM = (42, 28, 150, 255)  # plate gradient, bottom
+CYAN = (34, 233, 219, 255)          # ring + satellite
+ORB_TOP = (240, 238, 255, 255)      # orb gradient, top
+ORB_BOTTOM = (198, 191, 255, 255)   # orb gradient, bottom
+HIGHLIGHT = (255, 255, 255, 90)     # soft sheen on the orb
 TRANSPARENT = (0, 0, 0, 0)
 
-
-def draw_g(img, cx, cy, radius, stroke, colour):
-    """
-    Draw a geometric capital G.
-
-    Construction: a filled outer disc with the counter punched out, the
-    aperture wedge removed, then the crossbar and terminal added back. Drawing
-    it subtractively (rather than as a stroked arc) is what keeps the counter
-    genuinely open at 16px, where a stroked arc closes up into a blob.
-
-    Everything is composited on a scratch layer so the punch-outs cut to
-    transparency and let the background plate show through.
-    """
-    layer = Image.new("RGBA", img.size, TRANSPARENT)
-    d = ImageDraw.Draw(layer)
-
-    outer = radius
-    inner = radius - stroke
-
-    # Ring of the G.
-    d.ellipse([cx - outer, cy - outer, cx + outer, cy + outer], fill=colour)
-    d.ellipse([cx - inner, cy - inner, cx + inner, cy + inner], fill=TRANSPARENT)
-
-    # Aperture: remove the wedge on the right between roughly 4 and 12 o'clock
-    # measured from the horizontal, leaving the classic G opening.
-    d.pieslice(
-        [cx - outer - 2, cy - outer - 2, cx + outer + 2, cy + outer + 2],
-        start=-32,
-        end=8,
-        fill=TRANSPARENT,
-    )
-
-    # Crossbar: horizontal spur entering from the right at the vertical centre.
-    bar_h = stroke * 0.92
-    bar_top = cy - bar_h / 2.0
-    bar_left = cx + radius * 0.06
-    d.rectangle([bar_left, bar_top, cx + outer, bar_top + bar_h], fill=colour)
-
-    # Vertical terminal dropping from the bar to close the aperture cleanly.
-    d.rectangle(
-        [cx + outer - stroke, bar_top, cx + outer, bar_top + bar_h * 1.05],
-        fill=colour,
-    )
-
-    img.alpha_composite(layer)
+TILT = -24  # orbit ring tilt, degrees (counterclockwise)
 
 
-def draw_dashed_ring(draw, cx, cy, radius, stroke, colour, dashes, duty=0.58):
-    """Draw a dashed circle: `dashes` segments, each covering `duty` of its slot."""
-    box = [cx - radius, cy - radius, cx + radius, cy + radius]
-    step = 360.0 / dashes
-    span = step * duty
-    for i in range(dashes):
-        start = i * step - span / 2.0
-        draw.arc(box, start=start, end=start + span, fill=colour, width=stroke)
+def vertical_gradient(width, height, top, bottom):
+    """An RGBA image with a vertical gradient from `top` to `bottom`."""
+    grad = Image.new("RGBA", (width, height), TRANSPARENT)
+    d = ImageDraw.Draw(grad)
+    for y in range(height):
+        t = y / max(1, height - 1)
+        color = tuple(round(top[i] + (bottom[i] - top[i]) * t) for i in range(4))
+        d.line([(0, y), (width - 1, y)], fill=color)
+    return grad
 
 
 def render(size, *, shape="disc"):
     """Render one icon at `size` px."""
     s = size * SS
     img = Image.new("RGBA", (s, s), TRANSPARENT)
-    d = ImageDraw.Draw(img)
-
     cx = cy = s / 2.0
 
-    # Background plate. A filled plate keeps the icon legible on both light and
+    # Background plate: vertical indigo gradient, disc (small) or rounded
+    # square (large). A filled plate keeps the icon legible on both light and
     # dark Firefox toolbars, which a bare glyph would not.
+    mask = Image.new("L", (s, s), 0)
+    md = ImageDraw.Draw(mask)
     if shape == "disc":
-        d.ellipse([0, 0, s - 1, s - 1], fill=INDIGO)
+        md.ellipse([0, 0, s - 1, s - 1], fill=255)
     else:  # rounded square, for the larger store/listing sizes
-        d.rounded_rectangle([0, 0, s - 1, s - 1], radius=s * 0.22, fill=INDIGO)
-
-    # Size-aware detail. Below ~32px a fine dashed ring turns to mush, so the
-    # ring gets fewer, heavier dashes and the G gets a touch more weight.
-    if size <= 20:
-        dashes, ring_stroke, g_stroke, g_r, ring_r = 0, 0.070, 0.105, 0.250, 0.400
-    elif size <= 40:
-        dashes, ring_stroke, g_stroke, g_r, ring_r = 8, 0.058, 0.092, 0.248, 0.408
-    elif size <= 64:
-        dashes, ring_stroke, g_stroke, g_r, ring_r = 10, 0.050, 0.086, 0.246, 0.412
-    else:
-        dashes, ring_stroke, g_stroke, g_r, ring_r = 12, 0.045, 0.082, 0.245, 0.416
-
-    ring_px = max(1, int(s * ring_stroke))
-    if dashes == 0:
-        rr = s * ring_r
-        d.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], outline=CYAN, width=ring_px)
-    else:
-        draw_dashed_ring(d, cx, cy, radius=s * ring_r, stroke=ring_px,
-                         colour=CYAN, dashes=dashes)
-    draw_g(
-        img,
-        cx,
-        cy,
-        radius=s * g_r,
-        stroke=max(2, int(s * g_stroke)),
-        colour=CYAN,
+        md.rounded_rectangle([0, 0, s - 1, s - 1], radius=s * 0.22, fill=255)
+    plate = vertical_gradient(s, s, INDIGO_TOP, INDIGO_BOTTOM)
+    img.alpha_composite(
+        Image.composite(plate, Image.new("RGBA", (s, s), TRANSPARENT), mask)
     )
+
+    # Size-aware detail. Below ~24px the satellite and ring tilt turn to mush,
+    # so small sizes get a chunkier ring and a solid plate instead.
+    if size <= 20:
+        ring_rx, ring_ry, ring_w, orb_r, satellite = 0.34, 0.145, 0.065, 0.215, False
+    elif size <= 40:
+        ring_rx, ring_ry, ring_w, orb_r, satellite = 0.35, 0.15, 0.052, 0.215, True
+    else:
+        ring_rx, ring_ry, ring_w, orb_r, satellite = 0.36, 0.15, 0.042, 0.215, True
+
+    ring_px = max(2, round(s * ring_w))
+    rx, ry = s * ring_rx, s * ring_ry
+    box = [cx - rx, cy - ry, cx + rx, cy + ry]
+
+    def ring_layer(start=None, end=None):
+        """The orbit ring, tilted; optionally just one arc of it."""
+        layer = Image.new("RGBA", (s, s), TRANSPARENT)
+        d = ImageDraw.Draw(layer)
+        if start is None:
+            d.ellipse(box, outline=CYAN, width=ring_px)
+        else:
+            d.arc(box, start=start, end=end, fill=CYAN, width=ring_px)
+        return layer.rotate(TILT, resample=Image.Resampling.BICUBIC, center=(cx, cy))
+
+    # Full ring behind the orb.
+    img.alpha_composite(ring_layer())
+
+    # Orb with a soft vertical gradient and a top-left sheen.
+    orb = Image.new("RGBA", (s, s), TRANSPARENT)
+    orb_mask = Image.new("L", (s, s), 0)
+    ImageDraw.Draw(orb_mask).ellipse(
+        [cx - s * orb_r, cy - s * orb_r, cx + s * orb_r, cy + s * orb_r], fill=255
+    )
+    orb_grad = vertical_gradient(s, s, ORB_TOP, ORB_BOTTOM)
+    orb.alpha_composite(
+        Image.composite(orb_grad, Image.new("RGBA", (s, s), TRANSPARENT), orb_mask)
+    )
+    hl = Image.new("RGBA", (s, s), TRANSPARENT)
+    hx, hy = cx - s * orb_r * 0.42, cy - s * orb_r * 0.55
+    hrx, hry = s * orb_r * 0.55, s * orb_r * 0.38
+    ImageDraw.Draw(hl).ellipse(
+        [hx - hrx, hy - hry, hx + hrx, hy + hry], fill=HIGHLIGHT
+    )
+    orb.alpha_composite(hl)
+    img.alpha_composite(orb)
+
+    # Lower half of the ring drawn in front of the orb (the "containing" arc)
+    # and the satellite riding it. The satellite is placed on the lower-left
+    # ring in the unrotated frame, so it tilts together with the ring.
+    front = ring_layer(start=180, end=360)
+    if satellite:
+        theta = math.radians(120)
+        px = cx + rx * math.cos(theta)
+        py = cy + ry * math.sin(theta)
+        rad = math.radians(TILT)
+        dx, dy = px - cx, py - cy
+        px = cx + dx * math.cos(rad) - dy * math.sin(rad)
+        py = cy + dx * math.sin(rad) + dy * math.cos(rad)
+        r = max(2, round(s * 0.042))
+        ImageDraw.Draw(front).ellipse([px - r, py - r, px + r, py + r], fill=CYAN)
+    img.alpha_composite(front)
 
     return img.resize((size, size), Image.LANCZOS)
 
@@ -160,5 +162,5 @@ def main():
 
 
 if __name__ == "__main__":
-    print("[icons] rendering G-Container icon set")
+    print("[icons] rendering Orbis icon set")
     main()
