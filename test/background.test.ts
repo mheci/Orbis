@@ -13,6 +13,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MockBrowser } from './mock-browser.js';
 import type {
+  AddRulesResult,
   Diagnostics,
   MatchResult,
   Message,
@@ -362,6 +363,63 @@ describe('background: messaging contract', () => {
     await expect(
       app.handleMessage({ type: 'add-rule', list: 'never', pattern: 'javascript:alert(1)' })
     ).rejects.toThrow(/Invalid pattern/);
+  });
+
+  it('bulk-adds patterns: canonicalizes, dedupes and reports nothing invalid', async () => {
+    const app = await loadApp(mock);
+    const result = await ask<AddRulesResult>(app, {
+      type: 'add-rules',
+      list: 'always',
+      patterns: ['Intranet.Example.com', 'docs.example.com', 'docs.example.com', 'ftp.example.com'],
+    });
+
+    expect(result.invalid).toEqual([]);
+    expect(result.settings.alwaysContainerize).toEqual([
+      'intranet.example.com',
+      'docs.example.com',
+      'ftp.example.com',
+    ]);
+    const match = await ask<MatchResult>(app, {
+      type: 'match-url',
+      url: 'https://docs.example.com/x',
+    });
+    expect(match.isGoogle).toBe(true);
+  });
+
+  it('bulk-add keeps the valid entries and reports the invalid ones', async () => {
+    const app = await loadApp(mock);
+    const result = await ask<AddRulesResult>(app, {
+      type: 'add-rules',
+      list: 'never',
+      patterns: [
+        'javascript:alert(1)',
+        'mail.example.com',
+        '',
+        'docs.google.com',
+        'docs.google.com',
+      ],
+    });
+
+    expect(result.invalid).toEqual(['javascript:alert(1)', '']);
+    expect(result.settings.neverContainerize).toEqual(['mail.example.com', 'docs.google.com']);
+    const match = await ask<MatchResult>(app, {
+      type: 'match-url',
+      url: 'https://docs.google.com/x',
+    });
+    expect(match.isGoogle).toBe(false);
+  });
+
+  it('single add-rule still throws on invalid input (API unchanged)', async () => {
+    const app = await loadApp(mock);
+    await expect(
+      app.handleMessage({ type: 'add-rule', list: 'always', pattern: 'javascript:alert(1)' })
+    ).rejects.toThrow(/Invalid pattern/);
+    const result = await ask<Settings>(app, {
+      type: 'add-rule',
+      list: 'always',
+      pattern: 'intranet.example.com',
+    });
+    expect(result.alwaysContainerize).toContain('intranet.example.com');
   });
 
   it('applies exceptions and keeps disabled ones inert', async () => {

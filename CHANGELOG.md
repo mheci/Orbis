@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A proper Exceptions panel in Rules &amp; exceptions: add exceptions with an optional note,
   toggle them on and off without deleting them, and see when each was created. The underlying
   rule support already existed; this is the first UI for it.
+- Bulk editing for the “Always” and “Never” lists: paste any number of patterns at once
+  (one per line, or comma- or semicolon-separated). Invalid entries are skipped and reported
+  in the status message while the rest are applied.
 - Keyboard shortcuts: `Ctrl+Alt+O` moves the current tab into the container, `Ctrl+Alt+X` moves
   it back out, and `Ctrl+Alt+P` pauses or resumes protection. All are rebindable from
   Firefox’s add-on shortcuts page.

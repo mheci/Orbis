@@ -249,13 +249,19 @@
     "message": "Always containerize"
   },
   "optionsAlwaysHint": {
-    "message": "Extra hosts that should always open in the Google container."
+    "message": "Extra hosts that should always open in the Google container. Paste several patterns at once, one per line."
+  },
+  "optionsAlwaysPlaceholder": {
+    "message": "example.com, one per line"
   },
   "optionsNeverTitle": {
     "message": "Never containerize"
   },
   "optionsNeverHint": {
-    "message": "Highest priority. Use for sites that must stay in normal browsing even when they redirect through Google."
+    "message": "Highest priority. Use for sites that must stay in normal browsing even when they redirect through Google. Paste several patterns at once, one per line."
+  },
+  "optionsNeverPlaceholder": {
+    "message": "mail.example.com, one per line"
   },
   "optionsExceptionsTitle": {
     "message": "Exceptions"
@@ -415,6 +421,12 @@
   },
   "optionsRuleAdded": {
     "message": "Rule added."
+  },
+  "optionsRulesAdded": {
+    "message": "Added $1 rules."
+  },
+  "optionsRulesSkipped": {
+    "message": "Skipped $1 invalid pattern(s): $2"
   },
   "optionsRuleAddFailed": {
     "message": "Could not add rule: $1"
