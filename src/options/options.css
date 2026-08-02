@@ -152,6 +152,7 @@ legend {
 }
 
 input[type='text'],
+textarea,
 select {
   background: var(--bg);
   color: var(--fg);
@@ -166,12 +167,20 @@ select {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
 }
 
-.inline input[type='text'] {
+.inline input[type='text'],
+.inline textarea {
   flex: 1;
   min-width: 200px;
+}
+
+.inline textarea {
+  resize: none;
+  overflow-y: auto;
+  max-height: 160px;
+  line-height: 1.35;
 }
 
 .btn {

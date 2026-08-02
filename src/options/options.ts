@@ -10,6 +10,7 @@
 import {
   CONTAINER_COLORS,
   CONTAINER_ICONS,
+  type AddRulesResult,
   type BackupDocument,
   type DecisionEntry,
   type DeepPartial,
@@ -495,14 +496,47 @@ function wireGeneral(): void {
 }
 
 function wireRules(): void {
-  const add = async (list: 'always' | 'never', input: HTMLInputElement): Promise<void> => {
-    const value = input.value.trim();
-    if (value === '') return;
+  /** Split pasted text into deduped, trimmed patterns (newlines, commas, semicolons). */
+  const splitPatterns = (value: string): string[] => {
+    const seen = new Set<string>();
+    const patterns: string[] = [];
+    for (const raw of value.split(/[\r\n,;]+/)) {
+      const pattern = raw.trim();
+      if (pattern === '' || seen.has(pattern)) continue;
+      seen.add(pattern);
+      patterns.push(pattern);
+    }
+    return patterns;
+  };
+
+  const autogrow = (input: HTMLTextAreaElement): void => {
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 160)}px`;
+  };
+
+  const add = async (list: 'always' | 'never', input: HTMLTextAreaElement): Promise<void> => {
+    const patterns = splitPatterns(input.value);
+    if (patterns.length === 0) return;
     try {
-      settings = await send<Settings>({ type: 'add-rule', list, pattern: value });
+      const result = await send<AddRulesResult>({ type: 'add-rules', list, patterns });
+      settings = result.settings;
       input.value = '';
+      input.style.height = '';
       render();
-      toast(getMessage('optionsRuleAdded'));
+      if (patterns.length === 1 && result.invalid.length === 1) {
+        toast(getMessage('optionsRuleAddFailed', result.invalid[0]));
+      } else if (patterns.length === 1) {
+        toast(getMessage('optionsRuleAdded'));
+      } else if (result.invalid.length > 0) {
+        toast(
+          `${getMessage('optionsRulesAdded', String(patterns.length - result.invalid.length))} ${getMessage(
+            'optionsRulesSkipped',
+            [String(result.invalid.length), result.invalid.slice(0, 3).join(', ')]
+          )}`
+        );
+      } else {
+        toast(getMessage('optionsRulesAdded', String(patterns.length)));
+      }
     } catch (error) {
       toast(
         getMessage('optionsRuleAddFailed', String(error instanceof Error ? error.message : error))
@@ -510,16 +544,19 @@ function wireRules(): void {
     }
   };
 
-  const alwaysInput = $('alwaysInput') as HTMLInputElement;
-  const neverInput = $('neverInput') as HTMLInputElement;
+  const alwaysInput = $('alwaysInput') as HTMLTextAreaElement;
+  const neverInput = $('neverInput') as HTMLTextAreaElement;
   $('alwaysAdd').addEventListener('click', () => void add('always', alwaysInput));
   $('neverAdd').addEventListener('click', () => void add('never', neverInput));
-  alwaysInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') void add('always', alwaysInput);
-  });
-  neverInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') void add('never', neverInput);
-  });
+  for (const input of [alwaysInput, neverInput]) {
+    input.addEventListener('input', () => autogrow(input));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        void add(input === alwaysInput ? 'always' : 'never', input);
+      }
+    });
+  }
 
   const exceptionInput = $('exceptionInput') as HTMLInputElement;
   const exceptionNote = $('exceptionNote') as HTMLInputElement;

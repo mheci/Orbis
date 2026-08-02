@@ -499,6 +499,36 @@ class Orbis {
     };
   }
 
+  /**
+   * Add patterns to an always/never list. Each raw pattern is canonicalized
+   * individually; invalid or duplicate entries are skipped instead of failing
+   * the whole batch, so a pasted list with one typo still applies cleanly.
+   */
+  private async addRules(
+    list: 'always' | 'never',
+    patterns: readonly string[]
+  ): Promise<{ settings: Settings; invalid: string[] }> {
+    const key = list === 'always' ? 'alwaysContainerize' : 'neverContainerize';
+    const next = [...this.settings[key]];
+    const seen = new Set(next);
+    const invalid: string[] = [];
+    for (const raw of patterns) {
+      const pattern = canonicalizeUserPattern(raw);
+      if (pattern === null) {
+        invalid.push(raw);
+        continue;
+      }
+      if (!seen.has(pattern)) {
+        seen.add(pattern);
+        next.push(pattern);
+      }
+    }
+    const settings = await this.updateSettings({
+      [key]: next,
+    } as Parameters<typeof mergeSettings>[1]);
+    return { settings, invalid };
+  }
+
   private updateBadge(): void {
     const active = isProtectionActive(this.settings, Date.now());
     const action = browser.action ?? browser.browserAction;
@@ -534,11 +564,12 @@ class Orbis {
       case 'resume':
         return this.updateSettings({ pausedUntil: 0 });
       case 'add-rule': {
-        const pattern = canonicalizeUserPattern(message.pattern);
-        if (pattern === null) throw new Error(`Invalid pattern: ${message.pattern}`);
-        const key = message.list === 'always' ? 'alwaysContainerize' : 'neverContainerize';
-        const next = [...new Set([...this.settings[key], pattern])];
-        return this.updateSettings({ [key]: next } as Parameters<typeof mergeSettings>[1]);
+        const { settings, invalid } = await this.addRules(message.list, [message.pattern]);
+        if (invalid.length > 0) throw new Error(`Invalid pattern: ${invalid[0]}`);
+        return settings;
+      }
+      case 'add-rules': {
+        return this.addRules(message.list, message.patterns);
       }
       case 'remove-rule': {
         const key = message.list === 'always' ? 'alwaysContainerize' : 'neverContainerize';

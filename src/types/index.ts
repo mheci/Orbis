@@ -170,6 +170,7 @@ export type Message =
   | { type: 'pause'; minutes: number }
   | { type: 'resume' }
   | { type: 'add-rule'; list: 'always' | 'never'; pattern: string }
+  | { type: 'add-rules'; list: 'always' | 'never'; patterns: string[] }
   | { type: 'remove-rule'; list: 'always' | 'never'; pattern: string }
   | { type: 'set-exceptions'; exceptions: ExceptionRule[] }
   | { type: 'export' }
@@ -247,3 +248,10 @@ export type DeepPartial<T> = {
       ? DeepPartial<T[K]>
       : T[K];
 };
+
+/** Result of a bulk add-rule request. */
+export interface AddRulesResult {
+  readonly settings: Settings;
+  /** Raw patterns that failed canonicalization and were dropped. */
+  readonly invalid: string[];
+}

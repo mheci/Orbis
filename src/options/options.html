@@ -147,11 +147,17 @@
       <section class="panel" id="panel-rules" role="tabpanel">
         <fieldset>
           <legend data-i18n="optionsAlwaysTitle">Always containerize</legend>
-          <p class="hint" data-i18n="optionsAlwaysHint">
+          <p class="hint" id="alwaysHint" data-i18n="optionsAlwaysHint">
             Extra hosts that should always open in the Google container.
           </p>
           <div class="inline">
-            <input type="text" id="alwaysInput" placeholder="example.com or example.com/path" />
+            <textarea
+              id="alwaysInput"
+              rows="1"
+              data-i18n-placeholder="optionsAlwaysPlaceholder"
+              placeholder="example.com, one per line"
+              aria-describedby="alwaysHint"
+            ></textarea>
             <button class="btn primary" id="alwaysAdd" data-i18n="optionsAllowAdd">Add</button>
           </div>
           <ul class="list" id="alwaysList"></ul>
@@ -159,12 +165,18 @@
 
         <fieldset>
           <legend data-i18n="optionsNeverTitle">Never containerize</legend>
-          <p class="hint" data-i18n="optionsNeverHint">
+          <p class="hint" id="neverHint" data-i18n="optionsNeverHint">
             Highest priority. Use for sites that must stay in normal browsing even when they
             redirect through Google.
           </p>
           <div class="inline">
-            <input type="text" id="neverInput" placeholder="mail.example.com" />
+            <textarea
+              id="neverInput"
+              rows="1"
+              data-i18n-placeholder="optionsNeverPlaceholder"
+              placeholder="mail.example.com, one per line"
+              aria-describedby="neverHint"
+            ></textarea>
             <button class="btn primary" id="neverAdd" data-i18n="optionsAllowAdd">Add</button>
           </div>
           <ul class="list" id="neverList"></ul>
