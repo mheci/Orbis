@@ -18,7 +18,13 @@
       </header>
 
       <div class="onboarding-progress">
-        <div class="progress-bar">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          aria-valuemin="1"
+          aria-valuemax="4"
+          aria-valuenow="1"
+        >
           <div id="progress-fill" class="progress-fill" style="width: 25%"></div>
         </div>
         <span id="progress-text">Step 1 of 4</span>
@@ -26,7 +32,7 @@
 
       <main id="onboarding-content">
         <section class="onboarding-step active" data-step="1">
-          <h2 data-i18n="onboardingStep1Title">What is Orbis?</h2>
+          <h2 tabindex="-1" data-i18n="onboardingStep1Title">What is Orbis?</h2>
           <p data-i18n-html="onboardingStep1Body"></p>
           <p data-i18n="onboardingStep1Body2"></p>
           <div class="example-box">
@@ -38,7 +44,7 @@
         </section>
 
         <section class="onboarding-step" data-step="2">
-          <h2 data-i18n="onboardingStep2Title">Fastest way to use it</h2>
+          <h2 tabindex="-1" data-i18n="onboardingStep2Title">Fastest way to use it</h2>
           <p data-i18n="onboardingStep2Body"></p>
           <div class="hotkey-demo">
             <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd>
@@ -58,7 +64,7 @@
         </section>
 
         <section class="onboarding-step" data-step="3">
-          <h2 data-i18n="onboardingStep3Title">Blocks trackers automatically</h2>
+          <h2 tabindex="-1" data-i18n="onboardingStep3Title">Blocks trackers automatically</h2>
           <p data-i18n="onboardingStep3Body"></p>
           <div class="cleanup-visual">
             <div class="cleanup-item">
@@ -82,7 +88,7 @@
         </section>
 
         <section class="onboarding-step" data-step="4">
-          <h2 data-i18n="onboardingStep4Title">You're ready!</h2>
+          <h2 tabindex="-1" data-i18n="onboardingStep4Title">You're ready!</h2>
           <p data-i18n="onboardingStep4Body"></p>
           <p data-i18n="onboardingStep4Body2"></p>
           <div class="final-actions">
@@ -105,7 +111,7 @@
         <button id="prev-step" class="button secondary" disabled data-i18n="onboardingBack">
           Back
         </button>
-        <div class="footer-dots">
+        <div class="footer-dots" aria-hidden="true">
           <span class="dot active" data-step="1"></span>
           <span class="dot" data-step="2"></span>
           <span class="dot" data-step="3"></span>
