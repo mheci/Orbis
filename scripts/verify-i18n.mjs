@@ -14,7 +14,7 @@
  * A missing key renders the raw key in the UI, so the build must fail before
  * that can ship.
  */
-import { readFile, readdir, stat } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const errors = [];
@@ -42,12 +42,11 @@ for (const [key, value] of Object.entries(messages)) {
 const used = new Set();
 
 async function walk(dir) {
-  for (const entry of await readdir(dir)) {
-    const full = join(dir, entry);
-    const info = await stat(full);
-    if (info.isDirectory()) {
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
       await walk(full);
-    } else if (/\.(html|ts|json)$/.test(entry) && !entry.endsWith('messages.json')) {
+    } else if (/\.(html|ts|json)$/.test(entry.name) && !entry.name.endsWith('messages.json')) {
       const source = await readFile(full, 'utf8');
       const where = full.replaceAll('\\', '/');
       for (const match of source.matchAll(/data-i18n(?:-[a-z-]+)?="([A-Za-z0-9_.-]+)"/g)) {
