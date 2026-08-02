@@ -1,6 +1,6 @@
 {
   "name": "orbis",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "Orbis — Keep Google in its own orbit. Automatically isolate every Google-owned site into a dedicated Firefox Container with complete tracker blocking.",
   "private": true,
   "type": "module",
