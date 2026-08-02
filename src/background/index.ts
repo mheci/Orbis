@@ -506,7 +506,9 @@ class Orbis {
     void action.setBadgeText({ text: active ? '' : 'off' });
     void action.setBadgeBackgroundColor?.({ color: '#8f8f8f' });
     void action.setTitle({
-      title: active ? `Orbis — protecting ${this.settings.container.name}` : 'Orbis — paused',
+      title: active
+        ? browser.i18n.getMessage('tooltipActive', this.settings.container.name)
+        : browser.i18n.getMessage('tooltipPaused'),
     });
   }
 
@@ -676,13 +678,13 @@ class Orbis {
       } catch {
         /* first run */
       }
-      create('gc-open-here', 'Open link in Orbis', ['link']);
-      create('gc-always', 'Always open this site in Orbis', ['page', 'link']);
-      create('gc-never', 'Never open this site in Orbis', ['page', 'link']);
+      create('gc-open-here', browser.i18n.getMessage('menuOpenLink'), ['link']);
+      create('gc-always', browser.i18n.getMessage('menuAlways'), ['page', 'link']);
+      create('gc-never', browser.i18n.getMessage('menuNever'), ['page', 'link']);
       // The tab context makes moving available from the tab strip itself,
       // where a "page" menu item is not offered.
-      create('gc-move-in', 'Move this tab into Orbis', ['page', 'tab']);
-      create('gc-move-out', 'Move this tab out of Orbis', ['page', 'tab']);
+      create('gc-move-in', browser.i18n.getMessage('menuMoveIn'), ['page', 'tab']);
+      create('gc-move-out', browser.i18n.getMessage('menuMoveOut'), ['page', 'tab']);
     });
 
     menus.onClicked.addListener(async (info, tab) => {

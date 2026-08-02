@@ -19,6 +19,7 @@ import {
   type Message,
   type Settings,
 } from '../types/index.js';
+import { getMessage, localizePage } from '../shared/i18n.js';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -57,9 +58,9 @@ async function patch(update: DeepPartial<Settings>): Promise<void> {
   try {
     settings = await send<Settings>({ type: 'set-settings', patch: update });
     render();
-    toast('Saved.');
+    toast(getMessage('optionsSaved'));
   } catch (error) {
-    toast(`Could not save: ${error instanceof Error ? error.message : String(error)}`);
+    toast(getMessage('optionsSaveFailed', error instanceof Error ? error.message : String(error)));
   }
 }
 
@@ -85,7 +86,7 @@ function renderList(
   if (entries.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty';
-    li.textContent = 'No entries yet.';
+    li.textContent = getMessage('optionsListEmpty');
     container.append(li);
     return;
   }
@@ -96,12 +97,12 @@ function renderList(
     const remove = document.createElement('button');
     remove.className = 'remove';
     remove.type = 'button';
-    remove.title = `Remove ${entry}`;
+    remove.title = getMessage('optionsRemoveRule', entry);
     remove.textContent = '✕';
     remove.addEventListener('click', async () => {
       settings = await send<Settings>({ type: 'remove-rule', list, pattern: entry });
       render();
-      toast('Removed.');
+      toast(getMessage('optionsRemoved'));
     });
     li.append(label, remove);
     container.append(li);
@@ -125,9 +126,9 @@ function renderDomainSets(diagnostics: Diagnostics | null): void {
     });
     const text = document.createElement('span');
     const title = document.createElement('h3');
-    title.textContent = SET_TITLES[id] ?? id;
+    title.textContent = getMessage(SET_TITLES[id] ?? 'optionsListEmpty');
     const desc = document.createElement('p');
-    desc.textContent = SET_DESCRIPTIONS[id] ?? '';
+    desc.textContent = getMessage(SET_DESCRIPTIONS[id] ?? 'optionsListEmpty');
     text.append(title, desc);
     label.append(input, text);
     wrapper.append(label);
@@ -135,7 +136,7 @@ function renderDomainSets(diagnostics: Diagnostics | null): void {
     if (diagnostics !== null && id === 'google') {
       const count = document.createElement('p');
       count.className = 'count';
-      count.textContent = `${diagnostics.domainCount.toLocaleString()} host patterns loaded in total.`;
+      count.textContent = getMessage('optionsHostCount', diagnostics.domainCount.toLocaleString());
       wrapper.append(count);
     }
     host.append(wrapper);
@@ -143,19 +144,17 @@ function renderDomainSets(diagnostics: Diagnostics | null): void {
 }
 
 const SET_TITLES: Record<string, string> = {
-  google: 'Google core properties',
-  youtube: 'YouTube & video delivery',
-  trackers: 'Advertising & measurement',
-  hosting: 'User-content hosting',
+  google: 'setTitleGoogle',
+  youtube: 'setTitleYoutube',
+  trackers: 'setTitleTrackers',
+  hosting: 'setTitleHosting',
 };
 
 const SET_DESCRIPTIONS: Record<string, string> = {
-  google: 'google.com, all country domains, Gmail, Drive, Maps, the .google gTLD and more.',
-  youtube: 'youtube.com, youtu.be, youtube-nocookie.com, localized YouTube domains, video CDNs.',
-  trackers:
-    'doubleclick.net, google-analytics.com, googletagmanager.com… Off by default: top-level visits are usually ad click-throughs belonging to the originating site.',
-  hosting:
-    'appspot.com, web.app, firebaseapp.com… Off by default: these host unrelated third-party apps.',
+  google: 'setDescGoogle',
+  youtube: 'setDescYoutube',
+  trackers: 'setDescTrackers',
+  hosting: 'setDescHosting',
 };
 
 function renderBlockAllowList(): void {
@@ -164,7 +163,7 @@ function renderBlockAllowList(): void {
   if (settings.blocking.allowlist.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty';
-    li.textContent = 'No sites yet.';
+    li.textContent = getMessage('optionsNoSites');
     host.append(li);
     return;
   }
@@ -175,12 +174,12 @@ function renderBlockAllowList(): void {
     const remove = document.createElement('button');
     remove.className = 'remove';
     remove.type = 'button';
-    remove.title = `Remove ${entry}`;
+    remove.title = getMessage('optionsRemoveRule', entry);
     remove.textContent = 'x';
     remove.addEventListener('click', async () => {
       settings = await send<Settings>({ type: 'allowlist-site', host: entry, allow: false });
       render();
-      toast('Removed.');
+      toast(getMessage('optionsRemoved'));
     });
     li.append(label, remove);
     host.append(li);
@@ -208,7 +207,7 @@ function renderExceptions(): void {
   if (settings.exceptions.length === 0) {
     const li = document.createElement('li');
     li.className = 'empty';
-    li.textContent = 'No exceptions yet.';
+    li.textContent = getMessage('optionsNoExceptions');
     host.append(li);
     return;
   }
@@ -220,49 +219,69 @@ function renderExceptions(): void {
     const toggle = document.createElement('input');
     toggle.type = 'checkbox';
     toggle.checked = rule.enabled;
-    toggle.title = rule.enabled ? 'Enabled — disable to ignore' : 'Disabled — enable to apply';
+    toggle.title = getMessage(
+      rule.enabled ? 'optionsExceptionEnabledTitle' : 'optionsExceptionDisabledTitle'
+    );
     toggle.addEventListener('change', () => {
       void saveExceptions(withException(rule.pattern, { enabled: toggle.checked })).catch((error) =>
-        toast(`Could not update: ${error instanceof Error ? error.message : String(error)}`)
+        toast(
+          getMessage(
+            'optionsExceptionUpdateFailed',
+            error instanceof Error ? error.message : String(error)
+          )
+        )
       );
     });
 
     const pattern = document.createElement('span');
     pattern.className = 'pattern';
     pattern.textContent = rule.pattern;
-    pattern.title = `Added ${new Date(rule.created).toLocaleDateString()}`;
+    pattern.title = getMessage(
+      'optionsExceptionAddedDate',
+      new Date(rule.created).toLocaleDateString()
+    );
 
     const note = document.createElement('input');
     note.type = 'text';
     note.className = 'note';
     note.maxLength = 200;
     note.value = rule.note ?? '';
-    note.placeholder = 'note';
-    note.title = 'Optional note';
+    note.placeholder = getMessage('optionsExceptionNotePlaceholder');
+    note.title = getMessage('optionsExceptionNoteTitle');
     note.addEventListener('change', () => {
       const value = note.value.trim().slice(0, 200);
       void saveExceptions(withException(rule.pattern, { note: value === '' ? undefined : value }))
         .then(() => {
           note.value = value;
-          toast('Note saved.');
+          toast(getMessage('optionsNoteSaved'));
         })
         .catch((error) => {
           note.value = rule.note ?? '';
-          toast(`Could not save: ${error instanceof Error ? error.message : String(error)}`);
+          toast(
+            getMessage(
+              'optionsNoteSaveFailed',
+              error instanceof Error ? error.message : String(error)
+            )
+          );
         });
     });
 
     const remove = document.createElement('button');
     remove.className = 'remove';
     remove.type = 'button';
-    remove.title = `Remove exception ${rule.pattern}`;
+    remove.title = getMessage('optionsRemoveException', rule.pattern);
     remove.textContent = '✕';
     remove.addEventListener('click', async () => {
       try {
         await saveExceptions(settings.exceptions.filter((r) => r.pattern !== rule.pattern));
-        toast('Exception removed.');
+        toast(getMessage('optionsExceptionRemoved'));
       } catch (error) {
-        toast(`Could not remove: ${error instanceof Error ? error.message : String(error)}`);
+        toast(
+          getMessage(
+            'optionsExceptionRemoveFailed',
+            error instanceof Error ? error.message : String(error)
+          )
+        );
       }
     });
 
@@ -274,13 +293,16 @@ function renderExceptions(): void {
 function renderStats(): void {
   const s = settings.statistics;
   const items: Array<[string, string]> = [
-    ['Contained navigations', s.containedNavigations.toLocaleString()],
-    ['Released navigations', s.releasedNavigations.toLocaleString()],
-    ['Links unwrapped', s.unwrappedLinks.toLocaleString()],
-    ['Exceptions applied', s.exceptionsApplied.toLocaleString()],
-    ['Trackers blocked', s.trackersBlocked.toLocaleString()],
-    ['Counting since', new Date(s.since).toLocaleDateString()],
-    ['Last event', s.lastEvent === 0 ? '—' : new Date(s.lastEvent).toLocaleString()],
+    [getMessage('optionsStatContained'), s.containedNavigations.toLocaleString()],
+    [getMessage('optionsStatReleased'), s.releasedNavigations.toLocaleString()],
+    [getMessage('optionsStatUnwrapped'), s.unwrappedLinks.toLocaleString()],
+    [getMessage('optionsStatExceptions'), s.exceptionsApplied.toLocaleString()],
+    [getMessage('optionsStatTrackers'), s.trackersBlocked.toLocaleString()],
+    [getMessage('optionsStatSince'), new Date(s.since).toLocaleDateString()],
+    [
+      getMessage('optionsStatLastEvent'),
+      s.lastEvent === 0 ? getMessage('optionsStatNever') : new Date(s.lastEvent).toLocaleString(),
+    ],
   ];
   const host = $('stats');
   host.textContent = '';
@@ -300,8 +322,8 @@ function render(): void {
   ($('enabled') as HTMLInputElement).checked = settings.enabled;
   const paused = settings.pausedUntil > Date.now();
   $('pauseState').textContent = paused
-    ? `Paused until ${new Date(settings.pausedUntil).toLocaleTimeString()}.`
-    : 'Protection is running.';
+    ? getMessage('optionsPausedUntil', new Date(settings.pausedUntil).toLocaleTimeString())
+    : getMessage('optionsRunning');
 
   ($('containerName') as HTMLInputElement).value = settings.container.name;
   fillSelect($('containerColor') as HTMLSelectElement, CONTAINER_COLORS, settings.container.color);
@@ -342,22 +364,22 @@ function wireTabs(): void {
 }
 
 const KIND_LABELS: Record<DecisionEntry['kind'], string> = {
-  contain: 'Contain',
-  release: 'Release',
-  unwrap: 'Unwrap',
-  ignore: 'Ignore',
+  contain: 'optionsLogKindContain',
+  release: 'optionsLogKindRelease',
+  unwrap: 'optionsLogKindUnwrap',
+  ignore: 'optionsLogKindIgnore',
 };
 
 function renderDecisionLog(entries: readonly DecisionEntry[]): void {
   const body = $('logBody');
   body.textContent = '';
-  $('logCount').textContent = `${entries.length} entries kept (newest first).`;
+  $('logCount').textContent = getMessage('optionsLogCount', String(entries.length));
   if (entries.length === 0) {
     const row = document.createElement('tr');
     const cell = document.createElement('td');
     cell.colSpan = 5;
     cell.className = 'empty';
-    cell.textContent = 'Nothing recorded yet.';
+    cell.textContent = getMessage('optionsLogEmpty');
     row.append(cell);
     body.append(row);
     return;
@@ -371,12 +393,12 @@ function renderDecisionLog(entries: readonly DecisionEntry[]): void {
     const kind = document.createElement('td');
     const badge = document.createElement('span');
     badge.className = `badge ${entry.kind}`;
-    badge.textContent = KIND_LABELS[entry.kind];
+    badge.textContent = getMessage(KIND_LABELS[entry.kind]);
     kind.append(badge);
     const reason = document.createElement('td');
     reason.textContent = entry.reason;
     const site = document.createElement('td');
-    site.textContent = entry.host ?? '—';
+    site.textContent = entry.host ?? getMessage('optionsStatNever');
     const url = document.createElement('td');
     url.className = 'url';
     url.textContent = entry.url;
@@ -395,7 +417,10 @@ async function refreshDiagnostics(): Promise<void> {
     renderDecisionLog(recentDecisions);
     renderDomainSets(diagnostics);
   } catch (error) {
-    $('diagnostics').textContent = `Diagnostics unavailable: ${String(error)}`;
+    $('diagnostics').textContent = getMessage(
+      'optionsDiagUnavailable',
+      error instanceof Error ? error.message : String(error)
+    );
   }
 }
 
@@ -406,12 +431,12 @@ function wireGeneral(): void {
   $('pause30').addEventListener('click', async () => {
     settings = await send<Settings>({ type: 'pause', minutes: 30 });
     render();
-    toast('Paused for 30 minutes.');
+    toast(getMessage('optionsPaused30'));
   });
   $('resume').addEventListener('click', async () => {
     settings = await send<Settings>({ type: 'resume' });
     render();
-    toast('Protection resumed.');
+    toast(getMessage('optionsResumed'));
   });
 
   const name = $('containerName') as HTMLInputElement;
@@ -445,9 +470,9 @@ function wireGeneral(): void {
       settings = await send<Settings>({ type: 'allowlist-site', host: value, allow: true });
       blockInput.value = '';
       render();
-      toast('Site added.');
+      toast(getMessage('optionsSiteAdded'));
     } catch (error) {
-      toast(`Could not add: ${error instanceof Error ? error.message : String(error)}`);
+      toast(getMessage('optionsAddFailed', error instanceof Error ? error.message : String(error)));
     }
   };
   $('blockAllowAdd').addEventListener('click', () => void addBlockAllow());
@@ -477,9 +502,11 @@ function wireRules(): void {
       settings = await send<Settings>({ type: 'add-rule', list, pattern: value });
       input.value = '';
       render();
-      toast('Rule added.');
+      toast(getMessage('optionsRuleAdded'));
     } catch (error) {
-      toast(`Could not add rule: ${String(error instanceof Error ? error.message : error)}`);
+      toast(
+        getMessage('optionsRuleAddFailed', String(error instanceof Error ? error.message : error))
+      );
     }
   };
 
@@ -512,9 +539,14 @@ function wireRules(): void {
       ]);
       exceptionInput.value = '';
       exceptionNote.value = '';
-      toast('Exception added.');
+      toast(getMessage('optionsExceptionAdded'));
     } catch (error) {
-      toast(`Could not add exception: ${error instanceof Error ? error.message : String(error)}`);
+      toast(
+        getMessage(
+          'optionsExceptionAddFailed',
+          error instanceof Error ? error.message : String(error)
+        )
+      );
     }
   };
   $('exceptionAdd').addEventListener('click', () => void addException());
@@ -533,7 +565,7 @@ function wireData(): void {
     link.download = `orbis-backup-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    toast('Backup exported.');
+    toast(getMessage('optionsBackupExported'));
   });
 
   const file = $('importFile') as HTMLInputElement;
@@ -545,19 +577,21 @@ function wireData(): void {
       const parsed: unknown = JSON.parse(await chosen.text());
       settings = await send<Settings>({ type: 'import', document: parsed });
       render();
-      toast('Settings imported.');
+      toast(getMessage('optionsSettingsImported'));
     } catch (error) {
-      toast(`Import failed: ${error instanceof Error ? error.message : String(error)}`);
+      toast(
+        getMessage('optionsImportFailed', error instanceof Error ? error.message : String(error))
+      );
     } finally {
       file.value = '';
     }
   });
 
   $('reset').addEventListener('click', async () => {
-    if (!window.confirm('Reset all Orbis settings to their defaults?')) return;
+    if (!window.confirm(getMessage('optionsResetConfirm'))) return;
     settings = await send<Settings>({ type: 'reset' });
     render();
-    toast('Settings reset.');
+    toast(getMessage('optionsSettingsReset'));
   });
 }
 
@@ -567,9 +601,11 @@ function wireDiagnostics(): void {
     try {
       const size = await send<number>({ type: 'clear-decision-log' });
       await refreshDiagnostics();
-      toast(size === 0 ? 'Log already empty.' : 'Decision log cleared.');
+      toast(size === 0 ? getMessage('optionsLogAlreadyEmpty') : getMessage('optionsLogCleared'));
     } catch (error) {
-      toast(`Could not clear log: ${error instanceof Error ? error.message : String(error)}`);
+      toast(
+        getMessage('optionsLogClearFailed', error instanceof Error ? error.message : String(error))
+      );
     }
   });
   const input = $('testInput') as HTMLInputElement;
@@ -578,9 +614,10 @@ function wireDiagnostics(): void {
     if (value === '') return;
     const url = /^https?:\/\//i.test(value) ? value : `https://${value}`;
     const result = await send<MatchResult>({ type: 'match-url', url });
+    const detail = `${result.source}${result.pattern ? ` (${result.pattern})` : ''}`;
     $('testResult').textContent = result.isGoogle
-      ? `✅ Containerized — rule: ${result.source}${result.pattern ? ` (${result.pattern})` : ''}`
-      : `➖ Normal browsing — reason: ${result.source}${result.pattern ? ` (${result.pattern})` : ''}`;
+      ? getMessage('optionsTestContained', detail)
+      : getMessage('optionsTestNormal', detail);
   };
   $('testBtn').addEventListener('click', () => void run());
   input.addEventListener('keydown', (e) => {
@@ -589,6 +626,7 @@ function wireDiagnostics(): void {
 }
 
 async function main(): Promise<void> {
+  localizePage();
   settings = await send<Settings>({ type: 'get-settings' });
   wireTabs();
   wireGeneral();

@@ -22,6 +22,9 @@ const files = [
   ['src/onboarding/onboarding.css', 'dist/onboarding/onboarding.css'],
 ];
 for (const [from, to] of files) await cp(from, to);
+// Locale catalog: Firefox resolves __MSG_*__ manifest keys and browser.i18n
+// lookups against _locales/<locale>/messages.json shipped in the package.
+await cp('src/_locales', 'dist/_locales', { recursive: true });
 // Copy only the icon sizes the manifest actually references. The 512px master
 // is for the AMO listing and README, and shipping it (plus any unused size)
 // would be dead weight in every user's profile.

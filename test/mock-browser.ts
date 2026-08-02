@@ -223,6 +223,14 @@ function buildApi(mock: MockBrowser): Record<string, unknown> {
       openOptionsPage: async () => {},
       sendMessage: async () => {},
     },
+    i18n: {
+      // Minimal stand-in: substitute $1..$n placeholders and fall back to the
+      // key itself so tests never crash on a missing locale file.
+      getMessage(key: string, substitutions?: string | string[]) {
+        const subs = Array.isArray(substitutions) ? substitutions : [substitutions];
+        return key.replace(/\$(\d+)/g, (_, n: string) => subs[Number(n) - 1] ?? '');
+      },
+    },
     action: {
       async setBadgeText(d: { text: string; tabId?: number }) {
         mock.badgeText = d.text;
