@@ -109,7 +109,10 @@ jobs:
       - name: web-ext lint (official AMO validator)
         # The build is warning-clean today; keep it that way so AMO review is never
         # blocked by drift. Downgrade this flag only with a very good reason.
-        run: npx --yes web-ext lint --source-dir=dist --warnings-as-errors
+        # --self-hosted matches reality: Orbis is distributed through GitHub
+        # Releases with its own update_url, which the validator would otherwise
+        # reject as an AMO-hosted-only mistake (MANIFEST_UPDATE_URL).
+        run: npx --yes web-ext lint --source-dir=dist --warnings-as-errors --self-hosted
 
       - name: Upload extension artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

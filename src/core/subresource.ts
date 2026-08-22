@@ -180,9 +180,14 @@ export class SubresourceClassifier {
   isGoogleOwned(host: string): boolean {
     const tld = host.slice(host.lastIndexOf('.') + 1);
     if (this.ownedBrandTLDs.has(tld)) return true;
+    // Walk suffixes from the TLD inwards, extending one growing string instead
+    // of joining a fresh slice per label — this runs on every sub-resource of
+    // every page, so per-label array copies add up.
     const labels = host.split('.');
-    for (let i = 0; i < labels.length - 1; i++) {
-      if (this.ownedHosts.has(labels.slice(i).join('.'))) return true;
+    let suffix = labels[labels.length - 1] as string;
+    for (let i = labels.length - 2; i >= 0; i--) {
+      suffix = `${labels[i]}.${suffix}`;
+      if (this.ownedHosts.has(suffix)) return true;
     }
     return false;
   }
@@ -311,15 +316,39 @@ export class SubresourceClassifier {
     return ALLOW('unclassified', 'unknown');
   }
 
-  /** Cached wrapper around decide(), for the hot request path. */
+  /**
+   * Cached wrapper around decide(), for the hot request path.
+   *
+   * A fast path first replicates the cheap prefix of decide() for requests
+   * that can only ever end in "not-google": most sub-resource loads on the web
+   * are not Google-owned, and each one would otherwise pay for cache-key string
+   * building, Map bookkeeping and a second URL parse inside decide(). The guard
+   * order mirrors decide() exactly, so both paths always agree.
+   */
   decideCached(context: SubresourceContext): SubresourceDecision {
+    if (this.mode !== 'off' && !NEVER_BLOCK_TYPES.has(context.type)) {
+      const parsed = safeParse(context.url);
+      if (
+        parsed !== null &&
+        (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
+        !this.isGoogleOwned(normalizeHostPattern(parsed.hostname))
+      ) {
+        return ALLOW('not-google');
+      }
+    }
+
     const key = `${context.originUrl ?? ''}\u0000${context.url}\u0000${context.type}\u0000${
       context.tabInContainer ? '1' : '0'
     }`;
     const hit = this.cache.get(key);
     if (hit !== undefined) return hit;
     const decision = this.decide(context);
-    if (this.cache.size >= SubresourceClassifier.CACHE_LIMIT) this.cache.clear();
+    // Evict the oldest entry rather than clearing everything: a full wipe at
+    // the boundary would discard every warm decision mid-page-load.
+    if (this.cache.size >= SubresourceClassifier.CACHE_LIMIT) {
+      const oldest = this.cache.keys().next();
+      if (!oldest.done) this.cache.delete(oldest.value);
+    }
     this.cache.set(key, decision);
     return decision;
   }

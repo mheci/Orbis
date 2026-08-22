@@ -32,6 +32,9 @@ Firefox 140+ desktop required.
 1. Download latest `-signed.xpi` from [Releases](https://github.com/mheci/Orbis/releases/latest)
 2. Open `about:addons` → Gear → Install Add-on From File → Select XPI → Approve
 
+Updates after v2.3.0 arrive automatically via a self-hosted update manifest — no AMO, no
+extra services; see [INSTALL.md](INSTALL.md).
+
 ## Use
 
 **Keyboard (fastest, invisible):**

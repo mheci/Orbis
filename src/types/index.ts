@@ -44,6 +44,7 @@ export type ContainerIcon = (typeof CONTAINER_ICONS)[number];
 /** How a rule was produced, used for diagnostics and precedence reporting. */
 export type MatchSource =
   | 'never-list'
+  | 'temporary-allow'
   | 'always-list'
   | 'exception'
   | 'builtin-never'
@@ -60,6 +61,20 @@ export interface MatchResult {
   readonly source: MatchSource;
   /** The registrable pattern or literal that matched, for diagnostics. */
   readonly pattern?: string;
+}
+
+/**
+ * A time-boxed "don't contain this site" window.
+ *
+ * The window is enforced by data — every consumer compares `until` against the
+ * clock — so expiry cannot be forgotten even if the event page is suspended
+ * and no timer ever fires.
+ */
+export interface TemporaryAllowRule {
+  /** Host (or host+path prefix) the window applies to. */
+  readonly pattern: string;
+  /** Epoch ms at which containment resumes automatically. */
+  readonly until: number;
 }
 
 /** A user-defined exception: a site that must never be pulled into the container. */
@@ -146,6 +161,8 @@ export interface Settings {
   alwaysContainerize: string[];
   /** Hosts the user never wants contained; wins over everything else. */
   neverContainerize: string[];
+  /** Time-boxed containment pauses; expire automatically at `until`. */
+  temporaryAllowances: TemporaryAllowRule[];
   /** Structured exceptions with metadata. */
   exceptions: ExceptionRule[];
   /** Local counters. */
@@ -172,6 +189,8 @@ export type Message =
   | { type: 'add-rule'; list: 'always' | 'never'; pattern: string }
   | { type: 'add-rules'; list: 'always' | 'never'; patterns: string[] }
   | { type: 'remove-rule'; list: 'always' | 'never'; pattern: string }
+  | { type: 'temporarily-allow'; host: string; minutes: number }
+  | { type: 'remove-temporary-allow'; host: string }
   | { type: 'set-exceptions'; exceptions: ExceptionRule[] }
   | { type: 'export' }
   | { type: 'import'; document: unknown }
@@ -179,19 +198,45 @@ export type Message =
   | { type: 'diagnostics' }
   | { type: 'allowlist-site'; host: string; allow: boolean }
   | { type: 'get-blocked'; tabId: number }
-  | { type: 'clear-decision-log' };
+  | { type: 'clear-decision-log' }
+  | { type: 'get-site-stats' }
+  | { type: 'clear-site-stats' };
+
+/**
+ * One site's locally-recorded activity counters.
+ *
+ * Hostnames only — no URLs, no timestamps beyond "last seen", no sync, never
+ * exported. The whole table is dropped by "Clear statistics".
+ */
+export interface SiteStatEntry {
+  readonly host: string;
+  /** Navigations moved into the container from or to this host. */
+  readonly contained: number;
+  /** Navigations released back out of the container. */
+  readonly released: number;
+  /** Redirector links unwrapped on this host. */
+  readonly unwrapped: number;
+  /** Google tracking resources blocked while this host was the origin. */
+  readonly trackersBlocked: number;
+  /** Epoch ms of the most recent counted event. */
+  readonly lastSeen: number;
+}
 
 /** Snapshot of runtime state used to render the popup. */
 export interface RuntimeState {
   readonly enabled: boolean;
   readonly paused: boolean;
   readonly pausedUntil: number;
+  /** Active time-boxed allowance for `currentHost`, if any (epoch ms). */
+  readonly tempAllowedUntil: number | null;
   readonly containerName: string;
   readonly containerColor: ContainerColor;
   readonly containerIcon: ContainerIcon;
   readonly cookieStoreId: string | null;
   readonly currentUrl: string | null;
   readonly currentHost: string | null;
+  /** The active tab's id, when there is one — so UIs never re-query tabs. */
+  readonly currentTabId: number | null;
   readonly currentTabInContainer: boolean;
   readonly currentMatch: MatchResult;
   readonly statistics: Statistics;

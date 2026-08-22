@@ -26,6 +26,7 @@ import {
   type ExceptionRule,
   type Settings,
   type Statistics,
+  type TemporaryAllowRule,
 } from '../types/index.js';
 import { getDomainDatabase, normalizeHostPattern } from './domain-db.js';
 import { parseHostPathRule } from './matcher.js';
@@ -78,6 +79,7 @@ export function defaultSettings(): Settings {
     domainSets,
     alwaysContainerize: [],
     neverContainerize: [],
+    temporaryAllowances: [],
     exceptions: [],
     statistics: defaultStatistics(),
   };
@@ -139,6 +141,36 @@ function sanitizeExceptions(value: unknown): ExceptionRule[] {
     if (out.length >= MAX_LIST_ENTRIES) break;
   }
   return out;
+}
+
+/**
+ * Rebuild valid temporary allowances from untrusted input.
+ *
+ * Expired windows are dropped on sight: they are meaningless once lapsed, and
+ * sanitising is the only write path, so this doubles as lazy storage cleanup.
+ * The clock read makes this function deliberately non-deterministic — that is
+ * the point of a time-boxed rule.
+ */
+export function sanitizeTemporaryAllowances(value: unknown): TemporaryAllowRule[] {
+  if (!Array.isArray(value)) return [];
+  const now = Date.now();
+  const byPattern = new Map<string, TemporaryAllowRule>();
+  for (const entry of value) {
+    if (typeof entry !== 'object' || entry === null) continue;
+    const record = entry as Record<string, unknown>;
+    const parsed =
+      typeof record['pattern'] === 'string' ? parseHostPathRule(record['pattern']) : null;
+    const until = record['until'];
+    if (parsed === null || typeof until !== 'number' || !Number.isFinite(until)) continue;
+    if (until <= now) continue;
+    const canonical = parsed.path === '' ? parsed.host : `${parsed.host}${parsed.path}`;
+    const existing = byPattern.get(canonical);
+    if (existing !== undefined && existing.until >= until) continue;
+    byPattern.set(canonical, { pattern: canonical, until });
+  }
+  // Longest-lived first, then cap: deterministic which survive truncation.
+  const sorted = [...byPattern.values()].sort((a, b) => b.until - a.until);
+  return sorted.slice(0, MAX_LIST_ENTRIES);
 }
 
 function sanitizeStatistics(value: unknown): Statistics {
@@ -234,6 +266,7 @@ export function sanitizeSettings(input: unknown): Settings {
     domainSets,
     alwaysContainerize: sanitizePatternList(record['alwaysContainerize']),
     neverContainerize: sanitizePatternList(record['neverContainerize']),
+    temporaryAllowances: sanitizeTemporaryAllowances(record['temporaryAllowances']),
     exceptions: sanitizeExceptions(record['exceptions']),
     statistics: sanitizeStatistics(record['statistics']),
   };

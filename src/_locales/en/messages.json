@@ -92,6 +92,15 @@
   "popupResume": {
     "message": "Resume protection"
   },
+  "popupTempAllow": {
+    "message": "Pause containment here for 30 min"
+  },
+  "popupTempResume": {
+    "message": "Resume containment for this site"
+  },
+  "popupTempHint": {
+    "message": "Containment paused here — about $1 min left."
+  },
   "popupNoPage": {
     "message": "No page loaded."
   },
@@ -443,6 +452,27 @@
   "optionsSettingsReset": {
     "message": "Settings reset."
   },
+  "optionsSiteStatsTitle": {
+    "message": "Activity by site"
+  },
+  "optionsSiteStatsHint": {
+    "message": "Where the counters above came from. Hostnames only, stored locally, never synced or exported. The oldest sites drop off after 200 entries."
+  },
+  "optionsSiteStatsColSite": {
+    "message": "Site"
+  },
+  "optionsSiteStatsEmpty": {
+    "message": "Nothing recorded yet."
+  },
+  "optionsSiteStatsClear": {
+    "message": "Clear site statistics"
+  },
+  "optionsSiteStatsCleared": {
+    "message": "Site statistics cleared."
+  },
+  "optionsSiteStatsClearFailed": {
+    "message": "Could not clear site statistics: $1"
+  },
   "optionsDiagUnavailable": {
     "message": "Diagnostics unavailable: $1"
   },
@@ -475,6 +505,21 @@
   },
   "optionsNoExceptions": {
     "message": "No exceptions yet."
+  },
+  "optionsTempTitle": {
+    "message": "Temporary allowances"
+  },
+  "optionsTempHint": {
+    "message": "Sites where containment pauses for a while and resumes on its own. Add one from the popup while visiting the site."
+  },
+  "optionsTempEmpty": {
+    "message": "No active temporary allowances."
+  },
+  "optionsTempUntil": {
+    "message": "Containment resumes $1"
+  },
+  "optionsTempRemoveTitle": {
+    "message": "End the temporary allowance for $1 now"
   },
   "optionsExceptionEnabledTitle": {
     "message": "Enabled — disable to ignore"

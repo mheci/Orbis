@@ -12,7 +12,20 @@ Signed XPI installs permanently on regular Firefox.
 2. Download `.xpi` file
 3. Open `about:addons` → Gear → Install Add-on From File → Select XPI → Approve
 
-Permissions explained in [PERMISSIONS.md](docs/PERMISSIONS.md). File is unlisted, won't auto-update – watch releases.
+Permissions explained in [PERMISSIONS.md](docs/PERMISSIONS.md).
+
+## Updates
+
+Installs from v2.3.0 onward update automatically. The signed XPI points Firefox at a
+self-hosted update manifest (`https://mheci.github.io/Orbis/updates.json`), which lists every
+release's signed download together with its SHA-256 hash; Firefox checks it periodically,
+offers the new version in `about:addons`, and verifies the checksum before installing.
+No other network service is involved — AMO is never used and the manifest only ever links
+back to this repository's own Releases.
+
+**One-time migration:** builds older than v2.3.0 contain no update URL, so Firefox cannot
+offer them anything. If you installed before v2.3.0, reinstall the current `.xpi` once
+(steps above) — from then on updates arrive on their own.
 
 ## Temporary (Try Without Installing)
 
