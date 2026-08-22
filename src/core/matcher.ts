@@ -13,12 +13,13 @@
  * Precedence (highest first)
  * --------------------------
  *  1. user "never containerize" list      -> not Google
- *  2. user exceptions (enabled only)      -> not Google
- *  3. built-in never list (GSI widgets)   -> not Google
- *  4. user "always containerize" list     -> Google
- *  5. brand gTLD (.google, .youtube, ...) -> Google
- *  6. enabled domain sets                 -> Google
- *  7. otherwise                           -> not Google
+ *  2. time-boxed temporary allowances     -> not Google (until they expire)
+ *  3. user exceptions (enabled only)      -> not Google
+ *  4. built-in never list (GSI widgets)   -> not Google
+ *  5. user "always containerize" list     -> Google
+ *  6. brand gTLD (.google, .youtube, ...) -> Google
+ *  7. enabled domain sets                 -> Google
+ *  8. otherwise                           -> not Google
  */
 
 import type { ExceptionRule, MatchResult, Settings } from '../types/index.js';
@@ -126,6 +127,12 @@ function ruleMatches(rule: HostPathRule, host: string, pathname: string): boolea
   return pathname.toLowerCase().startsWith(rule.path);
 }
 
+/** A compiled temporary allowance: a host rule plus its expiry instant. */
+interface TemporaryRule {
+  readonly rule: HostPathRule;
+  readonly until: number;
+}
+
 /**
  * A compiled, immutable matcher. Rebuilt whenever settings change; building is
  * cheap (a few milliseconds for ~1000 hosts) and happens off the hot path.
@@ -137,6 +144,7 @@ export class UrlMatcher {
   private readonly alwaysRules: readonly HostPathRule[];
   private readonly neverRules: readonly HostPathRule[];
   private readonly exceptionRules: readonly HostPathRule[];
+  private readonly temporaryRules: readonly TemporaryRule[];
   private readonly oauthPaths: readonly string[];
   /** Small LRU-ish cache keyed by origin+path prefix. */
   private readonly cache = new Map<string, MatchResult>();
@@ -165,6 +173,12 @@ export class UrlMatcher {
     this.alwaysRules = compileList(settings.alwaysContainerize);
     this.neverRules = compileList(settings.neverContainerize);
     this.exceptionRules = compileExceptions(settings.exceptions);
+    this.temporaryRules = settings.temporaryAllowances
+      .map((entry) => {
+        const rule = parseHostPathRule(entry.pattern);
+        return rule === null ? null : { rule, until: entry.until };
+      })
+      .filter((r): r is TemporaryRule => r !== null);
 
     this.hostCount = db.hostCount;
     this.buildMs = Date.now() - started;
@@ -175,8 +189,20 @@ export class UrlMatcher {
     const cached = this.cache.get(url);
     if (cached !== undefined) return cached;
     const result = this.computeMatch(url);
-    if (this.cache.size >= UrlMatcher.CACHE_LIMIT) this.cache.clear();
-    this.cache.set(url, result);
+    // Time-boxed verdicts are never cached: the cache has no clock, and a
+    // stored "temporarily allowed" answer could otherwise outlive its window
+    // until an unrelated settings write rebuilt the matcher. Recomputing them
+    // costs one trie walk per navigation while the window is live.
+    if (result.source !== 'temporary-allow') {
+      // Evict the oldest entry instead of wiping the whole cache: a full clear
+      // at the size boundary would throw away every warm entry during exactly
+      // the navigation bursts the cache exists for.
+      if (this.cache.size >= UrlMatcher.CACHE_LIMIT) {
+        const oldest = this.cache.keys().next();
+        if (!oldest.done) this.cache.delete(oldest.value);
+      }
+      this.cache.set(url, result);
+    }
     return result;
   }
 
@@ -193,6 +219,17 @@ export class UrlMatcher {
     for (const rule of this.neverRules) {
       if (ruleMatches(rule, host, pathname)) {
         return { isGoogle: false, source: 'never-list', pattern: rule.raw };
+      }
+    }
+
+    // 2. Time-boxed temporary allowances. Checked against the clock, never
+    //    against a timer, so a suspended worker cannot keep one alive past its
+    //    expiry — the worst a stale cache entry can do is expire one hop late.
+    const now = Date.now();
+    for (const { rule, until } of this.temporaryRules) {
+      if (until <= now) continue;
+      if (ruleMatches(rule, host, pathname)) {
+        return { isGoogle: false, source: 'temporary-allow', pattern: rule.raw };
       }
     }
 
@@ -280,6 +317,7 @@ export class UrlMatcher {
       always: this.alwaysRules.length,
       never: this.neverRules.length,
       exceptions: this.exceptionRules.length,
+      temporary: this.temporaryRules.length,
       builtinNever: this.builtinNever.length,
       brandTLDs: this.brandTLDs.size,
       hosts: this.hostCount,

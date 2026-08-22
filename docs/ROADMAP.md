@@ -3,6 +3,18 @@
 Ordered by how much difference something makes to users, not by how interesting it is to build.
 Anything that adds moving parts has to earn its place, because being dependable is the point.
 
+## Done, version 2.3
+
+- **Automatic updates for self-hosted installs.** The manifest now points Firefox at an update
+  manifest on GitHub Pages; the Release workflow regenerates it from the live release list with
+  per-release checksum pins. Installs from before v2.3.0 need one manual reinstall to join.
+- **Temporary allowances.** Pause containment for the current site for half an hour from the
+  popup; containment resumes on its own, a countdown shows on the toolbar icon, and nothing
+  can forget to re-enable it because expiry is enforced by the clock, not a timer.
+- **Activity by site.** The aggregate counters gained a local per-host breakdown (contained,
+  released, unwrapped, trackers blocked) in Backup & data — hostnames only, capped at 200
+  sites, never synced or exported.
+
 ## Done, version 2.0
 
 - Rebrand from G-Container to Orbis, with the extension id pinned to `orbis@mheci.github.io`

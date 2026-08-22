@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Orbis",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "__MSG_manifestDescription__",
   "homepage_url": "https://github.com/mheci/Orbis",
   "author": "Orbis contributors",
@@ -9,6 +9,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "orbis@mheci.github.io",
+      "update_url": "https://mheci.github.io/Orbis/updates.json",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": ["none"]

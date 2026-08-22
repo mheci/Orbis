@@ -228,6 +228,15 @@
         </fieldset>
 
         <fieldset>
+          <legend data-i18n="optionsTempTitle">Temporary allowances</legend>
+          <p class="hint" id="tempHint" data-i18n="optionsTempHint">
+            Sites where containment pauses for a while and resumes on its own. Add one from the
+            popup while visiting the site.
+          </p>
+          <ul class="list exceptions" id="tempList"></ul>
+        </fieldset>
+
+        <fieldset>
           <legend data-i18n="optionsExceptionsTitle">Exceptions</legend>
           <p class="hint" data-i18n="optionsExceptionsHint">
             Sites that must never be pulled into the container, even when they match Google.
@@ -264,6 +273,31 @@
         <fieldset>
           <legend data-i18n="optionsStatsTitle">Statistics</legend>
           <div id="stats" class="stats"></div>
+        </fieldset>
+        <fieldset>
+          <legend data-i18n="optionsSiteStatsTitle">Activity by site</legend>
+          <p class="hint" data-i18n="optionsSiteStatsHint">
+            Where the counters above came from. Hostnames only, stored locally, never synced or
+            exported. The oldest sites drop off after 200 entries.
+          </p>
+          <table class="decision-log">
+            <thead>
+              <tr>
+                <th scope="col" data-i18n="optionsSiteStatsColSite">Site</th>
+                <th scope="col" data-i18n="popupContained">Contained</th>
+                <th scope="col" data-i18n="popupReleased">Released</th>
+                <th scope="col" data-i18n="optionsStatUnwrapped">Unwrapped links</th>
+                <th scope="col" data-i18n="optionsStatTrackers">Trackers blocked</th>
+                <th scope="col" data-i18n="optionsStatLastEvent">Last event</th>
+              </tr>
+            </thead>
+            <tbody id="siteStatsBody"></tbody>
+          </table>
+          <div class="inline">
+            <button class="btn danger" id="clearSiteStats" data-i18n="optionsSiteStatsClear">
+              Clear site statistics
+            </button>
+          </div>
         </fieldset>
         <fieldset class="danger-zone">
           <legend data-i18n="optionsResetTitle">Reset</legend>

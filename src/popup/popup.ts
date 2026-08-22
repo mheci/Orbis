@@ -44,8 +44,12 @@ function describeMatch(state: RuntimeState): string {
     : getMessage('popupVerdictNormal');
 }
 
+/** Latest RuntimeState snapshot; every handler reads it instead of re-querying. */
+let latestState: RuntimeState | null = null;
+
 async function render(): Promise<void> {
   const state = await send<RuntimeState>({ type: 'get-state' });
+  latestState = state;
   const active = state.enabled && !state.paused;
 
   $('statusDot').classList.toggle('off', !active);
@@ -92,23 +96,33 @@ async function render(): Promise<void> {
   ($('always') as HTMLButtonElement).disabled = state.currentHost === null;
   ($('never') as HTMLButtonElement).disabled = state.currentHost === null;
 
+  // Time-boxed allowance: the button flips between pausing and resuming
+  // containment for this site, and the hint counts down while a window runs.
+  const tempButton = $('tempAllow') as HTMLButtonElement;
+  const tempHint = $('tempHint');
+  const windowLive =
+    typeof state.tempAllowedUntil === 'number' && state.tempAllowedUntil > Date.now();
+  tempButton.disabled = state.currentHost === null;
+  tempButton.textContent = windowLive
+    ? getMessage('popupTempResume')
+    : getMessage('popupTempAllow');
+  if (windowLive) {
+    tempHint.classList.remove('hidden');
+    renderTempHint(state.tempAllowedUntil as number);
+  } else {
+    tempHint.classList.add('hidden');
+    tempHint.textContent = '';
+  }
+
   $('pause').classList.toggle('hidden', state.paused);
   $('resume').classList.toggle('hidden', !state.paused);
 }
 
-async function currentTabId(): Promise<number | null> {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  return typeof tab?.id === 'number' ? tab.id : null;
-}
-
-async function currentHost(): Promise<string | null> {
-  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-  if (typeof tab?.url !== 'string') return null;
-  try {
-    return new URL(tab.url).hostname;
-  } catch {
-    return null;
-  }
+/** Countdown text for an active temporary allowance; ticks once per second. */
+function renderTempHint(until: number): void {
+  const remaining = Math.max(0, until - Date.now());
+  const minutes = Math.ceil(remaining / 60_000);
+  $('tempHint').textContent = getMessage('popupTempHint', String(minutes));
 }
 
 function wire(): void {
@@ -117,38 +131,55 @@ function wire(): void {
     window.close();
   });
 
-  $('moveIn').addEventListener('click', async () => {
-    const tabId = await currentTabId();
-    if (tabId !== null) await send({ type: 'move-tab', tabId, into: true });
+  // Tab facts (id, host) come from the state snapshot the background already
+  // built; querying tabs again per click costs two extra round-trips and can
+  // only ever disagree with what was just rendered.
+  const move = async (into: boolean): Promise<void> => {
+    const tabId = latestState?.currentTabId;
+    if (typeof tabId === 'number') await send({ type: 'move-tab', tabId, into });
     window.close();
-  });
+  };
 
-  $('moveOut').addEventListener('click', async () => {
-    const tabId = await currentTabId();
-    if (tabId !== null) await send({ type: 'move-tab', tabId, into: false });
-    window.close();
-  });
+  $('moveIn').addEventListener('click', () => void move(true));
+  $('moveOut').addEventListener('click', () => void move(false));
 
   $('always').addEventListener('click', async () => {
-    const host = await currentHost();
-    if (host !== null) await send({ type: 'add-rule', list: 'always', pattern: host });
+    if (latestState?.currentHost) {
+      await send({ type: 'add-rule', list: 'always', pattern: latestState.currentHost });
+    }
     await safeRender();
   });
 
   $('never').addEventListener('click', async () => {
-    const host = await currentHost();
-    if (host !== null) await send({ type: 'add-rule', list: 'never', pattern: host });
+    if (latestState?.currentHost) {
+      await send({ type: 'add-rule', list: 'never', pattern: latestState.currentHost });
+    }
     await safeRender();
   });
 
   $('allowSite').addEventListener('click', async () => {
-    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
-    const host = await currentHost();
-    if (host === null) return;
-    const state = await send<RuntimeState>({ type: 'get-state' });
-    await send({ type: 'allowlist-site', host, allow: !state.siteAllowlisted });
+    const state = latestState;
+    if (state?.currentHost === null || state?.currentHost === undefined) return;
+    await send({
+      type: 'allowlist-site',
+      host: state.currentHost,
+      allow: !state.siteAllowlisted,
+    });
     // Blocking decisions are cached per page, so the change needs a reload.
-    if (typeof tab?.id === 'number') await browser.tabs.reload(tab.id);
+    if (typeof state.currentTabId === 'number') await browser.tabs.reload(state.currentTabId);
+    await safeRender();
+  });
+
+  $('tempAllow').addEventListener('click', async () => {
+    const state = latestState;
+    if (state?.currentHost === null || state?.currentHost === undefined) return;
+    const windowLive =
+      typeof state.tempAllowedUntil === 'number' && state.tempAllowedUntil > Date.now();
+    await send(
+      windowLive
+        ? { type: 'remove-temporary-allow', host: state.currentHost }
+        : { type: 'temporarily-allow', host: state.currentHost, minutes: 30 }
+    );
     await safeRender();
   });
 
@@ -189,3 +220,10 @@ async function safeRender(): Promise<void> {
 localizePage();
 wire();
 void safeRender();
+
+// Keep the countdown hint live while the popup is open. Reading the snapshot
+// only (no re-render) keeps a tick at string-assignment cost.
+setInterval(() => {
+  const until = latestState?.tempAllowedUntil ?? null;
+  if (typeof until === 'number' && until > Date.now()) renderTempHint(until);
+}, 1000);

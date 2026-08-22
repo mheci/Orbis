@@ -97,6 +97,15 @@ check(
   `manifest homepage_url must be "${CANONICAL_HOMEPAGE}" (found "${manifest.homepage_url}")`
 );
 
+// The self-hosted update channel lives on GitHub Pages under the same owner.
+// It only works when the manifest points at the exact canonical URL that
+// scripts/update-manifest.mjs deploys to; drift here silently kills updates.
+const CANONICAL_UPDATE_URL = `https://${CANONICAL_OWNER}.github.io/Orbis/updates.json`;
+check(
+  gecko?.update_url === CANONICAL_UPDATE_URL,
+  `gecko.update_url must be "${CANONICAL_UPDATE_URL}" (found "${gecko?.update_url}")`
+);
+
 const referenced = [
   ...(manifest.background?.scripts ?? []),
   manifest.action?.default_popup,
