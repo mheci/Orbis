@@ -276,6 +276,13 @@ body {
   margin: 2px 0 8px;
 }
 
+/* Live countdown for a temporary allowance on the current site. */
+.temp-hint {
+  margin: 6px 0 0;
+  color: var(--accent, #4f46e5);
+  font-weight: 600;
+}
+
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

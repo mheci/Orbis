@@ -79,6 +79,7 @@
         <span class="verdict" id="verdict" data-i18n="popupChecking">Checking…</span>
       </div>
       <p class="host" id="host">—</p>
+      <p class="hint temp-hint hidden" id="tempHint"></p>
     </section>
 
     <section class="card">
@@ -132,6 +133,11 @@
         </button>
         <button id="never" class="btn subtle" data-i18n="popupNever">
           Never containerize this site
+        </button>
+      </div>
+      <div class="action-row">
+        <button id="tempAllow" class="btn subtle" data-i18n="popupTempAllow">
+          Pause containment here for 30 min
         </button>
       </div>
     </section>

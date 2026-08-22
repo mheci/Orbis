@@ -137,12 +137,28 @@ navigation path, and decisions are memoised in a cache capped at 1024 entries.
 Checked from the top down, first match wins:
 
 1. Sites the user marked "never"
-2. The user's own exceptions
-3. Built in exceptions for sign-in widgets that other sites embed
-4. Sites the user marked "always"
-5. Brand endings such as .google and .youtube
-6. The enabled groups in the address database
-7. Anything else browses normally
+2. Time-boxed temporary allowances that have not expired yet
+3. The user's own exceptions
+4. Built in exceptions for sign-in widgets that other sites embed
+5. Sites the user marked "always"
+6. Brand endings such as .google and .youtube
+7. The enabled groups in the address database
+8. Anything else browses normally
+
+Temporary allowances are enforced by data, not timers: every lookup compares the window's
+expiry against the clock, so an allowance cannot outlive itself even if the background page
+is suspended and no timer ever fires. Their verdicts are also never written to the match
+cache, which has no clock of its own.
+
+## Updates without a store
+
+Installs are self-hosted, so Firefox needs to be told where updates live. The manifest pins
+`browser_specific_settings.gecko.update_url` to `https://mheci.github.io/Orbis/updates.json`,
+a Firefox update manifest deployed to the `gh-pages` branch. On every tagged release the
+Release workflow regenerates it from the live release list (`scripts/update-manifest.mjs`):
+one entry per release with a signed XPI, newest first, each pinning the per-release download
+URL and its sha256 digest as `update_hash`. Installs made before v2.3.0 carry no update URL
+and need one manual reinstall to join the channel.
 
 ## Avoiding loops
 
@@ -186,6 +202,12 @@ Everything read back is rebuilt field by field. Unknown keys are dropped, wrong 
 with defaults, lists are capped at 2000 entries, and every address pattern must pass a strict format
 check. Corrupted or hostile input cannot reach the matcher.
 
+Two things are stored outside the settings document on purpose: the decision log and the
+per-site activity table. Neither is a preference — they are local records with their own
+lifecycles (the decision log keeps 200 entries, the site table 200 hosts) and neither is ever
+synced or included in a backup export. Expired temporary allowances are dropped by the same
+field-by-field rebuild, which is what eventually forgets them in storage.
+
 ## Running without a persistent background page
 
 The background script can be shut down by Firefox at any time, so:
@@ -194,6 +216,9 @@ Anything that must survive lives in storage. Anything else, the loop guard and t
 is cheap to rebuild. Setup is safe to call repeatedly and every entry point waits for it.
 
 Counter writes are delayed by five seconds so a burst of page loads does not hammer storage.
+Timers are only ever conveniences: allowance expiry is checked against the clock wherever it is
+read, so a suspended page can at worst freeze a countdown badge for a minute — it can never keep
+a lapsed window active.
 
 ## Content security policy
 

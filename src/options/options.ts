@@ -19,6 +19,7 @@ import {
   type MatchResult,
   type Message,
   type Settings,
+  type SiteStatEntry,
 } from '../types/index.js';
 import { getMessage, localizePage } from '../shared/i18n.js';
 
@@ -204,6 +205,59 @@ async function saveExceptions(next: ExceptionRule[]): Promise<void> {
   render();
 }
 
+function renderTempAllowances(): void {
+  const host = $('tempList');
+  host.textContent = '';
+  if (settings.temporaryAllowances.length === 0) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = getMessage('optionsTempEmpty');
+    host.append(li);
+    return;
+  }
+  // Soonest expiry first — the list reads like a queue of windows closing.
+  const entries = [...settings.temporaryAllowances].sort((a, b) => a.until - b.until);
+  for (const rule of entries) {
+    const li = document.createElement('li');
+    li.className = 'exception-row temp-row';
+
+    const pattern = document.createElement('span');
+    pattern.className = 'pattern';
+    pattern.textContent = rule.pattern;
+
+    const until = document.createElement('span');
+    until.className = 'until';
+    until.textContent = getMessage('optionsTempUntil', new Date(rule.until).toLocaleString());
+
+    const remove = document.createElement('button');
+    remove.className = 'remove';
+    remove.type = 'button';
+    remove.title = getMessage('optionsTempRemoveTitle', rule.pattern);
+    remove.setAttribute('aria-label', getMessage('optionsTempRemoveTitle', rule.pattern));
+    remove.textContent = '✕';
+    remove.addEventListener('click', async () => {
+      try {
+        settings = await send<Settings>({
+          type: 'remove-temporary-allow',
+          host: rule.pattern,
+        });
+        render();
+        toast(getMessage('optionsRemoved'));
+      } catch (error) {
+        toast(
+          getMessage(
+            'optionsExceptionUpdateFailed',
+            error instanceof Error ? error.message : String(error)
+          )
+        );
+      }
+    });
+
+    li.append(pattern, until, remove);
+    host.append(li);
+  }
+}
+
 function renderExceptions(): void {
   const host = $('exceptionList');
   host.textContent = '';
@@ -352,6 +406,7 @@ function render(): void {
   renderDomainSets(null);
   renderList($('alwaysList'), settings.alwaysContainerize, 'always');
   renderList($('neverList'), settings.neverContainerize, 'never');
+  renderTempAllowances();
   renderExceptions();
   renderStats();
 }
@@ -398,6 +453,7 @@ function selectTab(tab: HTMLButtonElement): void {
   tab.tabIndex = 0;
   document.getElementById(`panel-${tab.dataset['panel']}`)?.classList.add('active');
   if (tab.dataset['panel'] === 'diagnostics') void refreshDiagnostics();
+  if (tab.dataset['panel'] === 'data') void refreshSiteStats();
 }
 
 const KIND_LABELS: Record<DecisionEntry['kind'], string> = {
@@ -628,6 +684,58 @@ function wireRules(): void {
   });
 }
 
+// ------------------------------------------------------------------ site stats
+
+/** Render the per-site activity table from a fresh background snapshot. */
+async function refreshSiteStats(): Promise<void> {
+  const body = $('siteStatsBody');
+  body.textContent = '';
+  try {
+    const entries = await send<SiteStatEntry[]>({ type: 'get-site-stats' });
+    if (entries.length === 0) {
+      const row = document.createElement('tr');
+      const cell = document.createElement('td');
+      cell.colSpan = 6;
+      cell.className = 'empty';
+      cell.textContent = getMessage('optionsSiteStatsEmpty');
+      row.append(cell);
+      body.append(row);
+      return;
+    }
+    for (const entry of entries) {
+      const row = document.createElement('tr');
+      const site = document.createElement('td');
+      site.textContent = entry.host;
+      const contained = document.createElement('td');
+      contained.textContent = entry.contained.toLocaleString();
+      const released = document.createElement('td');
+      released.textContent = entry.released.toLocaleString();
+      const unwrapped = document.createElement('td');
+      unwrapped.textContent = entry.unwrapped.toLocaleString();
+      const blocked = document.createElement('td');
+      blocked.textContent = entry.trackersBlocked.toLocaleString();
+      const seen = document.createElement('td');
+      seen.textContent =
+        entry.lastSeen === 0
+          ? getMessage('optionsStatNever')
+          : new Date(entry.lastSeen).toLocaleString();
+      row.append(site, contained, released, unwrapped, blocked, seen);
+      body.append(row);
+    }
+  } catch (error) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 6;
+    cell.className = 'empty';
+    cell.textContent = getMessage(
+      'optionsDiagUnavailable',
+      error instanceof Error ? error.message : String(error)
+    );
+    row.append(cell);
+    body.append(row);
+  }
+}
+
 function wireData(): void {
   $('export').addEventListener('click', async () => {
     const backup = await send<BackupDocument>({ type: 'export' });
@@ -665,6 +773,21 @@ function wireData(): void {
     settings = await send<Settings>({ type: 'reset' });
     render();
     toast(getMessage('optionsSettingsReset'));
+  });
+
+  $('clearSiteStats').addEventListener('click', async () => {
+    try {
+      await send<SiteStatEntry[]>({ type: 'clear-site-stats' });
+      await refreshSiteStats();
+      toast(getMessage('optionsSiteStatsCleared'));
+    } catch (error) {
+      toast(
+        getMessage(
+          'optionsSiteStatsClearFailed',
+          error instanceof Error ? error.message : String(error)
+        )
+      );
+    }
   });
 }
 

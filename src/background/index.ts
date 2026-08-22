@@ -22,6 +22,7 @@ import { ContainerManager, type ContextualIdentitiesApi } from '../core/containe
 import { UrlMatcher, safeParse } from '../core/matcher.js';
 import { SubresourceClassifier } from '../core/subresource.js';
 import { getDomainDatabase } from '../core/domain-db.js';
+import { SiteStats } from '../core/site-stats.js';
 import { SettingsStore } from '../core/storage.js';
 import {
   buildBackup,
@@ -30,26 +31,42 @@ import {
   mergeSettings,
   parseBackup,
 } from '../core/settings.js';
-import type { Diagnostics, Message, RuntimeState, Settings, Statistics } from '../types/index.js';
+import type {
+  Diagnostics,
+  Message,
+  RuntimeState,
+  Settings,
+  SiteStatEntry,
+  Statistics,
+} from '../types/index.js';
 
 const CONTAINER_ID_STORAGE_KEY = 'containerId';
 const DECISION_LOG_STORAGE_KEY = 'decisionLog';
+const SITE_STATS_STORAGE_KEY = 'siteStats';
+
+/** Longest temporary allowance that can be requested, in minutes. */
+const TEMP_ALLOW_MAX_MINUTES = 24 * 60;
 
 class Orbis {
   private readonly store = new SettingsStore();
   private readonly loopGuard = new LoopGuard();
   private readonly decisionLog = new DecisionLog();
+  private readonly siteStats = new SiteStats();
   private matcher: UrlMatcher;
   private container: ContainerManager;
   private settings: Settings;
   private ready: Promise<void> | null = null;
   private statsFlushTimer: ReturnType<typeof setTimeout> | null = null;
   private logFlushTimer: ReturnType<typeof setTimeout> | null = null;
+  private statsSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private tempAllowTimer: ReturnType<typeof setTimeout> | null = null;
   private blocker: SubresourceClassifier;
   /** Per-tab count of Google resources blocked, for the popup and badge. */
   private readonly blockedPerTab = new Map<number, number>();
   /** Cookie store of each tab, cached so the blocking path stays synchronous. */
   private readonly tabStores = new Map<number, string>();
+  /** URL of each tab, cached so the badge can show allowance countdowns. */
+  private readonly tabUrls = new Map<number, string>();
 
   constructor() {
     this.settings = defaultSettings();
@@ -76,12 +93,26 @@ class Orbis {
   init(): Promise<void> {
     if (this.ready === null) {
       this.ready = (async () => {
-        this.settings = await this.store.load();
+        // Every serial round-trip here is visible as wake-up latency for the
+        // first navigation after an idle suspend. Settings and the decision
+        // log live in disjoint storage keys, so their reads run concurrently;
+        // the container lookup needs the loaded spec, so it stays ordered.
+        const settingsPromise = this.store.load();
+        const decisionLogPromise = browser.storage.local.get(DECISION_LOG_STORAGE_KEY);
+        const siteStatsPromise = browser.storage.local.get(SITE_STATS_STORAGE_KEY);
+        this.settings = await settingsPromise;
         this.rebuildMatcher();
-        await this.container.ensure(this.settings.container);
-        const stored = await browser.storage.local.get(DECISION_LOG_STORAGE_KEY);
-        this.decisionLog.restore(stored?.[DECISION_LOG_STORAGE_KEY]);
+        await Promise.all([
+          this.container.ensure(this.settings.container),
+          decisionLogPromise.then((stored) => {
+            this.decisionLog.restore(stored?.[DECISION_LOG_STORAGE_KEY]);
+          }),
+          siteStatsPromise.then((stored) => {
+            this.siteStats.restore(stored?.[SITE_STATS_STORAGE_KEY]);
+          }),
+        ]);
         this.updateBadge();
+        this.scheduleTempAllowExpiry();
       })().catch((error: unknown) => {
         // The event page calls init from every entry point, so a single
         // transient storage failure must not poison the memoised promise and
@@ -124,6 +155,8 @@ class Orbis {
       await this.container.applySpec(c);
     }
     this.updateBadge();
+    // Allowance windows may have been added, removed or replaced by the patch.
+    this.scheduleTempAllowExpiry();
     return this.settings;
   }
 
@@ -160,6 +193,87 @@ class Orbis {
     }
     void browser.storage.local.remove(DECISION_LOG_STORAGE_KEY);
     return this.decisionLog.size;
+  }
+
+  // ---------------------------------------------------- temporary allowances
+
+  /** Epoch ms until which `url`'s host is exempt, or null when none is live. */
+  private tempAllowedUntil(url: string | null, now: number): number | null {
+    if (url === null) return null;
+    const parsed = safeParse(url);
+    const host = parsed?.hostname ?? null;
+    if (host === null) return null;
+    for (const entry of this.settings.temporaryAllowances) {
+      if (entry.until <= now) continue;
+      const rule = entry.pattern.split('/')[0] as string;
+      if (host === rule || host.endsWith(`.${rule}`)) return entry.until;
+    }
+    return null;
+  }
+
+  /**
+   * Keep the countdown badge ticking and prune lapsed windows through the
+   * normal write path, so storage eventually forgets them too.
+   *
+   * Correctness never depends on this timer — every consumer compares `until`
+   * against the clock — so a suspended event page only means a frozen badge,
+   * never an expired window staying active. Ticks at most once a minute and
+   * stops entirely once no window is live.
+   */
+  private scheduleTempAllowExpiry(): void {
+    if (this.tempAllowTimer !== null) {
+      clearTimeout(this.tempAllowTimer);
+      this.tempAllowTimer = null;
+    }
+    const now = Date.now();
+    if (this.settings.temporaryAllowances.length === 0) return;
+    const earliest = Math.min(...this.settings.temporaryAllowances.map((e) => e.until));
+    this.tempAllowTimer = setTimeout(
+      () => {
+        this.tempAllowTimer = null;
+        const remaining = this.settings.temporaryAllowances.filter((e) => e.until > Date.now());
+        if (remaining.length !== this.settings.temporaryAllowances.length) {
+          void this.updateSettings({ temporaryAllowances: remaining })
+            .catch(() => {})
+            .then(() => {
+              for (const tabId of this.tabUrls.keys()) this.refreshBadge(tabId);
+            });
+        } else {
+          for (const tabId of this.tabUrls.keys()) this.refreshBadge(tabId);
+        }
+        this.scheduleTempAllowExpiry();
+      },
+      Math.min(Math.max(earliest - now, 1000), 60_000)
+    );
+  }
+
+  // -------------------------------------------------------------- site stats
+
+  /** Record one local per-host event; persistence is debounced. */
+  private recordSiteStat(
+    kind: 'contained' | 'released' | 'unwrapped' | 'trackersBlocked',
+    url: string | null
+  ): void {
+    if (!this.settings.behaviour.collectStatistics) return;
+    const parsed = url === null ? null : safeParse(url);
+    const host = parsed?.hostname ?? null;
+    if (host === null || host.length === 0) return;
+    this.siteStats.record(kind, host, Date.now());
+    if (this.statsSaveTimer !== null) return;
+    this.statsSaveTimer = setTimeout(() => {
+      this.statsSaveTimer = null;
+      void browser.storage.local.set({ [SITE_STATS_STORAGE_KEY]: this.siteStats.snapshot() });
+    }, 5000);
+  }
+
+  private clearSiteStats(): SiteStatEntry[] {
+    this.siteStats.clear();
+    if (this.statsSaveTimer !== null) {
+      clearTimeout(this.statsSaveTimer);
+      this.statsSaveTimer = null;
+    }
+    void browser.storage.local.remove(SITE_STATS_STORAGE_KEY);
+    return [];
   }
 
   // -------------------------------------------------------------- navigation
@@ -230,10 +344,10 @@ class Orbis {
       // The engine collapses user-rule hits into generic reasons, so the only
       // reliable signal is the match source: count navigations that were about
       // to be contained (outside the container, engine said ignore) but for a
-      // user exception or never-rule.
+      // user exception, never-rule or temporary allowance.
       if (action.reason === 'not-google') {
         const source = this.matcher.match(details.url).source;
-        if (source === 'exception' || source === 'never-list') {
+        if (source === 'exception' || source === 'never-list' || source === 'temporary-allow') {
           this.bumpStat('exceptionsApplied');
         }
       }
@@ -244,7 +358,7 @@ class Orbis {
     // own onBeforeRequest event does not trigger a second decision.
     this.loopGuard.remember(details.tabId, details.url, now);
 
-    const executed = await this.executeAction(action, tab);
+    const executed = await this.executeAction(action, tab, details.url);
     if (!executed) {
       // The replacement tab could not be created (container deleted mid-flight,
       // window closing, resource exhaustion). Cancelling anyway would strand the
@@ -268,7 +382,8 @@ class Orbis {
    */
   private async executeAction(
     action: Exclude<NavigationAction, { kind: 'ignore' }>,
-    sourceTab: browser.tabs.Tab
+    sourceTab: browser.tabs.Tab,
+    sourceUrl: string
   ): Promise<boolean> {
     const cookieStoreId = action.kind === 'contain' ? action.cookieStoreId : DEFAULT_COOKIE_STORE;
 
@@ -302,9 +417,17 @@ class Orbis {
       return false;
     }
 
-    if (action.kind === 'contain') this.bumpStat('containedNavigations');
-    else if (action.kind === 'release') this.bumpStat('releasedNavigations');
-    else if (action.kind === 'unwrap') this.bumpStat('unwrappedLinks');
+    if (action.kind === 'contain') {
+      this.bumpStat('containedNavigations');
+      this.recordSiteStat('contained', action.url);
+    } else if (action.kind === 'release') {
+      this.bumpStat('releasedNavigations');
+      this.recordSiteStat('released', action.url);
+    } else if (action.kind === 'unwrap') {
+      this.bumpStat('unwrappedLinks');
+      // The site that hosted the redirector link is the one the user was on.
+      this.recordSiteStat('unwrapped', sourceUrl);
+    }
     return true;
   }
 
@@ -379,6 +502,13 @@ class Orbis {
       this.refreshBadge(details.tabId);
     }
     this.bumpStat('trackersBlocked');
+    // Attribute the block to the page that tried to load the tracker.
+    const originUrl = typeof details.originUrl === 'string' ? details.originUrl : null;
+    if (originUrl !== null) {
+      this.recordSiteStat('trackersBlocked', originUrl);
+    } else if (typeof details.documentUrl === 'string') {
+      this.recordSiteStat('trackersBlocked', details.documentUrl);
+    }
     return { cancel: true };
   }
 
@@ -390,9 +520,21 @@ class Orbis {
       void action.setBadgeText({ tabId, text: '' });
       return;
     }
+    // A live temporary allowance owns this tab's badge: minutes until
+    // containment resumes, so the paused state is visible and self-explaining.
+    const tabUrl = this.tabUrls.get(tabId);
+    if (tabUrl !== undefined) {
+      const until = this.tempAllowedUntil(tabUrl, Date.now());
+      if (until !== null) {
+        const minutes = Math.max(1, Math.ceil((until - Date.now()) / 60_000));
+        void action.setBadgeText({ tabId, text: `${minutes}m` });
+        return;
+      }
+    }
     const count = this.blockedPerTab.get(tabId) ?? 0;
+    // Text only; the colour is a persistent global set once by updateBadge(),
+    // so re-sending it per blocked request is pure API churn on the hot path.
     void action.setBadgeText({ tabId, text: count > 0 ? String(count) : '' });
-    void action.setBadgeBackgroundColor?.({ tabId, color: '#1a1042' });
   }
 
   // ------------------------------------------------------------- tab helpers
@@ -475,12 +617,14 @@ class Orbis {
       enabled: this.settings.enabled,
       paused: this.settings.pausedUntil > now,
       pausedUntil: this.settings.pausedUntil,
+      tempAllowedUntil: this.tempAllowedUntil(url, now),
       containerName: this.settings.container.name,
       containerColor: this.settings.container.color,
       containerIcon: this.settings.container.icon,
       cookieStoreId: containerId,
       currentUrl: url,
       currentHost: parsed?.hostname ?? null,
+      currentTabId: typeof tab?.id === 'number' ? tab.id : null,
       currentTabInContainer:
         containerId !== null && (tab?.cookieStoreId ?? DEFAULT_COOKIE_STORE) === containerId,
       currentMatch: url === null ? { isGoogle: false, source: 'none' } : this.matcher.match(url),
@@ -590,6 +734,25 @@ class Orbis {
         const next = this.settings[key].filter((p) => p !== message.pattern);
         return this.updateSettings({ [key]: next } as Parameters<typeof mergeSettings>[1]);
       }
+      case 'temporarily-allow': {
+        const host = canonicalizeUserPattern(message.host);
+        if (host === null) throw new Error(`Invalid site: ${message.host}`);
+        const minutes = Math.min(Math.max(Math.floor(message.minutes), 1), TEMP_ALLOW_MAX_MINUTES);
+        const next = [
+          ...this.settings.temporaryAllowances.filter((entry) => entry.pattern !== host),
+          { pattern: host, until: Date.now() + minutes * 60_000 },
+        ];
+        return this.updateSettings({ temporaryAllowances: next });
+      }
+      case 'remove-temporary-allow': {
+        const host = canonicalizeUserPattern(message.host);
+        if (host === null) throw new Error(`Invalid site: ${message.host}`);
+        return this.updateSettings({
+          temporaryAllowances: this.settings.temporaryAllowances.filter(
+            (entry) => entry.pattern !== host
+          ),
+        });
+      }
       case 'set-exceptions':
         // The whole list is replaced and re-sanitised wholesale; invalid or
         // duplicate entries are dropped by sanitizeSettings, so a UI bug can
@@ -626,6 +789,10 @@ class Orbis {
         return this.blockedPerTab.get(message.tabId) ?? 0;
       case 'clear-decision-log':
         return this.clearDecisionLog();
+      case 'get-site-stats':
+        return this.siteStats.snapshot();
+      case 'clear-site-stats':
+        return this.clearSiteStats();
       case 'diagnostics':
         return this.diagnostics();
       default:
@@ -678,6 +845,7 @@ class Orbis {
       this.loopGuard.forgetTab(tabId);
       this.blockedPerTab.delete(tabId);
       this.tabStores.delete(tabId);
+      this.tabUrls.delete(tabId);
     });
 
     // The blocking path needs a tab's cookie store synchronously, so it is
@@ -685,6 +853,9 @@ class Orbis {
     const rememberTab = (tab: browser.tabs.Tab): void => {
       if (typeof tab.id === 'number' && typeof tab.cookieStoreId === 'string') {
         this.tabStores.set(tab.id, tab.cookieStoreId);
+      }
+      if (typeof tab.id === 'number' && typeof tab.url === 'string') {
+        this.tabUrls.set(tab.id, tab.url);
       }
     };
     browser.tabs.onCreated.addListener(rememberTab);

@@ -5,6 +5,43 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-08-22
+
+### Added
+
+- Automatic updates for self-hosted installs. The manifest now points Firefox at an update
+  manifest served from GitHub Pages (`updates.json`), and the Release workflow regenerates it
+  from the live release list on every tag: one entry per signed release, newest first, each
+  pinning the per-release download URL and its SHA-256 digest (`update_hash`). Installs made
+  before v2.3.0 carry no update URL — they need one manual reinstall to join the channel.
+- Temporary allowances: pause containment for the current site from the popup ("Pause
+  containment here for 30 min") when a flow keeps getting bounced. Containment resumes on its
+  own when the window lapses; the toolbar icon counts down the remaining minutes while one is
+  live, the popup shows the same countdown and a resume button, and active windows are listed
+  in Rules & exceptions. Expiry is enforced by data at every read, so nothing can forget to
+  re-enable protection — not even a suspended background page.
+- Activity by site: the aggregate statistics gained a per-host breakdown in Backup & data,
+  showing contained, released, unwrapped and tracker-blocked counts plus last-seen time for up
+  to 200 recently-active sites. Hostnames only, stored locally, never synced or exported, and
+  clearable independently.
+
+### Changed
+
+- The match and sub-resource caches now evict their oldest entry when full instead of wiping
+  themselves, so navigation bursts no longer throw away every warm decision at the size
+  boundary.
+- Non-Google sub-resource requests — the overwhelming majority of the web — skip cache
+  bookkeeping entirely via a fast path that mirrors the classifier's own pre-checks, and host
+  ownership checks no longer build a fresh string slice per label.
+- Startup reads settings, the decision log and the per-site table concurrently instead of one
+  storage round-trip after another, shortening event-page wake-ups.
+- The popup reuses the tab facts from its state snapshot instead of re-querying tabs on every
+  button press, saving two to three message round-trips per interaction.
+- The badge colour is set once as a persistent default rather than re-sent with every blocked
+  request.
+- Temporary allowances count toward the "exceptions applied" statistic alongside exception and
+  Never rules, matching what that counter actually measures.
+
 ## [2.2.1] - 2026-08-22
 
 ### Fixed
