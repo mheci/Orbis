@@ -1,4 +1,4 @@
-# Gitleaks configuration for G-Container.
+# Gitleaks configuration for Orbis.
 #
 # Extends the upstream default ruleset (which covers AWS, GCP, Slack, Stripe,
 # private keys and ~150 other providers) and adds the credential types this
