@@ -5,6 +5,19 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2026-08-22
+
+### Fixed
+
+- The “exceptions applied” statistic could never increase: it was keyed off ignore reasons
+  the engine never emits, so the counter always stayed at zero. It is now derived from the
+  match source instead (exception rules and the Never list), making user rules that prevent
+  containment finally visible in the popup and options statistics.
+- A single transient storage failure during extension startup poisoned the memoised ready
+  promise, leaving every entry point dead until the event page was recycled. The memo is now
+  dropped on failure, so the next navigation, message or command retries init and recovers
+  on its own.
+
 ## [2.2.0] - 2026-08-03
 
 ### Changed
