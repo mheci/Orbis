@@ -1,0 +1,30 @@
+{
+  "id": "orbis@mheci.github.io",
+  "versions": [
+    {
+      "version": "2.2.1",
+      "update_link": "https://github.com/mheci/Orbis/releases/download/v2.2.1/orbis-2.2.1-signed.xpi",
+      "update_hash": "sha256:2d56b439962a831e5c186ec21405b5c8a0b7689d35044aeadedbe5acf8f350f4"
+    },
+    {
+      "version": "2.2.0",
+      "update_link": "https://github.com/mheci/Orbis/releases/download/v2.2.0/orbis-2.2.0-signed.xpi",
+      "update_hash": "sha256:cdca073c73097b21d8cd1bdbbc13b6010fc609773314b9866419aa3418908f61"
+    },
+    {
+      "version": "2.1.0",
+      "update_link": "https://github.com/mheci/Orbis/releases/download/v2.1.0/orbis-2.1.0-signed.xpi",
+      "update_hash": "sha256:5cd3e13dc4fd32702243909e4a8899ac75b679a0f178bee64c2f3f6da3c491e4"
+    },
+    {
+      "version": "2.0.3",
+      "update_link": "https://github.com/mheci/Orbis/releases/download/v2.0.3/orbis-2.0.3-signed.xpi",
+      "update_hash": "sha256:873a46e05d0129d511a68b3e11bde2af94ec6dfc7317e7444d7536984263f445"
+    },
+    {
+      "version": "2.0.2",
+      "update_link": "https://github.com/mheci/Orbis/releases/download/v2.0.2/orbis-2.0.2-signed.xpi",
+      "update_hash": "sha256:ecc66eafa9b04fde9a42294f6edbf4d8cd165b85764b9a00be8aa042b9c87bb0"
+    }
+  ]
+}
