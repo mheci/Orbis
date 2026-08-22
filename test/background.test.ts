@@ -282,6 +282,23 @@ describe('background: messaging contract', () => {
     expect(match.isGoogle).toBe(false);
   });
 
+  it('bumps exceptionsApplied when a user rule prevents containment', async () => {
+    const app = await loadApp(mock);
+    await app.handleMessage({ type: 'add-rule', list: 'never', pattern: 'docs.google.com' });
+    const tab = mock.addTab();
+
+    // The rule downgrades docs.google.com to not-Google, so the navigation is
+    // ignored — and that must be visible in the statistics.
+    await app.onBeforeRequest(mainFrame('https://docs.google.com/', tab.id));
+    let settings = await ask<Settings>(app, { type: 'get-settings' });
+    expect(settings.statistics.exceptionsApplied).toBe(1);
+
+    // Ordinary non-Google traffic must not touch the counter.
+    await app.onBeforeRequest(mainFrame('https://example.org/', tab.id));
+    settings = await ask<Settings>(app, { type: 'get-settings' });
+    expect(settings.statistics.exceptionsApplied).toBe(1);
+  });
+
   it('renames the container in place without recreating it', async () => {
     const app = await loadApp(mock);
     const idBefore = [...mock.identities.keys()][0]!;
@@ -471,6 +488,32 @@ describe('background: messaging contract', () => {
 });
 
 describe('background: settings persistence across a restart', () => {
+  it('retries initialisation after a transient failure instead of staying dead', async () => {
+    const mock = new MockBrowser();
+    mock.install();
+    vi.resetModules();
+    const module = await import('../src/background/index.js');
+    // Let the import-time singleton settle against the healthy mock first, so
+    // the injected faults below are consumed only by the instance under test.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    // One init performs three storage reads: two settings reads inside the
+    // failure-tolerant SettingsStore (which swallows them) and then the
+    // decision-log read. Failing all three makes init reject; the second
+    // attempt must retry from scratch rather than replay the poisoned promise.
+    mock.failNextStorageReads = 3;
+    const app = new module.Orbis();
+    await expect(app.init()).rejects.toThrow(/storage read failed/);
+    await app.init();
+
+    // Fully functional afterwards: a Google navigation is contained.
+    const tab = mock.addTab();
+    expect(await app.onBeforeRequest(mainFrame('https://www.google.com/', tab.id))).toEqual({
+      cancel: true,
+    });
+    MockBrowser.uninstall();
+  });
+
   it('reloads user rules after the event page is suspended and revived', async () => {
     const mock = new MockBrowser();
     const first = await loadApp(mock);

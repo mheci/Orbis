@@ -73,6 +73,8 @@ export class MockBrowser {
   failNextCreates = 0;
   /** Fault injection: make contextualIdentities.create always reject. */
   failIdentityCreate = false;
+  /** Fault injection: make the next N storage reads reject, whichever area. */
+  failNextStorageReads = 0;
 
   readonly webRequestOnBeforeRequest = new Event();
   readonly runtimeOnMessage = new Event();
@@ -193,6 +195,10 @@ function buildApi(mock: MockBrowser): Record<string, unknown> {
     storage: {
       local: {
         async get(key: string) {
+          if (mock.failNextStorageReads > 0) {
+            mock.failNextStorageReads--;
+            throw new Error('storage read failed (simulated)');
+          }
           return mock.storageLocal.has(key) ? { [key]: mock.storageLocal.get(key) } : {};
         },
         async set(items: Record<string, unknown>) {

@@ -82,7 +82,14 @@ class Orbis {
         const stored = await browser.storage.local.get(DECISION_LOG_STORAGE_KEY);
         this.decisionLog.restore(stored?.[DECISION_LOG_STORAGE_KEY]);
         this.updateBadge();
-      })();
+      })().catch((error: unknown) => {
+        // The event page calls init from every entry point, so a single
+        // transient storage failure must not poison the memoised promise and
+        // disable protection until the worker is recycled. Drop the memo so
+        // the next navigation, message or command retries from scratch.
+        this.ready = null;
+        throw error;
+      });
     }
     return this.ready;
   }
@@ -220,8 +227,15 @@ class Orbis {
     this.logDecision(action, details.url, details.tabId, now);
 
     if (action.kind === 'ignore') {
-      if (action.reason === 'exception' || action.reason.startsWith('never')) {
-        this.bumpStat('exceptionsApplied');
+      // The engine collapses user-rule hits into generic reasons, so the only
+      // reliable signal is the match source: count navigations that were about
+      // to be contained (outside the container, engine said ignore) but for a
+      // user exception or never-rule.
+      if (action.reason === 'not-google') {
+        const source = this.matcher.match(details.url).source;
+        if (source === 'exception' || source === 'never-list') {
+          this.bumpStat('exceptionsApplied');
+        }
       }
       return undefined;
     }
