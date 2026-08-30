@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Found a security problem? Please do not file it here. See [SECURITY.md](https://github.com/mheci/Orbis/blob/main/SECURITY.md) instead.
+        This is a personal, experimental project. Report bugs below; expect rough edges.
 
   - type: textarea
     id: what
