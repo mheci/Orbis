@@ -97,7 +97,7 @@ jobs:
         run: |
           # AMO names the downloaded file after its upload UUID, e.g.
           # 3b298fb89a6740f880cd-2.0.2.xpi. Canonicalise it so the checksums,
-          # release notes and INSTALL.md all agree on the artifact name.
+          # release notes and README all agree on the artifact name.
           XPI=$(ls web-ext-artifacts/*.xpi 2>/dev/null | head -n1 || true)
           CANONICAL="orbis-${GITHUB_REF_NAME#v}-signed.xpi"
           if [ -n "$XPI" ] && [ "$(basename "$XPI")" != "$CANONICAL" ]; then
@@ -125,15 +125,17 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           {
             echo "notes<<EOF"
-            awk -v ver="$VERSION" '
-              $0 ~ "^## \\[" ver "\\]" { found=1; next }
-              found && /^## \[/ { exit }
-              found { print }
-            ' CHANGELOG.md
+            if [ -f CHANGELOG.md ]; then
+              awk -v ver="$VERSION" '
+                $0 ~ "^## \\[" ver "\\]" { found=1; next }
+                found && /^## \[/ { exit }
+                found { print }
+              ' CHANGELOG.md
+            fi
             echo ""
             echo "---"
             echo ""
-            echo "**Install:** download the \`-signed.xpi\` below (signature verified) and open it in Firefox, or see [INSTALL.md](https://github.com/mheci/Orbis/blob/main/INSTALL.md)."
+            echo "**Install:** download the \`-signed.xpi\` below (signature verified) and open it in Firefox, or follow the [README](https://github.com/mheci/Orbis#install)."
             echo ""
             echo "Verify the download: \`sha256sum -c SHA256SUMS.txt\` after saving it next to the artifacts."
             echo "EOF"
