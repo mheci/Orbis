@@ -249,7 +249,7 @@
     "message": "Domain sets"
   },
   "optionsDomainSetsHint": {
-    "message": "The domain database ships with the extension and needs no network access. Domain lists live in the repository under src/domains/."
+    "message": "The database ships with the extension. Edit the lists in <code>src/domains/</code>."
   },
   "optionsAlwaysTitle": {
     "message": "Always containerize"
