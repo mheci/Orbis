@@ -1,8 +1,13 @@
 # Orbis
 
+[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-orange.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/mheci/Orbis)](https://github.com/mheci/Orbis/releases/latest)
+
 **Keep Google in its own orbit.** One container, zero tracking, feels native.
 
 Orbis is a Firefox extension that automatically puts every Google site in a separate container – an isolated orbit where Google's cookies stay locked. Other sites can't see your Google session, and Google can't see your other browsing.
+
+> Personal project, experimental. Anything can change or break without notice.
 
 ## For Novices
 
@@ -33,7 +38,7 @@ Firefox 140+ desktop required.
 2. Open `about:addons` → Gear → Install Add-on From File → Select XPI → Approve
 
 Updates after v2.3.0 arrive automatically via a self-hosted update manifest — no AMO, no
-extra services; see [INSTALL.md](INSTALL.md).
+extra services.
 
 ## Use
 
@@ -42,6 +47,9 @@ extra services; see [INSTALL.md](INSTALL.md).
 - `Ctrl+Shift+O` – New Orbis tab (Google in its orbit)
 - `Ctrl+Shift+G` – Open Google in Orbis
 - `Alt+Shift+O` – Open Orbis popup
+- `Ctrl+Alt+O` – Move current tab into Orbis
+- `Ctrl+Alt+X` – Move current tab out of Orbis
+- `Ctrl+Alt+P` – Pause or resume containment
 
 Change shortcuts: Add-ons Manager → Gear → Manage Extension Shortcuts
 
@@ -61,7 +69,7 @@ Orbis knows 952+ addresses via JSON data:
 - **Advertising** (16, off by default): DoubleClick, Analytics, Tag Manager – off because ad click-throughs breaking destination.
 - **App hosting** (10, off): appspot.com, web.app, firebaseapp.com – hosts others' apps.
 
-Adding a missing site is one line in `src/domains/*.json` – see [DOMAIN_DATABASE.md](docs/DOMAIN_DATABASE.md).
+Adding a missing site is one line in `src/domains/*.json`.
 
 ## Privacy
 
@@ -69,7 +77,7 @@ Adding a missing site is one line in `src/domains/*.json` – see [DOMAIN_DATABA
 - No telemetry, analytics, crash reporting, third-party code
 - Only reads URLs to decide containment, never page content, injects nothing
 - Counters kept locally, optional, clearable
-- Permissions explained in [PERMISSIONS.md](docs/PERMISSIONS.md)
+- All permissions are declared in [src/manifest.json](src/manifest.json)
 
 ## What It Doesn't Do (Honest Limits)
 
@@ -90,8 +98,6 @@ npm test
 npm run build       # dist/ + full verification
 npm run package     # web-ext-artifacts/*.zip
 ```
-
-See [ARCHITECTURE.md](docs/ARCHITECTURE.md), [TESTING.md](docs/TESTING.md).
 
 ## License
 

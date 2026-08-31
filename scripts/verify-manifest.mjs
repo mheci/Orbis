@@ -3,7 +3,7 @@
  * Manifest verification.
  *
  * Fails the build when the manifest drifts from what the code actually needs:
- * every declared permission must be justified in docs/PERMISSIONS.md, every
+ * every declared permission must be in the ALLOWED_PERMISSIONS list, every
  * referenced file must exist, and the version must match package.json.
  */
 import { access, readFile } from 'node:fs/promises';
@@ -21,7 +21,7 @@ const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 check(manifest.manifest_version === 3, 'manifest_version must be 3');
 check(
   manifest.content_security_policy?.extension_pages === "script-src 'self'; object-src 'none';",
-  "extension_pages CSP must be exactly \"script-src 'self'; object-src 'none';\" (see docs/ARCHITECTURE.md)"
+  "extension_pages CSP must be exactly \"script-src 'self'; object-src 'none';\""
 );
 check(manifest.version === pkg.version, `version mismatch: ${manifest.version} vs ${pkg.version}`);
 check(/^\d+\.\d+\.\d+$/.test(manifest.version), `version must be semver: ${manifest.version}`);
@@ -37,7 +37,7 @@ check(
   'strict_min_version is required so Firefox does not offer the add-on to unsupported builds'
 );
 // AMO requires an explicit data-collection declaration. Orbis collects
-// nothing, so this must stay ["none"] — see docs/PERMISSIONS.md.
+// nothing, so this must stay ["none"].
 check(
   Array.isArray(gecko?.data_collection_permissions?.required),
   'browser_specific_settings.gecko.data_collection_permissions.required is required by AMO'
@@ -70,15 +70,7 @@ const ALLOWED_PERMISSIONS = new Set([
 for (const permission of manifest.permissions ?? []) {
   check(
     ALLOWED_PERMISSIONS.has(permission),
-    `unexpected permission "${permission}" — add it to ALLOWED_PERMISSIONS and document it in docs/PERMISSIONS.md`
-  );
-}
-
-const permissionDocs = await readFile('docs/PERMISSIONS.md', 'utf8');
-for (const permission of manifest.permissions ?? []) {
-  check(
-    permissionDocs.includes(permission),
-    `permission "${permission}" is not documented in docs/PERMISSIONS.md`
+    `unexpected permission "${permission}" — add it to ALLOWED_PERMISSIONS`
   );
 }
 
